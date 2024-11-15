@@ -123,21 +123,21 @@ def get_users_bubbles():
             print(Fore.RED + "Failed to retrieve bubbles, try again")
         response.raise_for_status()  # Raise an error for bad status codes
     except requests.exceptions.HTTPError as http_err:
-        print(f"HTTP error occurred: {http_err} - Response: {response.text}")
+        print(Fore.RED + f"HTTP error occurred: {http_err} - Response: {response.text}")
         return
     except requests.exceptions.RequestException as req_err:
-        print(f"Request exception occurred: {req_err}")
+        print(Fore.RED + f"Request exception occurred: {req_err}")
         return
     except Exception as err:
-        print(f"An unexpected error occurred: {err}")
+        print(Fore.RED + f"An unexpected error occurred: {err}")
         return
 
     try:
         with open(listofBubbles, 'w') as outfile:
             json.dump(response.json(), outfile, indent=4)
-        print(f"Response successfully written to {listofBubbles}")
+        print(Fore.GREEN + f"Response successfully written to {listofBubbles}")
     except IOError as io_err:
-        print(f"File write error occurred: {io_err}")
+        print(Fore.RED + f"File write error occurred: {io_err}")
 
 clear_screen()
 checkAccessToken()
