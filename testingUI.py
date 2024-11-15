@@ -104,6 +104,7 @@ def checkAccessToken():
         login()
 
 def get_users_bubbles():
+    print(Fore.BLUE + "Retrieving bubbles...")
     listofBubbles = r"C:\Users\paul\Desktop\Better Pronto\getUsersChatData\json\listofBubbles.json"
     url = f"{api_base_url}api/v3/bubble.list"
 
