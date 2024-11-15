@@ -99,11 +99,47 @@ def checkAccessToken():
         ACCESSTOKEN = False
     if ACCESSTOKEN == True:
         print(Fore.GREEN + f"Access Token already exists. Skipping login process.")
-        exit()
     elif ACCESSTOKEN == False:
         print(Fore.RED + "Access Token does not exist. Please login to get an access token.")
         login()
 
 clear_screen()
-
 checkAccessToken()
+
+def get_users_bubbles():
+    listofBubbles = r"C:\Users\paul\Desktop\Better Pronto\getUsersChatData\json\listofBubbles.json"
+    url = f"{api_base_url}api/v3/bubble.list"
+
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {accesstoken}",  # Ensure 'Bearer' is included
+    }
+
+    try:
+        start_time = time.time()
+        response = requests.post(url, headers=headers)
+        end_time = time.time()
+        print(f"Request completed in {end_time - start_time} seconds")
+        if response.status_code == 200:
+            print(Fore.GREEN + "Successfully retrieved bubbles")
+        else:
+            print(Fore.RED + "Failed to retrieve bubbles, try again")
+        response.raise_for_status()  # Raise an error for bad status codes
+    except requests.exceptions.HTTPError as http_err:
+        print(f"HTTP error occurred: {http_err} - Response: {response.text}")
+        return
+    except requests.exceptions.RequestException as req_err:
+        print(f"Request exception occurred: {req_err}")
+        return
+    except Exception as err:
+        print(f"An unexpected error occurred: {err}")
+        return
+
+    try:
+        with open(listofBubbles, 'w') as outfile:
+            json.dump(response.json(), outfile, indent=4)
+        print(f"Response successfully written to {listofBubbles}")
+    except IOError as io_err:
+        print(f"File write error occurred: {io_err}")
+
+get_users_bubbles()
