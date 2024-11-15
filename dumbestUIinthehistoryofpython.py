@@ -20,11 +20,10 @@ def clear_screen():
     else:
         os.system("clear")
 
-clear_screen()
+
 
 def login():
     print(Fore.BLUE + betterProntoLogo)
-    print(Fore.BLUE + "Better Pronto V 01.00.00, 11-12-24")
     print("")
     email = input(Fore.BLUE + "Please enter @ohs.stanford.edu email to login: ")
     request_start_time = time.time()
@@ -75,6 +74,7 @@ def login():
     clear_screen()
 
 def checkAccessToken():
+    global ACCESSTOKEN, accesstoken
     try:
         with open(r'C:\Users\paul\Desktop\Better Pronto Tests\terminalUI\accessTokenResponse.json', 'r') as file:
             data = json.load(file)
@@ -93,4 +93,6 @@ def checkAccessToken():
         print(Fore.RED + "Access Token does not exist. Please login to get an access token.")
         login()
 
+clear_screen()
 
+checkAccessToken()
