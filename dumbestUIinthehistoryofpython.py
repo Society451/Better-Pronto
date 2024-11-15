@@ -1,7 +1,7 @@
 import colorama, requests, json
 from colorama import Fore
 import time
-from Authentication.auth import post_user_verify, token_login, save_response_to_file, load_and_search
+from auth import post_user_verify, token_login, save_response_to_file, load_and_search
 import os
 import platform
 
@@ -30,6 +30,14 @@ def login():
     result = post_user_verify(email)
     request_end_time = time.time()
     total_time = request_end_time - request_start_time
+
+    result_str = json.dumps(result)  # Convert response to string
+
+    if "INVALID_EMAIL_EMAIL" in result_str:
+        clear_screen()
+        print(Fore.RED + "Invalid email entered. Please try again.")
+        return login()  # Retry login
+
     print(Fore.BLUE + "Verification email sent:", result)
     print(Fore.BLUE + f"Request took {total_time:.2f} seconds.")
     verification_code = input(Fore.BLUE + f"Input verification code sent to {email}: ")
@@ -61,6 +69,7 @@ def login():
 
     if response.status_code == 200:
         response_data = response.json()
+        print(Fore.GREEN + "Success:", response_data)
         print(Fore.GREEN + "Login successful")
     else:
         response_data = {"error": response.status_code, "message": response.text}
@@ -71,6 +80,7 @@ def login():
         json.dump(response_data, file , indent=4)
 
     print(Fore.BLUE + "Access Token saved to", Fore.GREEN + response_filePath)
+    time.sleep(100)
     clear_screen()
 
 def checkAccessToken():
