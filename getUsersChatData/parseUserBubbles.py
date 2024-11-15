@@ -1,6 +1,7 @@
 import json
 
-def parse_user_bubbles(json_file_path):
+def parse_user_bubbles():
+    json_file_path = r"C:\Users\paul\Desktop\Better Pronto\getUsersChatData\json\listofBubbles.json"
     with open(json_file_path, 'r') as file:
         data = json.load(file)
 
@@ -30,4 +31,4 @@ def parse_user_bubbles(json_file_path):
             print(f'  {groupChat}')
 
 # Example usage
-parse_user_bubbles(r"C:\Users\paul\Desktop\Better Pronto\getUsersChatData\json\listofBubbles.json")
+parse_user_bubbles()
