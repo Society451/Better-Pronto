@@ -3,7 +3,6 @@ import logging
 import time
 import json
 from dataclasses import dataclass, asdict
-
 # Custom exception for backend errors
 class BackendError(Exception):
     pass
@@ -15,7 +14,6 @@ class DeviceInfo:
     browserversion: str
     osname: str
     type: str
-
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
