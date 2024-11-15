@@ -1,9 +1,6 @@
 import colorama, requests, json
 from colorama import Fore
-import time
-import os
-import platform
-import logging
+import time, os, platform, logging
 from dataclasses import dataclass, asdict
 
 accesstoken = ""
@@ -15,6 +12,48 @@ betterProntoLogo = """
 |__) |__   |   |  |__  |__)    |__) |__) /  \ |\ |  |  /  \ 
 |__) |___  |   |  |___ |  \    |    |  \ \__/ | \|  |  \__/ 
 """
+
+def check_and_create_json_files():
+    # Define the path to the "Better Pronto" folder on the desktop
+    desktop_path = os.path.join(os.path.expanduser("~"), "Desktop")
+    better_pronto_path = os.path.join(desktop_path, "Better Pronto 1.0")
+    json_folder_path = os.path.join(better_pronto_path, "JSON")
+
+    # Define the names of the required JSON files
+    required_files = ["accessTokenResponse.json", "LoginToken_Response.json", "listofBubbles.json"]
+
+    # Check if the "Better Pronto" folder exists
+    if os.path.exists(better_pronto_path):
+        # Check if the "JSON" folder exists within "Better Pronto"
+        if os.path.exists(json_folder_path):
+            # Check for the required JSON files
+            all_files_exist = all(os.path.exists(os.path.join(json_folder_path, file_name)) for file_name in required_files)
+            if all_files_exist:
+                print(f'All required JSON files already exist in: {json_folder_path}')
+                return
+        else:
+            # Create the "JSON" folder if it doesn't exist
+            os.makedirs(json_folder_path)
+            print(f'Created folder: {json_folder_path}')
+    else:
+        # Create the "Better Pronto" folder if it doesn't exist
+        os.makedirs(better_pronto_path)
+        print(f'Created folder: {better_pronto_path}')
+        # Create the "JSON" folder
+        os.makedirs(json_folder_path)
+        print(f'Created folder: {json_folder_path}')
+
+    # Create the required JSON files if they don't exist
+    for file_name in required_files:
+        file_path = os.path.join(json_folder_path, file_name)
+        if not os.path.exists(file_path):
+            # Create the JSON file with an empty string if it doesn't exist
+            with open(file_path, 'w') as file:
+                file.write('')
+            print(f'Created blank file: {file_path}')
+        else:
+            print(f'File already exists: {file_path}')
+
 
 # Custom exception for backend errors
 class BackendError(Exception):
@@ -307,6 +346,7 @@ def parse_and_get_stats():
                   f'Unread Mentions: {chat["unread_mentions"]}; '
                   f'Latest Message Created At: {chat["latest_message_created_at"]}')
 
+check_and_create_json_files()
 clear_screen()
 checkAccessToken()
 get_users_bubbles()
