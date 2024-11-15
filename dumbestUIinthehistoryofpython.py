@@ -1,7 +1,7 @@
 import colorama, requests, json
 from colorama import Fore
 import time
-from auth import post_user_verify, token_login, save_response_to_file, load_and_search
+from Authentication.auth import post_user_verify, token_login, save_response_to_file, load_and_search
 import os
 import platform
 
