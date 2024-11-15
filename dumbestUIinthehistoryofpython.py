@@ -20,8 +20,6 @@ def clear_screen():
     else:
         os.system("clear")
 
-
-
 def login():
     print(Fore.BLUE + betterProntoLogo)
     print("")
@@ -93,11 +91,14 @@ def checkAccessToken():
             username = data["users"][0]["user"]["fullname"]
             print(Fore.GREEN + "UserID:", user_id)
             print(Fore.GREEN + "Username:", username)
+            print(Fore.GREEN + "AccessToken:", accesstoken)
+            if accesstoken != "":
+                ACCESSTOKEN = True
     except FileNotFoundError:
         print(Fore.RED + "File not found. Please login to get an access token.")
         ACCESSTOKEN = False
     if ACCESSTOKEN == True:
-        print(Fore.GREEN + f"Access Token {accesstoken} already exists. Skipping login process.")
+        print(Fore.GREEN + f"Access Token already exists. Skipping login process.")
         exit()
     elif ACCESSTOKEN == False:
         print(Fore.RED + "Access Token does not exist. Please login to get an access token.")
