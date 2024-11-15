@@ -5,6 +5,17 @@ import os
 import platform
 import logging
 from dataclasses import dataclass, asdict
+
+accesstoken = ""
+ACCESSTOKEN = False
+api_base_url = "https://stanfordohs.pronto.io/"
+colorama.init(autoreset=True)
+betterProntoLogo = """
+ __   ___ ___ ___  ___  __      __   __   __       ___  __  
+|__) |__   |   |  |__  |__)    |__) |__) /  \ |\ |  |  /  \ 
+|__) |___  |   |  |___ |  \    |    |  \ \__/ | \|  |  \__/ 
+"""
+
 # Custom exception for backend errors
 class BackendError(Exception):
     pass
@@ -124,19 +135,12 @@ def load_and_search(file_path, target_key):
         value = search_key(data, target_key)
         return value if value is not None else f"Key '{target_key}' not found."
     return data
-
-
-
-
-accesstoken = ""
-ACCESSTOKEN = False
-api_base_url = "https://stanfordohs.pronto.io/"
-colorama.init(autoreset=True)
-betterProntoLogo = """
- __   ___ ___ ___  ___  __      __   __   __       ___  __  
-|__) |__   |   |  |__  |__)    |__) |__) /  \ |\ |  |  /  \ 
-|__) |___  |   |  |___ |  \    |    |  \ \__/ | \|  |  \__/ 
-"""
+#
+#
+#
+#Main code
+#
+#
 def clear_screen():
     if platform.system() == "Windows":
         os.system("cls")
