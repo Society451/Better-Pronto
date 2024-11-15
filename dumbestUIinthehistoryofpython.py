@@ -103,9 +103,6 @@ def checkAccessToken():
         print(Fore.RED + "Access Token does not exist. Please login to get an access token.")
         login()
 
-clear_screen()
-checkAccessToken()
-
 def get_users_bubbles():
     listofBubbles = r"C:\Users\paul\Desktop\Better Pronto\getUsersChatData\json\listofBubbles.json"
     url = f"{api_base_url}api/v3/bubble.list"
@@ -142,4 +139,6 @@ def get_users_bubbles():
     except IOError as io_err:
         print(f"File write error occurred: {io_err}")
 
+clear_screen()
+checkAccessToken()
 get_users_bubbles()
