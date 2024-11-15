@@ -267,7 +267,7 @@ def get_users_bubbles():
     except IOError as io_err:
         print(Fore.RED + f"File write error occurred: {io_err}")
 
-def parse_user_bubbles():
+def parse_and_get_stats():
     json_file_path = r"C:\Users\paul\Desktop\Better Pronto\getUsersChatData\json\listofBubbles.json"
     with open(json_file_path, 'r') as file:
         data = json.load(file)
@@ -276,31 +276,56 @@ def parse_user_bubbles():
     dms = []
 
     for bubble in data["bubbles"]:
-        if bubble["dmpartner"] is not None:
-            dms.append(f'{bubble["title"]}; {bubble["id"]}')
+        if bubble.get("isdm", False):
+            dms.append({
+                "title": bubble["title"],
+                "id": bubble["id"],
+                "unread": 0,
+                "unread_mentions": 0,
+                "latest_message_created_at": ""
+            })
         else:
             category_title = bubble["category"]["title"] if bubble["category"] else "No Category"
             if category_title not in groupChats:
                 groupChats[category_title] = []
-            groupChats[category_title].append(f'{bubble["title"]}; {bubble["id"]}')
+            groupChats[category_title].append({
+                "title": bubble["title"],
+                "id": bubble["id"],
+                "unread": 0,
+                "unread_mentions": 0,
+                "latest_message_created_at": ""
+            })
 
-    # Sort group chats by category title and then alphabetically by group chat title
-    sorted_groupChats = {k: sorted(v) for k, v in sorted(groupChats.items())}
+    for stat in data["stats"]:
+        bubble_id = stat["bubble_id"]
+        for dm in dms:
+            if dm["id"] == bubble_id:
+                dm["unread"] = stat["unread"]
+                dm["unread_mentions"] = stat["unread_mentions"]
+                dm["latest_message_created_at"] = stat["latest_message_created_at"]
+        for category, bubbles in groupChats.items():
+            for bubble in bubbles:
+                if bubble["id"] == bubble_id:
+                    bubble["unread"] = stat["unread"]
+                    bubble["unread_mentions"] = stat["unread_mentions"]
+                    bubble["latest_message_created_at"] = stat["latest_message_created_at"]
 
-    #print("\nDMs:")
-    #for dm in dms:
-    #    print(dm)
+    sorted_groupChats = {k: sorted(v, key=lambda x: (-x["unread_mentions"], -x["unread"])) for k, v in sorted(groupChats.items())}
+    sorted_dms = sorted(dms, key=lambda x: (-x["unread_mentions"], -x["unread"]))
 
-    #print("\nGroup Chats:")
-    #for category, groupChatList in sorted_groupChats.items():
-    #    print(f'{category}:')
-    #    for groupChat in groupChatList:
-    #        print(f'  {groupChat}')
+    print("\nDMs:")
+    for dm in sorted_dms:
+        print(f'{dm["title"]}; {dm["id"]}; Unread: {dm["unread"]}; '
+              f'Unread Mentions: {dm["unread_mentions"]}; '
+              f'Latest Message Created At: {dm["latest_message_created_at"]}')
 
-# Example usage
-
-
-def getStats():
+    print("\nGroup Chats with Stats:")
+    for category, groupChatList in sorted_groupChats.items():
+        print(f'{category}:')
+        for groupChat in groupChatList:
+            print(f'  {groupChat["title"]}; {groupChat["id"]}; Unread: {groupChat["unread"]}; '
+                  f'Unread Mentions: {groupChat["unread_mentions"]}; '
+                  f'Latest Message Created At: {groupChat["latest_message_created_at"]}')
     json_file_path = r"C:\Users\paul\Desktop\Better Pronto\getUsersChatData\json\listofBubbles.json"
     with open(json_file_path, 'r') as file:
         data = json.load(file)
@@ -341,6 +366,4 @@ def getStats():
 clear_screen()
 checkAccessToken()
 get_users_bubbles()
-parse_user_bubbles()
-parse_user_bubbles()
-getStats()
+parse_and_get_stats()
