@@ -3,8 +3,12 @@ from colorama import Fore
 import time, os, platform, logging
 from dataclasses import dataclass, asdict
 
+LoginToken_ResponseFilePath = ""
+accessTokenResponseFilePath = ""
+listofBubblesFilePath = ""
+
 accesstoken = ""
-ACCESSTOKEN = False
+ACCESSTOKEN_STATUS = False
 api_base_url = "https://stanfordohs.pronto.io/"
 colorama.init(autoreset=True)
 betterProntoLogo = """
@@ -54,6 +58,12 @@ def check_and_create_json_files():
         else:
             print(f'File already exists: {file_path}')
 
+def getsystemInfo():
+    global LoginToken_ResponseFilePath, accessTokenResponseFilePath, listofBubblesFilePath
+    desktop_path = os.path.join(os.path.expanduser("~"), "Desktop")
+    LoginToken_ResponseFilePath = os.path.join(desktop_path, "Better Pronto 1.0", "JSON", "LoginToken_Response.json")
+    accessTokenResponseFilePath = os.path.join(desktop_path, "Better Pronto 1.0", "JSON", "accessTokenResponse.json")
+    listofBubblesFilePath = os.path.join(desktop_path, "Better Pronto 1.0", "JSON", "listofBubbles.json")
 
 # Custom exception for backend errors
 class BackendError(Exception):
@@ -133,7 +143,7 @@ def verification_code_to_accessToken(email):
         end_time = time.time()
         total_time = end_time - start_time
         print(f"Time to get response: {total_time} seconds.")
-        save_response_to_file(result, r"C:\Users\paul\Desktop\Better Pronto\Authentication\JSON\LoginToken_Response.json")
+        save_response_to_file(result, LoginToken_ResponseFilePath)
         if result.get("ok"):
             logger.info(f"User authenticated: {result}")
         else:
@@ -201,6 +211,10 @@ def login():
         clear_screen()
         print(Fore.RED + "Invalid email entered. Please try again.")
         return login()  # Retry login
+    if "EMAIL_NOT_FOUND" in result_str:
+        clear_screen()
+        print(Fore.RED + "Email not found. Please try again with an email registered with Stanford OHS.")
+        return login()
 
     print(Fore.BLUE + "Verification email sent:", result)
     print(Fore.BLUE + f"Request took {total_time:.2f} seconds.")
@@ -210,8 +224,8 @@ def login():
     logintoken = token_login(email, verification_code)
     end_time = time.time()
     total_time = end_time - start_time
-    save_response_to_file(logintoken, r"C:\Users\paul\Desktop\Better Pronto Tests\terminalUI\LoginToken_Response.json")
-    login_token = load_and_search(r"C:\Users\paul\Desktop\Better Pronto Tests\terminalUI\LoginToken_Response.json", 'logintoken')
+    save_response_to_file(logintoken, LoginToken_ResponseFilePath)
+    login_token = load_and_search(LoginToken_ResponseFilePath, 'logintoken')
 
     device_info = {
         "browsername": "firefox",
@@ -239,19 +253,20 @@ def login():
         response_data = {"error": response.status_code, "message": response.text}
         print(Fore.RED + f"Error: {response.status_code} - {response.text}")
 
-    response_filePath = r"C:\Users\paul\Desktop\Better Pronto\Authentication\JSON\accessTokenResponse.json"
-    with open(response_filePath, 'w') as file:
+    with open(accessTokenResponseFilePath, 'w') as file:
         json.dump(response_data, file , indent=4)
 
-    print(Fore.BLUE + "Access Token saved to", Fore.GREEN + response_filePath)
-    time.sleep(100)
+    print(Fore.BLUE + "Access Token saved to", Fore.GREEN + accessTokenResponseFilePath)
     clear_screen()
 
 def checkAccessToken():
-    global ACCESSTOKEN, accesstoken
+    global ACCESSTOKEN_STATUS, accesstoken
     try:
-        with open(r'C:\Users\paul\Desktop\Better Pronto Tests\terminalUI\accessTokenResponse.json', 'r') as file:
-            data = json.load(file)
+        with open(accessTokenResponseFilePath, 'r') as file:
+            content = file.read().strip()
+            if not content:
+                raise FileNotFoundError("File is empty. Please login to get an access token.")
+            data = json.loads(content)
             accesstoken = data["users"][0]["accesstoken"]
             user_id = data["users"][0]["user"]["id"]
             username = data["users"][0]["user"]["fullname"]
@@ -259,19 +274,24 @@ def checkAccessToken():
             print(Fore.GREEN + "Username:", username)
             print(Fore.GREEN + "AccessToken:", accesstoken)
             if accesstoken != "":
-                ACCESSTOKEN = True
-    except FileNotFoundError:
-        print(Fore.RED + "File not found. Please login to get an access token.")
-        ACCESSTOKEN = False
-    if ACCESSTOKEN == True:
+                ACCESSTOKEN_STATUS = True
+    except FileNotFoundError as e:
+        print(Fore.RED + str(e))
+        ACCESSTOKEN_STATUS = False
+    except json.JSONDecodeError:
+        print(Fore.RED + "Invalid JSON format. Please login to get a valid access token.")
+        ACCESSTOKEN_STATUS = False
+
+    if ACCESSTOKEN_STATUS:
         print(Fore.GREEN + f"Access Token already exists. Skipping login process.")
-    elif ACCESSTOKEN == False:
+    else:
         print(Fore.RED + "Access Token does not exist. Please login to get an access token.")
         login()
+        checkAccessToken()
 
 def get_users_bubbles():
     print(Fore.BLUE + "Retrieving bubbles...")
-    listofBubbles = r"C:\Users\paul\Desktop\Better Pronto\getUsersChatData\json\listofBubbles.json"
+    listofBubbles = listofBubblesFilePath
     url = f"{api_base_url}api/v3/bubble.list"
 
     headers = {
@@ -300,14 +320,14 @@ def get_users_bubbles():
         return
 
     try:
-        with open(listofBubbles, 'w') as outfile:
+        with open(listofBubblesFilePath, 'w') as outfile:
             json.dump(response.json(), outfile, indent=4)
-        print(Fore.GREEN + f"Response successfully written to {listofBubbles}")
+        print(Fore.GREEN + f"Response successfully written to {listofBubblesFilePath}")
     except IOError as io_err:
         print(Fore.RED + f"File write error occurred: {io_err}")
 
 def parse_and_get_stats():
-    with open(r"C:\Users\paul\Desktop\Better Pronto\getUsersChatData\json\listofBubbles.json") as file:
+    with open(listofBubblesFilePath) as file:
         data = json.load(file)
 
     stats_by_id = {stat["bubble_id"]: stat for stat in data["stats"]}
@@ -346,8 +366,22 @@ def parse_and_get_stats():
                   f'Unread Mentions: {chat["unread_mentions"]}; '
                   f'Latest Message Created At: {chat["latest_message_created_at"]}')
 
-check_and_create_json_files()
-clear_screen()
-checkAccessToken()
-get_users_bubbles()
-parse_and_get_stats()
+    # New section for Unreads
+    print("\nUnreads:")
+    unread_items = sorted_dms + [chat for chats in sorted_groupChats.values() for chat in chats]
+    unread_items = [item for item in unread_items if item["unread"] > 0]
+    for item in unread_items:
+        print(f'{item["title"]}; {item["id"]}; Unread: {item["unread"]}; '
+              f'Unread Mentions: {item["unread_mentions"]}; '
+              f'Latest Message Created At: {item["latest_message_created_at"]}')
+
+
+def main():
+    check_and_create_json_files()
+    getsystemInfo()
+    clear_screen()
+    checkAccessToken()
+    get_users_bubbles()
+    parse_and_get_stats()
+
+main()
