@@ -5,7 +5,7 @@ Smaller, (hopefully!) faster alternative to https://github.com/arihant2math/pron
 
 #### Why Better Pronto?
 
-The official Pronto client is bloated (taking up over 300 mb of RAM), leaks memory, and has poor user interface design. Better Pronto aims to fix this by rewriting the pronto client from the ground up.
+The official Pronto client is bloated (taking up over 300 mb of RAM), leaks memory, and has poor user interface design. Better Pronto aims to fix this by rewriting the Pronto client from the ground up.
 
 #### Performance
 
