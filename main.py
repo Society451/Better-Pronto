@@ -82,7 +82,7 @@ def makeChatJson():
     # Ensure the Chat Data folder exists
     if not os.path.exists(chatData_folder_path):
         os.makedirs(chatData_folder_path)
-        print(Fore.GREEN + f"Created folder: {chatData_folder_path}")
+
     else:
         pass
     
@@ -104,13 +104,13 @@ def makeChatJson():
                 bubble_folder_path = os.path.join(chatData_folder_path, str(bubble_id))
                 if not os.path.exists(bubble_folder_path):
                     os.makedirs(bubble_folder_path)
-                    print(Fore.GREEN + f"Created folder: {bubble_folder_path}")
+                    
                 
                 json_file_path = os.path.join(bubble_folder_path, f"{bubble_id}.json")
                 if not os.path.exists(json_file_path):
                     # Create an empty file
                     open(json_file_path, 'w').close()
-                    print(Fore.GREEN + f"Created JSON file: {json_file_path}")
+                    
     except FileNotFoundError:
         print(Fore.RED + f"listofBubbles.json not found")
     except json.JSONDecodeError:
@@ -459,7 +459,6 @@ def pickBubble():
 def main():
     check_and_create_json_files()
     getsystemInfo()
-    makeChatJson()
     clear_screen()
     checkAccessToken()
     get_users_bubbles()
