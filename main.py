@@ -89,23 +89,33 @@ def makeChatJson():
     # Path to the listofBubbles.json file
     listofBubbles_path = os.path.join(json_folder_path, "listofBubbles.json")
     
-    # Read the listofBubbles.json file
-    with open(listofBubbles_path, 'r') as file:
-        data = json.load(file)
-    
-    # Access the "bubbles" key in the JSON data
-    bubbles_data = data.get("bubbles", [])
-    
-    # Create folders for each "id" in the bubbles list
-    for bubble in bubbles_data:
-        bubble_id = bubble.get("id")
-        if bubble_id:
-            bubble_folder_path = os.path.join(chatData_folder_path, str(bubble_id))
-            if not os.path.exists(bubble_folder_path):
-                os.makedirs(bubble_folder_path)
-                print(Fore.GREEN + f"Created folder: {bubble_folder_path}")
-            else:
-                pass
+    try:
+        # Read the listofBubbles.json file
+        with open(listofBubbles_path, 'r') as file:
+            data = json.load(file)
+        
+        # Access the "bubbles" key in the JSON data
+        bubbles_data = data.get("bubbles", [])
+        
+        # Create a folder for each bubble ID and a JSON file within each folder
+        for bubble in bubbles_data:
+            bubble_id = bubble.get("id")
+            if bubble_id:
+                bubble_folder_path = os.path.join(chatData_folder_path, str(bubble_id))
+                if not os.path.exists(bubble_folder_path):
+                    os.makedirs(bubble_folder_path)
+                    print(Fore.GREEN + f"Created folder: {bubble_folder_path}")
+                
+                json_file_path = os.path.join(bubble_folder_path, f"{bubble_id}.json")
+                if not os.path.exists(json_file_path):
+                    # Create empty JSON file with basic structure
+                    with open(json_file_path, 'w') as f:
+                        json.dump({"messages": []}, f)
+                    print(Fore.GREEN + f"Created JSON file: {json_file_path}")
+    except FileNotFoundError:
+        print(Fore.RED + f"listofBubbles.json not found")
+    except json.JSONDecodeError:
+        print(Fore.RED + f"Invalid JSON in listofBubbles.json")
 
 # Custom exception for backend errors
 class BackendError(Exception):
