@@ -21,3 +21,7 @@ Better Pronto aims to be as fast and lightweight as possible, stripping Pronto d
 - [ ] Faster, client-side searching/archive feature
 - [ ] Better message threads
 - [ ] Better blocking feature
+
+### Dependencies
+- (`colorama`)[https://github.com/tartley/colorama]
+- (`fuzzywuzzy`)[https://github.com/seatgeek/fuzzywuzzy]
