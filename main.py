@@ -454,7 +454,43 @@ def pickBubble():
             print(Fore.RED + "No close match found, please try again")
             return pickBubble()
 
+def getBubbleMessages(bubbleID, latestMessageID):
+    desktop_path = os.path.join(os.path.expanduser("~"), "Desktop")
+    better_pronto_path = os.path.join(desktop_path, "Better Pronto 1.0")
+    json_folder_path = os.path.join(better_pronto_path, "JSON")
+    chatData_folder_path = os.path.join(json_folder_path, "Chat Data")
+    
+    url = f"{api_base_url}/api/v1/bubble.history"
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {accesstoken}",
+    }
+    if latestMessageID is None:
+        payload = {"bubble_id": bubbleID}
+    if latestMessageID is not None:
+        payload = {"bubble_id": bubbleID, "latest": {latestMessageID}}
 
+    try:
+        response = requests.post(url, headers=headers, json=payload)
+        response.raise_for_status()
+        response_json = response.json()
+        
+        bubble_folder_path = os.path.join(chatData_folder_path, str(bubbleID))
+        os.makedirs(bubble_folder_path, exist_ok=True)
+        
+        bubbleMessagesFilePath = os.path.join(bubble_folder_path, f"{bubbleID}.json")
+        with open(bubbleMessagesFilePath, 'w') as infile:
+            json.dump(response_json, infile, indent=4)
+        print(f"Bubble messages for {bubbleID} have been written to {bubbleMessagesFilePath}")
+        
+    except requests.exceptions.HTTPError as http_err:
+        print(f"HTTP error occurred: {http_err} - Response: {response.text}")
+    except requests.exceptions.RequestException as req_err:
+        print(f"Request exception occurred: {req_err}")
+    except IOError as io_err:
+        print(f"File write error occurred: {io_err}")
+    except Exception as err:
+        print(f"An unexpected error occurred: {err}")
 
 def main():
     check_and_create_json_files()
