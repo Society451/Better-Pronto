@@ -73,6 +73,40 @@ def getsystemInfo():
     accessTokenResponseFilePath = os.path.join(desktop_path, "Better Pronto 1.0", "JSON", "accessTokenResponse.json")
     listofBubblesFilePath = os.path.join(desktop_path, "Better Pronto 1.0", "JSON", "listofBubbles.json")
 
+def makeChatJson():
+    desktop_path = os.path.join(os.path.expanduser("~"), "Desktop")
+    better_pronto_path = os.path.join(desktop_path, "Better Pronto 1.0")
+    json_folder_path = os.path.join(better_pronto_path, "JSON")
+    chatData_folder_path = os.path.join(json_folder_path, "Chat Data")
+    
+    # Ensure the Chat Data folder exists
+    if not os.path.exists(chatData_folder_path):
+        os.makedirs(chatData_folder_path)
+        print(Fore.GREEN + f"Created folder: {chatData_folder_path}")
+    else:
+        print(Fore.GREEN + f"Folder already exists: {chatData_folder_path}")
+    
+    # Path to the listofBubbles.json file
+    listofBubbles_path = os.path.join(json_folder_path, "listofBubbles.json")
+    
+    # Read the listofBubbles.json file
+    with open(listofBubbles_path, 'r') as file:
+        data = json.load(file)
+    
+    # Access the "bubbles" key in the JSON data
+    bubbles_data = data.get("bubbles", [])
+    
+    # Create folders for each "id" in the bubbles list
+    for bubble in bubbles_data:
+        bubble_id = bubble.get("id")
+        if bubble_id:
+            bubble_folder_path = os.path.join(chatData_folder_path, str(bubble_id))
+            if not os.path.exists(bubble_folder_path):
+                os.makedirs(bubble_folder_path)
+                print(Fore.GREEN + f"Created folder: {bubble_folder_path}")
+            else:
+                pass
+
 # Custom exception for backend errors
 class BackendError(Exception):
     pass
@@ -413,9 +447,12 @@ def pickBubble():
 
 
 
+
+
 def main():
     check_and_create_json_files()
     getsystemInfo()
+    makeChatJson()
     clear_screen()
     checkAccessToken()
     get_users_bubbles()
