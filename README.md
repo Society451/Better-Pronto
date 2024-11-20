@@ -23,5 +23,5 @@ Better Pronto aims to be as fast and lightweight as possible, stripping Pronto d
 - [ ] Better blocking feature
 
 ### Dependencies
-- (`colorama`)[https://github.com/tartley/colorama]
-- (`fuzzywuzzy`)[https://github.com/seatgeek/fuzzywuzzy]
+- [`colorama`](https://github.com/tartley/colorama)
+- [`fuzzywuzzy`](https://github.com/seatgeek/fuzzywuzzy)
