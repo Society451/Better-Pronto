@@ -1,11 +1,12 @@
-import colorama, requests, json
+import colorama, requests, json, time, os, platform, logging
 from colorama import Fore
-import time, os, platform, logging
 from dataclasses import dataclass, asdict
+from fuzzywuzzy import process
 
 LoginToken_ResponseFilePath = ""
 accessTokenResponseFilePath = ""
 listofBubblesFilePath = ""
+bubbleFocus = ""
 
 accesstoken = ""
 ACCESSTOKEN_STATUS = False
@@ -308,6 +309,12 @@ def get_users_bubbles():
             print(Fore.GREEN + "Successfully retrieved bubbles")
         else:
             print(Fore.RED + "Failed to retrieve bubbles, try again")
+        response_data = response.json()
+        if "UNAUTHORIZED" in response_data:
+            print(Fore.RED + "Unauthorized access. Please login to get a valid access token.")
+            login()
+            checkAccessToken()
+            get_users_bubbles()
         response.raise_for_status()  # Raise an error for bad status codes
     except requests.exceptions.HTTPError as http_err:
         print(Fore.RED + f"HTTP error occurred: {http_err} - Response: {response.text}")
@@ -318,6 +325,7 @@ def get_users_bubbles():
     except Exception as err:
         print(Fore.RED + f"An unexpected error occurred: {err}")
         return
+    
 
     try:
         with open(listofBubblesFilePath, 'w') as outfile:
@@ -349,7 +357,7 @@ def parse_and_get_stats():
             groupChats.setdefault(category_title, []).append(info)
 
     key_func = lambda x: (-x["unread_mentions"], -x["unread"])
-    sorted_dms = sorted(dms, key=key_func)
+    sorted_dms = sorted(dms, key=lambda x: x["title"].lower())  # Sort DMs alphabetically by title
     sorted_groupChats = {k: sorted(v, key=key_func) for k, v in groupChats.items()}
 
     print("\nDMs:")
@@ -375,6 +383,28 @@ def parse_and_get_stats():
               f'Unread Mentions: {item["unread_mentions"]}; '
               f'Latest Message Created At: {item["latest_message_created_at"]}')
 
+def pickBubble():
+    global bubbleFocus
+    bubbleFocus = input("Please enter which bubble you wish to view:")
+
+    with open(listofBubblesFilePath, "r") as file:
+        data = json.load(file)
+        bubble_titles = [bubble["title"] for bubble in data["bubbles"]]
+        closest_match = process.extractOne(bubbleFocus, bubble_titles, score_cutoff=66)
+        
+        if closest_match:
+            for bubble in data["bubbles"]:
+                if bubble["title"] == closest_match[0]:
+                    bubbleFocus = {"title": bubble['title'], "id": bubble['id']}
+                    print(Fore.GREEN + f"Title: {bubble['title']}, ID: {bubble['id']}")
+                    return bubbleFocus
+                    
+        else:
+            clear_screen()
+            print(Fore.RED + "No close match found, please try again")
+            return pickBubble()
+
+
 
 def main():
     check_and_create_json_files()
@@ -383,5 +413,6 @@ def main():
     checkAccessToken()
     get_users_bubbles()
     parse_and_get_stats()
+    pickBubble()
 
 main()
