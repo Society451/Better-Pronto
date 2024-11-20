@@ -23,6 +23,7 @@ def check_and_create_json_files():
     desktop_path = os.path.join(os.path.expanduser("~"), "Desktop")
     better_pronto_path = os.path.join(desktop_path, "Better Pronto 1.0")
     json_folder_path = os.path.join(better_pronto_path, "JSON")
+    chatData_folder_path = os.path.join(json_folder_path, "Chat Data")
 
     # Define the names of the required JSON files
     required_files = ["accessTokenResponse.json", "LoginToken_Response.json", "listofBubbles.json"]
@@ -35,7 +36,6 @@ def check_and_create_json_files():
             all_files_exist = all(os.path.exists(os.path.join(json_folder_path, file_name)) for file_name in required_files)
             if all_files_exist:
                 print(f'All required JSON files already exist in: {json_folder_path}')
-                return
         else:
             # Create the "JSON" folder if it doesn't exist
             os.makedirs(json_folder_path)
@@ -47,6 +47,13 @@ def check_and_create_json_files():
         # Create the "JSON" folder
         os.makedirs(json_folder_path)
         print(f'Created folder: {json_folder_path}')
+
+    # Create the "Chat Data" folder within the "JSON" folder if it doesn't exist
+    if not os.path.exists(chatData_folder_path):
+        os.makedirs(chatData_folder_path)
+        print(f'Created folder: {chatData_folder_path}')
+    else:
+        print(f'Folder already exists: {chatData_folder_path}')
 
     # Create the required JSON files if they don't exist
     for file_name in required_files:
