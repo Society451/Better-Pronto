@@ -7,7 +7,7 @@ The official Pronto client is bloated (taking up over 300 mb of RAM), leaks memo
 
 #### Performance
 
-Better Pronto aims to be as fast and lightweight as possible, stripping Pronto down to its bare bones while still maintaining stellar performance and full functionality. By keeping simplicity and transparency at the forefront of our design process, users with even the most basic knowledge of Python can help contribute to and improve this project.
+Better Pronto aims to be as fast and lightweight as possible, stripping Pronto down to its bare bones while still maintaining stellar performance and full functionality. By keeping simplicity and transparency at the forefront of our design process, users with even the most basic knowledge of Python can customize, contribute to and improve this project.
 
 #### Future Client Features：
 
