@@ -1,13 +1,17 @@
 import colorama, requests, json, time, os, platform, logging
-from colorama import Fore
+from colorama import Fore, Style
 from dataclasses import dataclass, asdict
 from fuzzywuzzy import process
+
+colorama.init(autoreset=True)
 
 LoginToken_ResponseFilePath = ""
 accessTokenResponseFilePath = ""
 listofBubblesFilePath = ""
 bubbleFocus = ""
 bubbleID = 0
+
+user_id = 0
 
 accesstoken = ""
 ACCESSTOKEN_STATUS = False
@@ -312,7 +316,7 @@ def login():
     clear_screen()
 
 def checkAccessToken():
-    global ACCESSTOKEN_STATUS, accesstoken
+    global ACCESSTOKEN_STATUS, accesstoken, user_id
     try:
         with open(accessTokenResponseFilePath, 'r') as file:
             content = file.read().strip()
@@ -495,6 +499,7 @@ def getBubbleMessages(bubbleID, latestMessageID):
         print(f"An unexpected error occurred: {err}")
 
 def parseMessages(bubbleID):
+
     desktop_path = os.path.join(os.path.expanduser("~"), "Desktop")
     better_pronto_path = os.path.join(desktop_path, "Better Pronto 1.0")
     json_folder_path = os.path.join(better_pronto_path, "JSON")
@@ -522,10 +527,16 @@ def parseMessages(bubbleID):
         text = message["message"]
         edited = message["user_edited_at"]
         numberofEdits = message["user_edited_version"]
-        if edited:
-            print(f"{time} {user}: {text} (edited {numberofEdits} times)")
+        if message["user"]["id"] == user_id:
+            if edited:
+                print(Fore.BLUE + f"{time} {user}: {text} " + Fore.RED + f"(edited {numberofEdits} times)")
+            else:
+                print(Fore.BLUE + f"{time} {user}: {text}")
         else:
-            print(f"{time} {user}: {text}")
+            if edited:
+                print(f"{time} {user}: {text} " + Fore.RED + f"(edited {numberofEdits} times)" + Style.RESET_ALL)
+            else:
+                print(f"{time} {user}: {text}")
 
 
 def main():
