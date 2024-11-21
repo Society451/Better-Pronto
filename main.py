@@ -492,6 +492,40 @@ def getBubbleMessages(bubbleID, latestMessageID):
     except Exception as err:
         print(f"An unexpected error occurred: {err}")
 
+def parseMessages(bubbleID):
+    desktop_path = os.path.join(os.path.expanduser("~"), "Desktop")
+    better_pronto_path = os.path.join(desktop_path, "Better Pronto 1.0")
+    json_folder_path = os.path.join(better_pronto_path, "JSON")
+    chatData_folder_path = os.path.join(json_folder_path, "Chat Data")
+    bubble_folder_path = os.path.join(chatData_folder_path, str(bubbleID))
+    messageJSONPath = os.path.join(bubble_folder_path, f"{bubbleID}.json")
+
+    if not os.path.exists(messageJSONPath):
+        print("No messages found for bubble ID:", bubbleID)
+        return
+
+    with open(messageJSONPath, 'r') as file:
+        data = json.load(file)
+
+    if not data.get("ok"):
+        print("Failed to retrieve messages")
+        return
+
+    messages = data.get("messages", [])
+    messages.sort(key=lambda x: x["created_at"])
+
+    for message in messages:
+        time = message["created_at"]
+        user = message["user"]["fullname"]
+        text = message["message"]
+        edited = message["user_edited_at"]
+        numberofEdits = message["user_edited_version"]
+        if edited:
+            print(f"{time} {user}: {text} (edited {numberofEdits} times)")
+        else:
+            print(f"{time} {user}: {text}")
+
+
 def main():
     check_and_create_json_files()
     getsystemInfo()
