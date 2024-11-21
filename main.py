@@ -7,6 +7,7 @@ LoginToken_ResponseFilePath = ""
 accessTokenResponseFilePath = ""
 listofBubblesFilePath = ""
 bubbleFocus = ""
+bubbleID = 0
 
 accesstoken = ""
 ACCESSTOKEN_STATUS = False
@@ -434,7 +435,7 @@ def parse_and_get_stats():
               f'Latest Message Created At: {item["latest_message_created_at"]}')
 
 def pickBubble():
-    global bubbleFocus
+    global bubbleFocus, bubbleID
     bubbleFocus = input("Please enter which bubble you wish to view:")
 
     with open(listofBubblesFilePath, "r") as file:
@@ -446,6 +447,7 @@ def pickBubble():
             for bubble in data["bubbles"]:
                 if bubble["title"] == closest_match[0]:
                     bubbleFocus = {"title": bubble['title'], "id": bubble['id']}
+                    bubbleID = bubble['id']
                     print(Fore.GREEN + f"Title: {bubble['title']}, ID: {bubble['id']}")
                     return bubbleFocus
                     
@@ -535,5 +537,7 @@ def main():
     parse_and_get_stats()
     makeChatJson()
     pickBubble()
+    getBubbleMessages(bubbleID, None)
+    parseMessages(bubbleID)
 
 main()
