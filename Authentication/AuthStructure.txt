@@ -1,4 +1,0 @@
-Request Auth Email，produces 6-digit Code [getAuthenticationEmail.py]
-└── LoginToken from 6-digit Code [getLoginTokenfromEmail.py, saves to LoginToken_Response.json]
-          └── Access Token from LoginToken [getAccessToken.py, saves to accessTokenResponse.json] 
-		  └──Access Resources[getBubbleList.py]
