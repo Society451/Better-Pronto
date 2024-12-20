@@ -8,6 +8,11 @@ body {
     background-attachment: fixed;
     background-position: center;
     color: #333;
+    height: 100vh; /* Ensure the body takes the full viewport height */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0; /* Remove default margin */
 }
 
 .login-box {
@@ -47,7 +52,7 @@ body {
     border-radius: 5px;
 }
 
-.login-box input[type="submit"] {
+.login-box input[type="submit"], .login-box button {
     width: 80%;
     padding: 10px;
     border: none;
@@ -57,8 +62,15 @@ body {
     cursor: pointer;
 }
 
-.login-box input[type="submit"]:hover {
+.login-box input[type="submit"]:hover, .login-box button:hover {
     background: #6B0F0F; /* Darker shade for hover effect */
+}
+
+.button-group {
+    display: flex;
+    justify-content: space-between;
+    width: 80%;
+    gap: 10px; /* Added gap between buttons */
 }
 
 .code-inputs {
