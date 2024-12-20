@@ -1,6 +1,8 @@
 # Better-Pronto
 Simple, transparent and easy-to-use Python Client for Pronto (https://stanfordohs.pronto.io/)
 
+### Am currently working on [this alternative client](https://github.com/Society451/Better-Pronto-Alpha)
+
 #### Why Better Pronto?
 
 The official Pronto client is bloated (taking up over 300 mb of RAM), leaks memory, and has poor user interface design. Better Pronto aims to fix this by rewriting the Pronto client from the ground up.
