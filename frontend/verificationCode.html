@@ -109,10 +109,12 @@
             codeInputs[0].focus();
         });
 
-        document.getElementById('verification-form').addEventListener('submit', function(event) {
+        document.getElementById('verification-form').addEventListener('submit', async function(event) {
             event.preventDefault();
             const code = Array.from(codeInputs).map(input => input.value).join('');
-            // Handle verification code submission
+            console.log(`Verification code entered: ${code}`);
+            const response = await window.pywebview.api.handle_verification_code(code);
+            console.log(response);
         });
     </script>
 </body>
