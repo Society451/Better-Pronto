@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="author" content="Better Pronto">
+    <meta name="description" content="Enter Verification Code">
+    <title>Enter Verification Code</title>
+    <link rel="stylesheet" href="main.css" type="text/css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .login-box {
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            width: 80%;
+        }
+        #clear-button {
+            background-color: #8C1515;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px;
+            cursor: pointer;
+        }
+        #clear-button:hover {
+            background-color: #6B0F0F;
+        }
+        .grey-text {
+            color: grey;
+            font-size: 14px;
+            margin-top: -10px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-box">
+        <h4 style="text-align: center;">Enter 6-Digit Verification Code</h4>
+        <p class="grey-text">Verification code may take a few minutes to send.</p>
+        <form id="verification-form">
+            <div class="code-inputs">
+                <input type="text" maxlength="1" class="code-input" required>
+                <input type="text" maxlength="1" class="code-input" required>
+                <input type="text" maxlength="1" class="code-input" required>
+                <input type="text" maxlength="1" class="code-input" required>
+                <input type="text" maxlength="1" class="code-input" required>
+                <input type="text" maxlength="1" class="code-input" required>
+            </div>
+            <div class="button-group">
+                <input type="submit" value="Verify Code">
+                <button type="button" id="clear-button">Clear</button>
+            </div>
+        </form>
+        <p id="error-message" style="color: red; text-align: center;"></p>
+    </div>
+    <script>
+        const codeInputs = document.querySelectorAll('.code-input');
+        const clearButton = document.getElementById('clear-button');
+
+        codeInputs.forEach((input, index) => {
+            input.addEventListener('input', () => {
+                if (input.value.length === 1 && index < codeInputs.length - 1) {
+                    codeInputs[index + 1].focus();
+                }
+            });
+
+            input.addEventListener('keydown', (event) => {
+                if (event.key === 'Backspace' && input.value === '' && index > 0) {
+                    codeInputs[index - 1].focus();
+                } else if (event.key === 'Delete' && index < codeInputs.length - 1) {
+                    codeInputs[index + 1].value = '';
+                    codeInputs[index + 1].focus();
+                } else if (event.key === 'ArrowLeft' && index > 0) {
+                    codeInputs[index - 1].focus();
+                } else if (event.key === 'ArrowRight' && index < codeInputs.length - 1) {
+                    codeInputs[index + 1].focus();
+                } else if (event.ctrlKey && event.key === 'a') {
+                    event.preventDefault();
+                    codeInputs.forEach(input => input.select());
+                }
+            });
+
+            input.addEventListener('paste', (event) => {
+                const paste = (event.clipboardData || window.clipboardData).getData('text');
+                const pasteArray = paste.split('');
+                codeInputs.forEach((input, i) => {
+                    input.value = pasteArray[i] || '';
+                });
+                event.preventDefault();
+            });
+        });
+
+        clearButton.addEventListener('click', () => {
+            codeInputs.forEach(input => input.value = '');
+            codeInputs[0].focus();
+        });
+
+        document.getElementById('verification-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const code = Array.from(codeInputs).map(input => input.value).join('');
+            // Handle verification code submission
+        });
+    </script>
+</body>
+
+</html>
