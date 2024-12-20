@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="author" content="Better Pronto">
+    <meta name="description" content="Chat Dashboard">
+    <title>Chat</title>
+    <link rel="stylesheet" href="./chat.css" type="text/css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+
+<body>
+    <div class="sidebar">
+        <h4>Groups
+            <button class="collapse-button" id="toggle-all">Collapse All</button>
+            <button class="search-button" id="search-button">
+                <i class="fa fa-search"></i>
+            </button>
+            <div class="search-container" style="display: none;">
+                <input type="text" id="search-input" class="search-input" placeholder="Search for Group or DM">
+                <button class="clear-search" id="clear-search">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+        </h4>
+        <div class="chat-list" id="chat-list">
+            <!-- Categories will be dynamically generated here -->
+        </div>
+    </div>
+    <div class="chat-container">
+        <div class="chat-heading">Paul Estrada</div>
+        <div class="messages" id="messages">
+            <!-- Messages will be displayed here -->
+        </div>
+        <div class="input-group">
+            <textarea id="message-input" placeholder="Type a message. Use @ to mention..."></textarea>
+        </div>
+    </div>
+    <script>
+        const messagesContainer = document.getElementById('messages');
+        const messageInput = document.getElementById('message-input');
+        const searchButton = document.getElementById('search-button');
+        const searchInput = document.getElementById('search-input');
+        const searchContainer = document.querySelector('.search-container');
+        const clearSearch = document.getElementById('clear-search');
+        const toggleAllButton = document.getElementById('toggle-all');
+
+        let lastSender = null; // Track the last message sender
+        const hasDeletePermission = true; // Message Delete permission
+        let isShiftPressed = false; // Track if Shift key is pressed
+
+        // Detect Shift key press and release
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Shift') {
+                isShiftPressed = true;
+            }
+        });
+
+        document.addEventListener('keyup', (event) => {
+            if (event.key === 'Shift') {
+                isShiftPressed = false;
+            }
+        });
+
+        // Message class to create message elements
+        class Message {
+            constructor(content, sender, timestamp, isDefault = false) {
+                this.content = content;
+                this.sender = sender;
+                this.timestamp = timestamp;
+                this.isDefault = isDefault;
+            }
+
+            // Create a message element
+            createElement() {
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('message');
+                if (this.isDefault) {
+                    messageElement.style.fontStyle = 'italic';
+                }
+
+                /* Always show sender and timestamp */
+                const senderElement = document.createElement('div');
+                senderElement.classList.add('message-sender');
+                senderElement.textContent = `${this.sender} - ${this.timestamp}`;
+                messageElement.appendChild(senderElement);
+
+                const contentElement = document.createElement('div');
+                contentElement.classList.add('message-content');
+                contentElement.textContent = this.content;
+                messageElement.appendChild(contentElement);
+
+                /* Add delete icon if permission is granted */
+                if (hasDeletePermission) {
+                    const deleteIcon = document.createElement('i');
+                    deleteIcon.classList.add('fas', 'fa-trash-alt', 'delete-icon');
+                    deleteIcon.title = 'Delete Message';
+                    // Add event listener for deletion if needed
+                    deleteIcon.addEventListener('click', (event) => {
+                        event.stopPropagation(); /* Prevent triggering message click */
+                        messagesContainer.removeChild(messageElement);
+                    });
+                    messageElement.appendChild(deleteIcon); /* Ensure deleteIcon is inside messageElement */
+
+                    // Change color on hover if Shift key is pressed
+                    messageElement.addEventListener('mouseover', () => {
+                        if (isShiftPressed) {
+                            deleteIcon.style.color = 'red';
+                        }
+                    });
+
+                    messageElement.addEventListener('mouseout', () => {
+                        deleteIcon.style.color = ''; // Reset color
+                    });
+                }
+
+                return messageElement;
+            }
+        }
+
+        // Category class to create category elements
+        class Category {
+            constructor(name, chats) {
+                this.name = name;
+                this.chats = chats;
+            }
+
+            // Create a category element
+            createElement() {
+                const categoryElement = document.createElement('div');
+                categoryElement.classList.add('category');
+
+                const headerElement = document.createElement('div');
+                headerElement.classList.add('category-header');
+                headerElement.textContent = this.name;
+
+                const contentElement = document.createElement('div');
+                contentElement.classList.add('category-content', 'expanded');
+
+                this.chats.forEach(chat => {
+                    const chatItem = document.createElement('div');
+                    chatItem.classList.add('chat-item');
+                    chatItem.innerHTML = `
+                        ${chat}
+                        <button class="menu-button">⋮</button>
+                        <ul class="dropdown-menu">
+                            ${this.createDropdownOptions(['Option 1', 'Option 2', 'Option 3', 'Option 4'])}
+                        </ul>
+                    `;
+                    contentElement.appendChild(chatItem);
+                });
+
+                categoryElement.appendChild(headerElement);
+                categoryElement.appendChild(contentElement);
+
+                return categoryElement;
+            }
+
+            // Create dropdown options
+            createDropdownOptions(options) {
+                return options.map(option => `<li>${option}</li>`).join('');
+            }
+        }
+
+        // Function to initialize categories and chats
+        function initializeCategories() {
+            const categories = [
+                new Category('Category 1', ['Chat 1', 'Chat 2', 'Chat 3']),
+                new Category('Category 2', ['Chat 4', 'Chat 5', 'Chat 6']),
+                new Category('Category 3', ['Chat 7', 'Chat 8', 'Chat 9']),
+                new Category('Category 4', ['Chat 10', 'Chat 11', 'Chat 12'])
+            ];
+
+            const chatList = document.getElementById('chat-list');
+            categories.forEach(category => {
+                chatList.appendChild(category.createElement());
+            });
+
+            // Add event listeners for category headers and menu buttons
+            document.querySelectorAll('.category-header').forEach(header => {
+                header.addEventListener('click', () => {
+                    const content = header.nextElementSibling;
+                    const isExpanded = content.classList.contains('expanded');
+
+                    // Toggle the 'expanded' and 'collapsed' classes
+                    content.classList.toggle('expanded');
+                    content.classList.toggle('collapsed');
+
+                    // Toggle the arrow direction
+                    header.classList.toggle('collapsed', isExpanded);
+                });
+            });
+
+            document.querySelectorAll('.menu-button').forEach(button => {
+                button.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    const dropdown = button.nextElementSibling;
+                    dropdown.classList.toggle('show');
+                });
+            });
+
+            window.addEventListener('click', () => {
+                document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                    menu.classList.remove('show');
+                });
+            });
+
+            document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                menu.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                });
+            });
+        }
+
+        // Display a default message when the page loads
+        window.addEventListener('DOMContentLoaded', () => {
+            const defaultMessage = new Message('Started a private chat with Paul Estrada', 'System', new Date().toLocaleString(), true);
+            messagesContainer.appendChild(defaultMessage.createElement());
+
+            initializeCategories();
+        });
+
+        // Add event listener for the Enter key to send a message
+        messageInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault(); // Prevent default Enter key behavior
+                const messageText = messageInput.value.trim();
+                if (messageText) {
+                    const sender = 'You'; // Replace with dynamic sender if needed
+                    const timestamp = new Date().toLocaleString();
+                    const message = new Message(messageText, sender, timestamp);
+                    messagesContainer.appendChild(message.createElement());
+                    messageInput.value = ''; // Clear the input after sending
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight; // Scroll to the bottom
+                }
+            }
+        });
+
+        // Add event listener to toggle all categories
+        toggleAllButton.addEventListener('click', () => {
+            const isCollapsing = toggleAllButton.textContent === 'Collapse All';
+
+            document.querySelectorAll('.category-content').forEach(content => {
+                content.classList.toggle('expanded', !isCollapsing);
+                content.classList.toggle('collapsed', isCollapsing);
+            });
+            document.querySelectorAll('.category-header').forEach(header => {
+                header.classList.toggle('collapsed', isCollapsing);
+            });
+
+            // Update button text
+            toggleAllButton.textContent = isCollapsing ? 'Expand All' : 'Collapse All';
+        });
+
+        // Add event listener to toggle search input
+        searchButton.addEventListener('click', () => {
+            searchButton.style.display = 'none';
+            searchContainer.style.display = 'flex';
+            searchInput.focus();
+        });
+
+        // Add event listener to clear and exit search input
+        clearSearch.addEventListener('click', () => {
+            searchInput.value = '';
+            searchContainer.style.display = 'none';
+            searchButton.style.display = 'block';
+        });
+    </script>
+</body>
+</html>
