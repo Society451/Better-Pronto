@@ -3,7 +3,7 @@ html {
     font-family: 'Roboto', sans-serif; /* Updated font */
 }
 body {
-    background: url('download.jpeg') no-repeat center center fixed;
+    background: url('../images/download.jpeg') no-repeat center center fixed;
     background-size: cover;
     background-attachment: fixed;
     background-position: center;
@@ -16,12 +16,13 @@ body {
 }
 
 .login-box {
-    width: 300px;
-    margin: 150px auto; /* Adjusted margin to make the box lower */
+    width: 100%;
+    max-width: 400px;
     padding: 20px;
     background: #ffffff;
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
 }
 
 .login-box h2 {
@@ -71,6 +72,26 @@ body {
     justify-content: space-between;
     width: 80%;
     gap: 10px; /* Added gap between buttons */
+}
+
+#clear-button {
+    background-color: #8C1515;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px;
+    cursor: pointer;
+}
+
+#clear-button:hover {
+    background-color: #6B0F0F;
+}
+
+.grey-text {
+    color: grey;
+    font-size: 14px;
+    margin-top: -10px;
+    margin-bottom: 20px;
 }
 
 .code-inputs {

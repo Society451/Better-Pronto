@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="author" content="Better Pronto">
+    <meta name="description" content="Enter Verification Code">
+    <title>Enter Verification Code</title>
+    <link rel="stylesheet" href="../css/verificationCode.css" type="text/css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap">
+</head>
+<body>
+    <div class="login-box">
+        <h4 style="text-align: center;">Enter 6-Digit Verification Code</h4>
+        <p class="grey-text">Verification code may take a few minutes to send.</p>
+        <form id="verification-form">
+            <div class="code-inputs">
+                <input type="text" maxlength="1" class="code-input" required>
+                <input type="text" maxlength="1" class="code-input" required>
+                <input type="text" maxlength="1" class="code-input" required>
+                <input type="text" maxlength="1" class="code-input" required>
+                <input type="text" maxlength="1" class="code-input" required>
+                <input type="text" maxlength="1" class="code-input" required>
+            </div>
+            <div class="button-group">
+                <input type="submit" value="Verify Code">
+                <button type="button" id="clear-button">Clear</button>
+            </div>
+        </form>
+        <p id="error-message" style="color: red; text-align: center;"></p>
+    </div>
+    <script src="../js/verificationCode.js"></script>
+</body>
+</html>
