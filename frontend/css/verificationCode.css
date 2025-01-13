@@ -4,6 +4,10 @@ html {
 }
 
 body {
+    background: url('../images/background.png') no-repeat center center fixed; /* Corrected image path */
+    background-size: cover; /* Ensure the background image covers the entire background */
+    background-position: center;
+    background-repeat: no-repeat;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -26,6 +30,21 @@ body {
     justify-content: space-between;
     width: 80%;
     gap: 10px; /* Added gap between buttons */
+}
+
+.button-group input[type="submit"],
+.button-group button {
+    background-color: #8C1515;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px;
+    cursor: pointer;
+}
+
+.button-group input[type="submit"]:hover,
+.button-group button:hover {
+    background-color: #6B0F0F;
 }
 
 #clear-button {

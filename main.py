@@ -3,8 +3,7 @@ import json
 from bpro.pronto import requestVerificationEmail, verification_code_to_login_token, login_token_to_access_token, getUsersBubbles
 from bpro.systemcheck import createappfolders
 
-clientAuthPath, clientDataPath, chatJSONPath, clientloginJSONPath, clientauthTokenJSONPath = createappfolders()
-
+auth_path, chats_path, loginTokenJSONPath, authTokenJSONPath, verificationCodeResponseJSONPath, settings_path, encryption_path, logs_path, settingsJSONPath, keysJSONPath, bubbleOverviewJSONPath = createappfolders()
 # Function to save response data to a file
 def save_response_to_file(response_data, file_path):
     try:
@@ -96,6 +95,6 @@ class Api:
 # Create an instance of the Api class
 api = Api()
 # Create a webview window with the specified HTML file and API
-window = webview.create_window('Better Pronto Alpha', 'file:///home/paul/Desktop/Python Projects/BRPO/Better Pronto Alpha/pywebview/frontend/html/login.html', js_api=api)
+window = webview.create_window('Better Pronto Alpha', 'file:////home/paul/Desktop/Better-Pronto-Alpha/frontend/html/login.html', js_api=api)
 # Start the webview with debug mode enabled
 webview.start(debug=True)

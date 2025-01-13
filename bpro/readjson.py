@@ -97,4 +97,4 @@ def test():# Call the function
     print("Uncategorized Groups:", uncategorizedgroups)
     print("Unread Bubbles:", unread_bubbles)
 
-test() #remove later
+#test() #remove later
