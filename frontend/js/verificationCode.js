@@ -49,6 +49,6 @@ document.getElementById('verification-form').addEventListener('submit', async fu
         document.getElementById('error-message').textContent = "Invalid verification code. Please try again.";
     } else {
         errorMessage.textContent = "";
-        window.location.href = "chat.html";
+        window.location.href = "../html/chat.html";
     }
 });
