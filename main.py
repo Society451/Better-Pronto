@@ -57,22 +57,22 @@ class Api:
             window.load_url('file:///home/paul/Desktop/Python Projects/BRPO/Better Pronto Alpha/pywebview/frontend/chat.html')
             window.resize(1200, 800)
         # Save the response to a file
-        save_response_to_file(response, f"{clientloginJSONPath}")
+        save_response_to_file(response, f"{loginTokenJSONPath}")
         return "ok"
     
     def accessToken(self):
         print("Access token method called")  # Debugging statement
-        logintoken = getvalueLogin(clientloginJSONPath, "logintoken")
+        logintoken = getvalueLogin(loginTokenJSONPath, "logintoken")
         if logintoken:
             print(f"Login token found: {logintoken}")  # Debugging statement
             response = login_token_to_access_token(logintoken)
-            save_response_to_file(response, f"{clientauthTokenJSONPath}")
+            save_response_to_file(response, f"{authTokenJSONPath}")
             print("Access token received")
             print(response)
             
             # Debugging: Check if the file is written correctly
             try:
-                with open(clientauthTokenJSONPath, "r") as file:
+                with open(authTokenJSONPath, "r") as file:
                     written_data = json.load(file)
                     print("Written data:", written_data)
             except Exception as e:
@@ -86,7 +86,7 @@ class Api:
     def getUsersBubbles(access_token):
         print("Get users bubbles method called")
         response = getUsersBubbles(access_token)
-        save_response_to_file(response, f"{chatJSONPath}")
+        save_response_to_file(response, f"{bubbleOverviewJSONPath}")
         if response:
             print("Users bubbles received")
             return "Ok"
