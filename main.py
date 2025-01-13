@@ -1,5 +1,6 @@
 import webview
 import json
+import os
 from bpro.pronto import requestVerificationEmail, verification_code_to_login_token, login_token_to_access_token, getUsersBubbles
 from bpro.systemcheck import createappfolders
 
@@ -36,11 +37,8 @@ class Api:
 
     # Method to handle email input
     def handle_email(self, email):
-        # Check if the email domain is "stanford.edu"
         if "stanford.edu" in email:
             self.email = email
-            # Request a verification email to be sent
-            #print(requestVerificationEmail(email))
             print("Email accepted and verification code has been sent")
             return "Email accepted"
         else:
@@ -49,15 +47,15 @@ class Api:
     # Method to handle verification code input
     def handle_verification_code(self, code):
         print("Verification code checked")
-        # Convert verification code to login token
         response = "ok" #verification_code_to_login_token(self.email, code)
         if "ok" in response:
             print("Login token received")
             # Resize the window and redirect to chat.html
-            window.load_url('file:///home/paul/Desktop/Python Projects/BRPO/Better Pronto Alpha/pywebview/frontend/chat.html')
+            chat_html_path = os.path.join(os.path.dirname(__file__), 'frontend', 'html', 'chat.html')
+            window.load_url(f'file://{chat_html_path}')
             window.resize(1200, 800)
         # Save the response to a file
-        save_response_to_file(response, f"{loginTokenJSONPath}")
+        save_response_to_file(response, loginTokenJSONPath)
         return "ok"
     
     def accessToken(self):
