@@ -3,7 +3,7 @@ from systemcheck import createappfolders
 from pronto import requestVerificationEmail, verification_code_to_login_token, login_token_to_access_token, getUsersBubbles
 from readjson import save_response_to_file, getvalueLogin, getaccesstoken
 
-auth_path, chats_path, loginTokenJSONPath, authTokenJSONPath, verificationCodeResponseJSONPath, settings_path, encryption_path, logs_path, settingsJSONPath, keysJSONPath, bubbleOverviewJSONPath = createappfolders()
+auth_path, chats_path, bubbles_path, loginTokenJSONPath, authTokenJSONPath, verificationCodeResponseJSONPath, settings_path, encryption_path, logs_path, settingsJSONPath, keysJSONPath, bubbleOverviewJSONPath = createappfolders()
 
 def simpleVerification():
     email = input("Please enter your email:")

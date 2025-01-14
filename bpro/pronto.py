@@ -122,17 +122,15 @@ def getUsersBubbles(access_token):
 
 # Function to get last 50 messages in a bubble, given bubble ID 
 # and an optional argument of latest message ID, which will return a list of 50 messages sent before that message
-def get_bubble_messages(access_token, bubbleID, latestMessageID):
-   
+def get_bubble_messages(access_token, bubbleID, latestMessageID=None):
     url = f"{API_BASE_URL}api/v1/bubble.history"
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"Bearer {access_token}",
     }
-    if latestMessageID is None:
-        request_payload = {"bubble_id": bubbleID}
-    else:
-        request_payload = {"bubble_id": bubbleID, "latest": latestMessageID}
+    request_payload = {"bubble_id": bubbleID}
+    if latestMessageID is not None:
+        request_payload["latest"] = latestMessageID
 
     try:
         response = requests.post(url, headers=headers, json=request_payload)
