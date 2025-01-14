@@ -90,9 +90,10 @@ class Message {
 
 // Category class to create category elements
 class Category {
-    constructor(name, chats) {
+    constructor(name, chats, unreadCounts = {}) {
         this.name = name;
         this.chats = chats;
+        this.unreadCounts = unreadCounts;
     }
 
     // Create a category element
@@ -112,6 +113,7 @@ class Category {
             chatItem.classList.add('chat-item');
             chatItem.innerHTML = `
                 ${chat}
+                <span class="unread-count">${this.unreadCounts[chat] || 0}</span>
                 <button class="menu-button">⋮</button>
                 <ul class="dropdown-menu">
                     ${this.createDropdownOptions(['Option 1', 'Option 2', 'Option 3', 'Option 4'])}
@@ -132,54 +134,99 @@ class Category {
     }
 }
 
-// Function to initialize categories and chats
-function initializeCategories() {
-    const categories = [
-        new Category('Category 1', ['Chat 1', 'Chat 2', 'Chat 3']),
-        new Category('Category 2', ['Chat 4', 'Chat 5', 'Chat 6']),
-        new Category('Category 3', ['Chat 7', 'Chat 8', 'Chat 9']),
-        new Category('Category 4', ['Chat 10', 'Chat 11', 'Chat 12'])
-    ];
+// Function to initialize categories and chats dynamically from backend
+async function initializeCategories() {
+    try {
+        console.log("Initializing categories and chats"); // New debug statement
+        const accessTokenResponse = await window.pywebview.api.accessToken();
+        console.log('Access Token Response:', accessTokenResponse); // Existing debug statement
 
-    const chatList = document.getElementById('chat-list');
-    categories.forEach(category => {
-        chatList.appendChild(category.createElement());
-    });
+        if (accessTokenResponse === "Ok") {
+            const bubblesData = await window.pywebview.api.get_bubbles_and_categories(accessTokenResponse);
+            console.log('bubblesData:', bubblesData); // Existing debug statement
 
-    // Add event listeners for category headers and menu buttons
-    document.querySelectorAll('.category-header').forEach(header => {
-        header.addEventListener('click', () => {
-            const content = header.nextElementSibling;
-            const isExpanded = content.classList.contains('expanded');
+            if (bubblesData.error) {
+                console.error('Error from API:', bubblesData.error); // Existing debug statement
+                return;
+            }
 
-            // Toggle the 'expanded' and 'collapsed' classes
-            content.classList.toggle('expanded');
-            content.classList.toggle('collapsed');
+            const { dms, categorizedgroups, uncategorizedgroups, unread_bubbles } = bubblesData;
+            console.log('Parsed Data:', { dms, categorizedgroups, uncategorizedgroups, unread_bubbles }); // New debug statement
 
-            // Toggle the arrow direction
-            header.classList.toggle('collapsed', isExpanded);
-        });
-    });
+            const unreadMap = {};
+            unread_bubbles.forEach(item => {
+                unreadMap[item.title] = item.unread;
+            });
 
-    document.querySelectorAll('.menu-button').forEach(button => {
-        button.addEventListener('click', (event) => {
-            event.stopPropagation();
-            const dropdown = button.nextElementSibling;
-            dropdown.classList.toggle('show');
-        });
-    });
+            const categories = [];
 
-    window.addEventListener('click', () => {
-        document.querySelectorAll('.dropdown-menu').forEach(menu => {
-            menu.classList.remove('show');
-        });
-    });
+            // Add DM category
+            if (dms.length > 0) {
+                categories.push(new Category('Direct Messages', dms, unreadMap));
+            }
 
-    document.querySelectorAll('.dropdown-menu').forEach(menu => {
-        menu.addEventListener('click', (event) => {
-            event.stopPropagation();
-        });
-    });
+            // Add categorized groups
+            for (const [categoryName, chats] of Object.entries(categorizedgroups)) {
+                categories.push(new Category(categoryName, chats, unreadMap));
+            }
+
+            // Add uncategorized groups
+            if (uncategorizedgroups.length > 0) {
+                categories.push(new Category('Uncategorized', uncategorizedgroups, unreadMap));
+            }
+
+            const chatList = document.getElementById('chat-list');
+            chatList.innerHTML = ''; // Clear existing content
+            categories.forEach(category => {
+                const categoryElement = category.createElement();
+                if (categoryElement) {
+                    chatList.appendChild(categoryElement);
+                } else {
+                    console.warn('Failed to create category element:', category.name);
+                }
+            });
+
+            // Add event listeners for category headers and menu buttons
+            document.querySelectorAll('.category-header').forEach(header => {
+                header.addEventListener('click', () => {
+                    const content = header.nextElementSibling;
+                    const isExpanded = content.classList.contains('expanded');
+
+                    // Toggle the 'expanded' and 'collapsed' classes
+                    content.classList.toggle('expanded');
+                    content.classList.toggle('collapsed');
+
+                    // Toggle the arrow direction
+                    header.classList.toggle('collapsed', isExpanded);
+                });
+            });
+
+            document.querySelectorAll('.menu-button').forEach(button => {
+                button.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    const dropdown = button.nextElementSibling;
+                    dropdown.classList.toggle('show');
+                });
+            });
+
+            window.addEventListener('click', () => {
+                document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                    menu.classList.remove('show');
+                });
+            });
+
+            document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                menu.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                });
+            });
+
+        } else {
+            console.error("Access token retrieval failed with response:", accessTokenResponse); // Existing debug statement
+        }
+    } catch (error) {
+        console.error("Error initializing categories:", error); // Existing debug statement
+    }
 }
 
 // Display a default message when the page loads

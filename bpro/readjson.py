@@ -1,5 +1,5 @@
 import json
-from systemcheck import createappfolders
+from .systemcheck import createappfolders
 
 auth_path, chats_path, loginTokenJSONPath, authTokenJSONPath, verificationCodeResponseJSONPath, settings_path, encryption_path, logs_path, settingsJSONPath, keysJSONPath, bubbleOverviewJSONPath = createappfolders()
 
@@ -46,6 +46,7 @@ def getbubbleoverview(file_path):
                 [bubble["title"] for bubble in bubbles if bubble.get("isdm")],
                 key=lambda x: x
             )
+            print("Sorted DM Bubbles:", sorted_dm_bubbles)  # New debug statement
 
             # Categorize and sort Non-DM bubbles
             categorizedgroups = {}
@@ -67,9 +68,11 @@ def getbubbleoverview(file_path):
                 categorizedgroups[category].sort()
             # Sort the categories themselves
             categorizedgroups = dict(sorted(categorizedgroups.items()))
+            print("Categorized Groups:", categorizedgroups)  # New debug statement
 
             # Sort uncategorized groups
             uncategorizedgroups.sort()
+            print("Uncategorized Groups:", uncategorizedgroups)  # New debug statement
 
             # Identify unread bubbles
             bubble_id_to_title = {bubble["id"]: bubble["title"] for bubble in bubbles}
@@ -83,18 +86,18 @@ def getbubbleoverview(file_path):
                 if stat.get("marked_unread", 0) > 0 or stat.get("unread", 0) > 0 or stat.get("unread_mentions", 0) > 0
                 if bubble_id_to_title.get(stat["bubble_id"])
             ]
+            print("Unread Bubbles:", unread_bubbles)  # New debug statement
 
             return sorted_dm_bubbles, categorizedgroups, uncategorizedgroups, unread_bubbles
     except Exception as e:
         print(f"Error reading JSON file: {e}")
         return None, None, None, None
 
+# def test():# Call the function
+#     dms, categorizedgroups, uncategorizedgroups, unread_bubbles = getbubbleoverview(bubbleOverviewJSONPath)
+#     print("DMs:", dms)
+#     print("Categorized Groups:", categorizedgroups)
+#     print("Uncategorized Groups:", uncategorizedgroups)
+#     print("Unread Bubbles:", unread_bubbles)
 
-def test():# Call the function
-    dms, categorizedgroups, uncategorizedgroups, unread_bubbles = getbubbleoverview(bubbleOverviewJSONPath)
-    print("DMs:", dms)
-    print("Categorized Groups:", categorizedgroups)
-    print("Uncategorized Groups:", uncategorizedgroups)
-    print("Unread Bubbles:", unread_bubbles)
-
-#test() #remove later
+# test() #remove later

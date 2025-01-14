@@ -37,6 +37,9 @@ body {
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
     cursor: pointer; /* Pointer cursor on hover */
     transition: background 0.3s; /* Smooth background transition */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
 .chat-item:hover {
@@ -290,4 +293,19 @@ body {
 .message:hover .delete-icon {
     display: block; /* Show the delete icon */
     opacity: 1; /* Fully opaque */
+}
+
+.unread-count {
+    background-color: red;
+    color: white;
+    border-radius: 12px;
+    padding: 2px 6px;
+    font-size: 12px;
+    margin-left: 10px;
+}
+
+.chat-item .unread-count {
+    /* Position the unread count */
+    margin-left: auto;
+    margin-right: 10px;
 }
