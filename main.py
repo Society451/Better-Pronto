@@ -7,7 +7,6 @@ from bpro.readjson import getbubbleoverview, get_dms, get_categorized_bubbles, g
 
 auth_path, chats_path, loginTokenJSONPath, authTokenJSONPath, verificationCodeResponseJSONPath, settings_path, encryption_path, logs_path, settingsJSONPath, keysJSONPath, bubbleOverviewJSONPath = createappfolders()
 
-
 # Function to save response data to a file
 def save_response_to_file(response_data, file_path):
     try:

@@ -13,6 +13,7 @@ body {
     padding: 20px; /* Padding inside the sidebar */
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); /* Subtle shadow on the right */
     overflow-y: auto; /* Enable vertical scrolling */
+    scroll-behavior: smooth; /* Smooth scrolling */
 }
 
 .sidebar h4 {
@@ -26,6 +27,7 @@ body {
     background: #ffffff; /* White background */
     border-radius: 1px; /* Slightly rounded corners */
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    scroll-behavior: smooth; /* Smooth scrolling */
 }
 
 .chat-item {
@@ -104,6 +106,7 @@ body {
     margin-top: 20px; /* Space between the chat heading and messages */
     margin-bottom: 20px; /* Space at the bottom */
     max-height: 80vh; /* Prevent the container from expanding beyond viewport */
+    scroll-behavior: smooth; /* Smooth scrolling */
 }
 
 .message {
