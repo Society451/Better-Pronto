@@ -1,5 +1,5 @@
 import json
-from systemcheck import createappfolders
+from .systemcheck import createappfolders
 
 auth_path, chats_path, loginTokenJSONPath, authTokenJSONPath, verificationCodeResponseJSONPath, settings_path, encryption_path, logs_path, settingsJSONPath, keysJSONPath, bubbleOverviewJSONPath = createappfolders()
 
@@ -97,7 +97,7 @@ def get_dms(bubbleOverviewJSONPath):
         print(f"Error reading JSON file: {e}")
         return None
 
-def get_categorized_groups(bubbleOverviewJSONPath):
+def get_categorized_bubbles(bubbleOverviewJSONPath):
     try:
         _, categorizedgroups, _, _ = getbubbleoverview(bubbleOverviewJSONPath)
         return categorizedgroups
@@ -105,7 +105,7 @@ def get_categorized_groups(bubbleOverviewJSONPath):
         print(f"Error reading JSON file: {e}")
         return None
 
-def get_uncategorized_groups(bubbleOverviewJSONPath):
+def get_uncategorized_bubbles(bubbleOverviewJSONPath):
     try:
         _, _, uncategorizedgroups, _ = getbubbleoverview(bubbleOverviewJSONPath)
         return uncategorizedgroups
@@ -121,9 +121,18 @@ def get_unread_bubbles(bubbleOverviewJSONPath):
         print(f"Error reading JSON file: {e}")
         return None
 
+def get_categories(bubbleOverviewJSONPath):
+    try:
+        _, categorizedgroups, _, _ = getbubbleoverview(bubbleOverviewJSONPath)
+        return list(categorizedgroups.keys())
+    except Exception as e:
+        print(f"Error reading JSON file: {e}")
+        return None
 
-
+# Example usage:
+#categories = get_categories(bubbleOverviewJSONPath)
+#print(categories)
 #print(get_dms(bubbleOverviewJSONPath))
-#print(get_categorized_groups(bubbleOverviewJSONPath))
-#print(get_uncategorized_groups(bubbleOverviewJSONPath))
+#print(get_categorized_bubbles(bubbleOverviewJSONPath))
+#print(get_uncategorized_bubbles(bubbleOverviewJSONPath))
 #print(get_unread_bubbles(bubbleOverviewJSONPath))

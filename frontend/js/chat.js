@@ -138,46 +138,41 @@ class Category {
 async function initializeCategories() {
     try {
         console.log("Initializing categories and chats"); // New debug statement
-        const accessTokenResponse = await window.pywebview.api.accessToken();
-        console.log('Access Token Response:', accessTokenResponse); // Existing debug statement
+        // const accessTokenResponse = await window.pywebview.api.accessToken();
+        // console.log('Access Token Response:', accessTokenResponse); // Existing debug statement
 
-        if (accessTokenResponse === "Ok") {
-            const bubblesData = await window.pywebview.api.get_bubbles_and_categories(accessTokenResponse);
-            console.log('bubblesData:', bubblesData); // Existing debug statement
-
-            if (bubblesData.error) {
-                console.error('Error from API:', bubblesData.error); // Existing debug statement
-                return;
-            }
-
-            const { dms, categorizedgroups, uncategorizedgroups, unread_bubbles } = bubblesData;
-            console.log('Parsed Data:', { dms, categorizedgroups, uncategorizedgroups, unread_bubbles }); // New debug statement
+        // if (accessTokenResponse === "Ok") {
+            const categories = await window.pywebview.api.get_categories("test_access_token");
+            const dms = await window.pywebview.api.get_dms("test_access_token");
+            const categorizedBubbles = await window.pywebview.api.get_categorized_bubbles("test_access_token");
+            const uncategorizedBubbles = await window.pywebview.api.get_uncategorized_bubbles("test_access_token");
+            const unreadBubbles = await window.pywebview.api.get_unread_bubbles("test_access_token");
 
             const unreadMap = {};
-            unread_bubbles.forEach(item => {
+            unreadBubbles.forEach(item => {
                 unreadMap[item.title] = item.unread;
             });
 
-            const categories = [];
+            const categoryElements = [];
 
             // Add DM category
             if (dms.length > 0) {
-                categories.push(new Category('Direct Messages', dms, unreadMap));
+                categoryElements.push(new Category('Direct Messages', dms, unreadMap));
             }
 
-            // Add categorized groups
-            for (const [categoryName, chats] of Object.entries(categorizedgroups)) {
-                categories.push(new Category(categoryName, chats, unreadMap));
+            // Add categorized bubbles
+            for (const [categoryName, chats] of Object.entries(categorizedBubbles)) {
+                categoryElements.push(new Category(categoryName, chats, unreadMap));
             }
 
-            // Add uncategorized groups
-            if (uncategorizedgroups.length > 0) {
-                categories.push(new Category('Uncategorized', uncategorizedgroups, unreadMap));
+            // Add uncategorized bubbles
+            if (uncategorizedBubbles.length > 0) {
+                categoryElements.push(new Category('Uncategorized', uncategorizedBubbles, unreadMap));
             }
 
             const chatList = document.getElementById('chat-list');
             chatList.innerHTML = ''; // Clear existing content
-            categories.forEach(category => {
+            categoryElements.forEach(category => {
                 const categoryElement = category.createElement();
                 if (categoryElement) {
                     chatList.appendChild(categoryElement);
@@ -221,11 +216,20 @@ async function initializeCategories() {
                 });
             });
 
-        } else {
-            console.error("Access token retrieval failed with response:", accessTokenResponse); // Existing debug statement
-        }
+        // } else {
+        //     console.error("Access token retrieval failed with response:", accessTokenResponse); // Existing debug statement
+        // }
     } catch (error) {
         console.error("Error initializing categories:", error); // Existing debug statement
+    }
+}
+
+// Function to wait for pywebview API to be ready
+function waitForPywebview() {
+    if (window.pywebview && window.pywebview.api) {
+        initializeCategories();
+    } else {
+        setTimeout(waitForPywebview, 100); // Check again after 100ms
     }
 }
 
@@ -235,11 +239,10 @@ window.addEventListener('DOMContentLoaded', async () => {
     const defaultMessage = new Message('Started a private chat with Paul Estrada', 'System', new Date().toLocaleString(), true);
     messagesContainer.appendChild(defaultMessage.createElement());
 
-    initializeCategories();
+    waitForPywebview(); // Wait for pywebview API to be ready
 
-    // Request access token
-    const accessTokenResponse = await window.pywebview.api.accessToken();
-    console.log('Access token response:', accessTokenResponse);
+    // const accessTokenResponse = await window.pywebview.api.accessToken();
+    // console.log('Access token response:', accessTokenResponse);
 });
 
 // Add event listener for the Enter key to send a message
