@@ -224,6 +224,23 @@ async function initializeCategories() {
     }
 }
 
+// Function to retrieve and display detailed messages for a specific bubble ID
+async function loadMessages(bubbleID) {
+    try {
+        const messages = await window.pywebview.api.get_detailed_messages(bubbleID);
+        messagesContainer.innerHTML = ''; // Clear existing messages
+        messages.forEach(msg => {
+            const message = new Message(msg.content, msg.author, msg.time_of_sending);
+            messagesContainer.appendChild(message.createElement());
+        });
+    } catch (error) {
+        console.error("Error loading messages:", error);
+    }
+}
+
+// Example usage of loadMessages
+// loadMessages('exampleBubbleID');
+
 // Function to wait for pywebview API to be ready
 function waitForPywebview() {
     if (window.pywebview && window.pywebview.api) {

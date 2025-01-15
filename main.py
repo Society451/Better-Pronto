@@ -1,11 +1,14 @@
 import webview
 import json
 import os
-from bpro.pronto import requestVerificationEmail, verification_code_to_login_token, login_token_to_access_token, getUsersBubbles
+from bpro.pronto import requestVerificationEmail, verification_code_to_login_token, login_token_to_access_token, getUsersBubbles, get_bubble_messages
 from bpro.systemcheck import createappfolders
-from bpro.readjson import getbubbleoverview, get_dms, get_categorized_bubbles, get_uncategorized_bubbles, get_unread_bubbles, get_categories
+from bpro.readjson import getbubbleoverview, get_dms, get_categorized_bubbles, get_uncategorized_bubbles, get_unread_bubbles, get_categories, getaccesstoken
 
 auth_path, chats_path, bubbles_path, loginTokenJSONPath, authTokenJSONPath, verificationCodeResponseJSONPath, settings_path, encryption_path, logs_path, settingsJSONPath, keysJSONPath, bubbleOverviewJSONPath = createappfolders()
+
+accesstoken = getaccesstoken(authTokenJSONPath)
+#use this to bypass auth for testing
 
 # Function to save response data to a file
 def save_response_to_file(response_data, file_path):
@@ -28,108 +31,111 @@ def getvalueLogin(file_path, value):
         return None
 
 class Api:
-    def __init__(self):
+    def __init__(self, accesstoken):
         self.email = ""
+        self.accesstoken = accesstoken
 
     def makeNewWindow(windowName, windowURL, api):
         window = webview.create_window(windowName, windowURL, js_api=api)
         return window
 
-    # Method to handle email input
     def handle_email(self, email):
         if "stanford.edu" in email:
             self.email = email
             print("Email accepted and verification code has been sent")
-            #print("Verification code response:", requestVerificationEmail(email))
             return "Email accepted"
         else:
             return "Invalid email domain"
 
-    # Method to handle verification code input
     def handle_verification_code(self, code):
         print("Verification code checked")
-        response = verification_code_to_login_token(self.email, code)  # Replace with actual verification logic
+        response = verification_code_to_login_token(self.email, code)
         if "ok" in response:
             print("Login token received")
         save_response_to_file(response, loginTokenJSONPath)
         return "ok"
-    #add more logic here later
     
     def accessToken(self):
-        print("Access token method called")  # Debugging statement
+        print("Access token method called")
         logintoken = getvalueLogin(loginTokenJSONPath, "logintoken")
         if logintoken:
-            print(f"Login token found: {logintoken}")  # Debugging statement
+            print(f"Login token found: {logintoken}")
             response = login_token_to_access_token(logintoken)
-            print(f"Access token response: {response}")  # Debugging statement
+            print(f"Access token response: {response}")
             if response:
                 save_response_to_file(response, f"{authTokenJSONPath}")
                 print("Access token received")
                 print(response)
-                
-                # Debugging: Check if the file is written correctly
                 try:
                     with open(authTokenJSONPath, "r") as file:
                         written_data = json.load(file)
                         print("Written data:", written_data)
                 except Exception as e:
                     print(f"Error reading written file: {e}")
-                
-                return "Ok"  # Return the access token response
+                return "Ok"
             else:
-                print("Failed to get access token from login token")  # Debugging statement
+                print("Failed to get access token from login token")
                 return None
         else:
             print("Login token not found")
             return None
 
-    def get_dms(self, access_token=None):
-        print("Fetching DMs")  # Debugging statement
-        #if access_token:
-        #    response = getUsersBubbles(access_token)
-        #    save_response_to_file(response, bubbleOverviewJSONPath)
+    def get_dms(self, *args):
+        print("Fetching DMs")
         dms = get_dms(bubbleOverviewJSONPath)
-        print("DMs:", dms)  # Debugging statement
+        print("DMs:", dms)
         return dms
 
-    def get_categorized_bubbles(self, access_token=None):
-        print("Fetching categorized bubbles")  # Debugging statement
-        #if access_token:
-        #    response = getUsersBubbles(access_token)
-        #    save_response_to_file(response, bubbleOverviewJSONPath)
+    def get_categorized_bubbles(self, *args):
+        print("Fetching categorized bubbles")
         categorized_bubbles = get_categorized_bubbles(bubbleOverviewJSONPath)
-        print("Categorized Bubbles:", categorized_bubbles)  # Debugging statement
+        print("Categorized Bubbles:", categorized_bubbles)
         return categorized_bubbles
 
-    def get_uncategorized_bubbles(self, access_token=None):
-        print("Fetching uncategorized bubbles")  # Debugging statement
-        #if access_token:
-        #    response = getUsersBubbles(access_token)
-        #    save_response_to_file(response, bubbleOverviewJSONPath)
+    def get_uncategorized_bubbles(self, *args):
+        print("Fetching uncategorized bubbles")
         uncategorized_bubbles = get_uncategorized_bubbles(bubbleOverviewJSONPath)
-        print("Uncategorized Bubbles:", uncategorized_bubbles)  # Debugging statement
+        print("Uncategorized Bubbles:", uncategorized_bubbles)
         return uncategorized_bubbles
 
-    def get_unread_bubbles(self, access_token=None):
-        print("Fetching unread bubbles")  # Debugging statement
-        #if access_token:
-        #    response = getUsersBubbles(access_token)
-        #    save_response_to_file(response, bubbleOverviewJSONPath)
+    def get_unread_bubbles(self, *args):
+        print("Fetching unread bubbles")
         unread_bubbles = get_unread_bubbles(bubbleOverviewJSONPath)
-        print("Unread Bubbles:", unread_bubbles)  # Debugging statement
+        print("Unread Bubbles:", unread_bubbles)
         return unread_bubbles
 
-    def get_categories(self, access_token=None):
-        print("Fetching categories")  # Debugging statement
-        #if access_token:
-        #    response = getUsersBubbles(access_token)
-        #    save_response_to_file(response, bubbleOverviewJSONPath)
+    def get_categories(self, *args):
+        print("Fetching categories")
         categories = get_categories(bubbleOverviewJSONPath)
-        print("Categories:", categories)  # Debugging statement
+        print("Categories:", categories)
         return categories
+    
+    def get_detailed_messages(self, bubbleID):
+        messages = get_bubble_messages(self.accesstoken, bubbleID)
+        print(f"Retrieved messages: {messages}")
+        detailed_messages = []
 
-# Create an instance of the Api class
-api = Api()
+        if not messages:
+            print("No messages found.")
+            return detailed_messages
+
+        for message in messages:
+            if isinstance(message, dict):
+                detailed_message = {
+                    "time_of_sending": message.get("created_at"),
+                    "author": message.get("user", {}).get("fullname"),
+                    "message_id": message.get("id"),
+                    "edit_count": message.get("user_edited_version", 0),
+                    "last_edited": message.get("user_edited_at"),
+                    "parent_message": message.get("parentmessage_id"),
+                    "reactions": message.get("reactionsummary", [])
+                }
+                detailed_messages.append(detailed_message)
+    
+        return detailed_messages
+
+# Create an instance of the Api class with the accesstoken
+api = Api(accesstoken)
 # Create a webview window with the specified HTML file and API
 window = webview.create_window(
     'Better Pronto Alpha',

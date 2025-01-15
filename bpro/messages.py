@@ -5,7 +5,7 @@ from systemcheck import createappfolders
 auth_path, chats_path, bubbles_path, loginTokenJSONPath, authTokenJSONPath, verificationCodeResponseJSONPath, settings_path, encryption_path, logs_path, settingsJSONPath, keysJSONPath, bubbleOverviewJSONPath = createappfolders()
 
 accesstoken = getaccesstoken(authTokenJSONPath)
-bubbleID = 3536226
+bubbleID = 2828820
 
 def get_detailed_messages(accesstoken, bubbleID):
     messages = get_bubble_messages(accesstoken, bubbleID)
