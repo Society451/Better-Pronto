@@ -307,3 +307,8 @@ clearSearch.addEventListener('click', () => {
     searchContainer.style.display = 'none';
     searchButton.style.display = 'block';
 });
+
+// Remove any event listeners that might prevent text selection
+document.addEventListener('mousedown', (event) => {
+    // Do not call event.preventDefault()
+});

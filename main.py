@@ -8,7 +8,7 @@ from bpro.readjson import getbubbleoverview, get_dms, get_categorized_bubbles, g
 auth_path, chats_path, bubbles_path, loginTokenJSONPath, authTokenJSONPath, verificationCodeResponseJSONPath, settings_path, encryption_path, logs_path, settingsJSONPath, keysJSONPath, bubbleOverviewJSONPath = createappfolders()
 
 accesstoken = getaccesstoken(authTokenJSONPath)
-#use this to bypass auth for testing
+#use this to bypass dynamic auth for testing
 
 # Function to save response data to a file
 def save_response_to_file(response_data, file_path):
@@ -139,8 +139,10 @@ api = Api(accesstoken)
 # Create a webview window with the specified HTML file and API
 window = webview.create_window(
     'Better Pronto Alpha',
-    'file:///home/paul/Desktop/Better-Pronto-Alpha/frontend/html/chat.html',  # Updated URL
-    js_api=api
+    'file:///home/paul/Desktop/Better-Pronto-Alpha/frontend/html/chat.html',
+    js_api=api,
+    text_select=True  # Ensure text selection is enabled
 )
+
 # Start the webview with debug mode enabled
-webview.start(debug=True)
+webview.start(debug=False)

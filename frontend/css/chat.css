@@ -1,3 +1,10 @@
+html, body {
+    user-select: text; /* Enable text selection for the entire page */
+    -webkit-user-select: text; /* Safari */
+    -moz-user-select: text; /* Firefox */
+    -ms-user-select: text; /* Internet Explorer/Edge */
+}
+
 body {
     display: flex; /* Use flexbox for layout */
     height: 100vh; /* Full viewport height */
@@ -5,6 +12,7 @@ body {
     background: none; /* Remove background image */
     align-items: flex-start; /* Align items to the top */
     font-family: 'Roboto', sans-serif; /* Use Roboto font */
+    user-select: text; /* Enable text selection */
 }
 
 .sidebar {
@@ -28,6 +36,7 @@ body {
     border-radius: 1px; /* Slightly rounded corners */
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
     scroll-behavior: smooth; /* Smooth scrolling */
+    user-select: text; /* Enable text selection */
 }
 
 .chat-item {
@@ -98,6 +107,7 @@ body {
     width: 80%; /* Expand to full width */
     height: 90%; /* Ensure the container takes full height */
     position: relative; /* Position relative for absolute positioning of children */
+    user-select: text; /* Enable text selection */
 }
 
 .messages {
@@ -107,6 +117,7 @@ body {
     margin-bottom: 20px; /* Space at the bottom */
     max-height: 80vh; /* Prevent the container from expanding beyond viewport */
     scroll-behavior: smooth; /* Smooth scrolling */
+    user-select: text; /* Enable text selection */
 }
 
 .message {
@@ -118,6 +129,7 @@ body {
     font-size: 14px; /* Font size */
     word-wrap: break-word; /* Ensure long words break to the next line */
     white-space: pre-wrap; /* Preserve whitespace and wrap text */
+    user-select: text; /* Enable text selection for messages */
 }
 
 .message-sender {
@@ -149,6 +161,7 @@ body {
     display: flex; /* Use flexbox for layout */
     margin-top: 0; /* Ensure it stays at the bottom */
     flex-shrink: 0; /* Prevent the input group from shrinking */
+    user-select: text; /* Enable text selection */
 }
 
 .input-group input {
@@ -311,4 +324,12 @@ body {
     /* Position the unread count */
     margin-left: auto;
     margin-right: 10px;
+}
+
+/* Ensure all child elements inherit text selection */
+.chat-container *,
+.chat-list *,
+.messages *,
+.input-group * {
+    user-select: text;
 }
