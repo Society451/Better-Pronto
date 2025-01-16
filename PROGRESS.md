@@ -3,7 +3,7 @@ Paul Estrada
 
 - Added somewhat dynamic chat headings
 - Added dynamic html path for main.py
-
+- Began to fix auth process with corrected accesstoken handling
 ### 01-14-2025, 5:20:58 PM. CST
 Paul Estrada
 

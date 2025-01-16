@@ -63,7 +63,7 @@ def verification_code_to_login_token(email, verification_code):
         logger.error(f"An unexpected error occurred: {err}")
         raise BackendError(f"An unexpected error occurred: {err}")
 
-# Function to get user access token from logintoken
+# Function to get user accesstoken from logintoken
 def login_token_to_access_token(logintoken):
     url = f"{API_BASE_URL}api/v1/user.tokenlogin"
     device_info = {
@@ -88,7 +88,10 @@ def login_token_to_access_token(logintoken):
         return response.json()
     except requests.exceptions.HTTPError as http_err:
         logger.error(f"HTTP error occurred: {http_err} - Response: {response.text}")
-        raise BackendError(f"HTTP error occurred: {http_err}")
+        if response.status_code == 401:
+            raise BackendError(f"HTTP error occurred: {http_err}")
+        else:
+            raise BackendError(f"HTTP error occurred: {http_err}")
     except requests.exceptions.RequestException as req_err:
         logger.error(f"Request exception occurred: {req_err}")
         raise BackendError(f"Request exception occurred: {req_err}")
@@ -112,7 +115,10 @@ def getUsersBubbles(access_token):
         return response.json()
     except requests.exceptions.HTTPError as http_err:
         logger.error(f"HTTP error occurred: {http_err} - Response: {response.text}")
-        raise BackendError(f"HTTP error occurred: {http_err}")
+        if response.status_code == 401:
+            raise BackendError(f"HTTP error occurred: {http_err}")
+        else:
+            raise BackendError(f"HTTP error occurred: {http_err}")
     except requests.exceptions.RequestException as req_err:
         logger.error(f"Request exception occurred: {req_err}")
         raise BackendError(f"Request exception occurred: {req_err}")
@@ -139,7 +145,10 @@ def get_bubble_messages(access_token, bubbleID, latestMessageID=None):
         return response_json
     except requests.exceptions.HTTPError as http_err:
         logger.error(f"HTTP error occurred: {http_err} - Response: {response.text}")
-        raise BackendError(f"HTTP error occurred: {http_err}")
+        if response.status_code == 401:
+            raise BackendError(f"HTTP error occurred: {http_err}")
+        else:
+            raise BackendError(f"HTTP error occurred: {http_err}")
     except requests.exceptions.RequestException as req_err:
         logger.error(f"Request exception occurred: {req_err}")
         raise BackendError(f"Request exception occurred: {req_err}")
@@ -164,7 +173,10 @@ def get_bubble_info(access_token, bubbleID):
         return response_json
     except requests.exceptions.HTTPError as http_err:
         logger.error(f"HTTP error occurred: {http_err} - Response: {response.text}")
-        raise BackendError(f"HTTP error occurred: {http_err}")
+        if response.status_code == 401:
+            raise BackendError(f"HTTP error occurred: {http_err}")
+        else:
+            raise BackendError(f"HTTP error occurred: {http_err}")
     except requests.exceptions.RequestException as req_err:
         logger.error(f"Request exception occurred: {req_err}")
         raise BackendError(f"Request exception occurred: {req_err}")
@@ -189,7 +201,10 @@ def markBubble(access_token, bubbleID):
         return response_json
     except requests.exceptions.HTTPError as http_err:
         logger.error(f"HTTP error occurred: {http_err} - Response: {response.text}")
-        raise BackendError(f"HTTP error occurred: {http_err}")
+        if response.status_code == 401:
+            raise BackendError(f"HTTP error occurred: {http_err}")
+        else:
+            raise BackendError(f"HTTP error occurred: {http_err}")
     except requests.exceptions.RequestException as req_err:
         logger.error(f"Request exception occurred: {req_err}")
         raise BackendError(f"Request exception occurred: {req_err}")
@@ -215,7 +230,10 @@ def createDM(access_token, id, orgID):
         return response_json
     except requests.exceptions.HTTPError as http_err:
         logger.error(f"HTTP error occurred: {http_err} - Response: {response.text}")
-        raise BackendError(f"HTTP error occurred: {http_err}")
+        if response.status_code == 401:
+            raise BackendError(f"HTTP error occurred: {http_err}")
+        else:
+            raise BackendError(f"HTTP error occurred: {http_err}")
     except requests.exceptions.RequestException as req_err:
         logger.error(f"Request exception occurred: {req_err}")
         raise BackendError(f"Request exception occurred: {req_err}")
@@ -249,7 +267,10 @@ def createBubble(access_token, orgID, title, category_id):
         return response_json
     except requests.exceptions.HTTPError as http_err:
         logger.error(f"HTTP error occurred: {http_err} - Response: {response.text}")
-        raise BackendError(f"HTTP error occurred: {http_err}")
+        if response.status_code == 401:
+            raise BackendError(f"HTTP error occurred: {http_err}")
+        else:
+            raise BackendError(f"HTTP error occurred: {http_err}")
     except requests.exceptions.RequestException as req_err:
         logger.error(f"Request exception occurred: {req_err}")
         raise BackendError(f"Request exception occurred: {req_err}")
@@ -278,7 +299,10 @@ def addMemberToBubble(access_token, bubbleID, invitations, sendemails, sendsms):
         return response_json
     except requests.exceptions.HTTPError as http_err:
         logger.error(f"HTTP error occurred: {http_err} - Response: {response.text}")
-        raise BackendError(f"HTTP error occurred: {http_err}")
+        if response.status_code == 401:
+            raise BackendError(f"HTTP error occurred: {http_err}")
+        else:
+            raise BackendError(f"HTTP error occurred: {http_err}")
     except requests.exceptions.RequestException as req_err:
         logger.error(f"Request exception occurred: {req_err}")
         raise BackendError(f"Request exception occurred: {req_err}")
@@ -305,7 +329,10 @@ def kickUserFromBubble(access_token, bubbleID, users):
         return response_json
     except requests.exceptions.HTTPError as http_err:
         logger.error(f"HTTP error occurred: {http_err} - Response: {response.text}")
-        raise BackendError(f"HTTP error occurred: {http_err}")
+        if response.status_code == 401:
+            raise BackendError(f"HTTP error occurred: {http_err}")
+        else:
+            raise BackendError(f"HTTP error occurred: {http_err}")
     except requests.exceptions.RequestException as req_err:
         logger.error(f"Request exception occurred: {req_err}")
         raise BackendError(f"Request exception occurred: {req_err}")
@@ -372,7 +399,10 @@ def updateBubble(access_token, bubbleID, title=None, category_id=None, changetit
         return response_json
     except requests.exceptions.HTTPError as http_err:
         logger.error(f"HTTP error occurred: {http_err} - Response: {response.text}")
-        raise BackendError(f"HTTP error occurred: {http_err}")
+        if response.status_code == 401:
+            raise BackendError(f"HTTP error occurred: {http_err}")
+        else:
+            raise BackendError(f"HTTP error occurred: {http_err}")
     except requests.exceptions.RequestException as req_err:
         logger.error(f"Request exception occurred: {req_err}")
         raise BackendError(f"Request exception occurred: {req_err}")
@@ -400,7 +430,10 @@ def pinMessage(access_token, pinned_message_id, pinned_message_expires_at):
         return response_json
     except requests.exceptions.HTTPError as http_err:
         logger.error(f"HTTP error occurred: {http_err} - Response: {response.text}")
-        raise BackendError(f"HTTP error occurred: {http_err}")
+        if response.status_code == 401:
+            raise BackendError(f"HTTP error occurred: {http_err}")
+        else:
+            raise BackendError(f"HTTP error occurred: {http_err}")
     except requests.exceptions.RequestException as req_err:
         logger.error(f"Request exception occurred: {req_err}")
         raise BackendError(f"Request exception occurred: {req_err}")
@@ -431,7 +464,10 @@ def createInvite(bubbleID, access, expires, access_token):
         return response_json
     except requests.exceptions.HTTPError as http_err:
         logger.error(f"HTTP error occurred: {http_err} - Response: {response.text}")
-        raise BackendError(f"HTTP error occurred: {http_err}")
+        if response.status_code == 401:
+            raise BackendError(f"HTTP error occurred: {http_err}")
+        else:
+            raise BackendError(f"HTTP error occurred: {http_err}")
     except requests.exceptions.RequestException as req_err:
         logger.error(f"Request exception occurred: {req_err}")
         raise BackendError(f"Request exception occurred: {req_err}")
@@ -466,7 +502,10 @@ def send_message_to_bubble(access_token, bubbleID, created_at, message, userID, 
         return response_json
     except requests.exceptions.HTTPError as http_err:
         logger.error(f"HTTP error occurred: {http_err} - Response: {response.text}")
-        raise BackendError(f"HTTP error occurred: {http_err}")
+        if response.status_code == 401:
+            raise BackendError(f"HTTP error occurred: {http_err}")
+        else:
+            raise BackendError(f"HTTP error occurred: {http_err}")
     except requests.exceptions.RequestException as req_err:
         logger.error(f"Request exception occurred: {req_err}")
         raise BackendError(f"Request exception occurred: {req_err}")
@@ -492,7 +531,10 @@ def addReaction(access_token, messageID, reactiontype_id):
         return response_json
     except requests.exceptions.HTTPError as http_err:
         logger.error(f"HTTP error occurred: {http_err} - Response: {response.text}")
-        raise BackendError(f"HTTP error occurred: {http_err}")
+        if response.status_code == 401:
+            raise BackendError(f"HTTP error occurred: {http_err}")
+        else:
+            raise BackendError(f"HTTP error occurred: {http_err}")
     except requests.exceptions.RequestException as req_err:
         logger.error(f"Request exception occurred: {req_err}")
         raise BackendError(f"Request exception occurred: {req_err}")
@@ -518,7 +560,10 @@ def removeReaction(access_token, messageID, reactiontype_id):
         return response_json
     except requests.exceptions.HTTPError as http_err:
         logger.error(f"HTTP error occurred: {http_err} - Response: {response.text}")
-        raise BackendError(f"HTTP error occurred: {http_err}")
+        if response.status_code == 401:
+            raise BackendError(f"HTTP error occurred: {http_err}")
+        else:
+            raise BackendError(f"HTTP error occurred: {http_err}")
     except requests.exceptions.RequestException as req_err:
         logger.error(f"Request exception occurred: {req_err}")
         raise BackendError(f"Request exception occurred: {req_err}")
@@ -544,7 +589,10 @@ def editMessgae(access_token, newMessage, messageID):
         return response_json
     except requests.exceptions.HTTPError as http_err:
         logger.error(f"HTTP error occurred: {http_err} - Response: {response.text}")
-        raise BackendError(f"HTTP error occurred: {http_err}")
+        if response.status_code == 401:
+            raise BackendError(f"HTTP error occurred: {http_err}")
+        else:
+            raise BackendError(f"HTTP error occurred: {http_err}")
     except requests.exceptions.RequestException as req_err:
         logger.error(f"Request exception occurred: {req_err}")
         raise BackendError(f"Request exception occurred: {req_err}")
@@ -569,7 +617,10 @@ def deleteMessage(access_token, messageID):
         return response_json
     except requests.exceptions.HTTPError as http_err:
         logger.error(f"HTTP error occurred: {http_err} - Response: {response.text}")
-        raise BackendError(f"HTTP error occurred: {http_err}")
+        if response.status_code == 401:
+            raise BackendError(f"HTTP error occurred: {http_err}")
+        else:
+            raise BackendError(f"HTTP error occurred: {http_err}")
     except requests.exceptions.RequestException as req_err:
         logger.error(f"Request exception occurred: {req_err}")
         raise BackendError(f"Request exception occurred: {req_err}")
@@ -596,7 +647,10 @@ def userInfo(access_token, id):
         return response_json
     except requests.exceptions.HTTPError as http_err:
         logger.error(f"HTTP error occurred: {http_err} - Response: {response.text}")
-        raise BackendError(f"HTTP error occurred: {http_err}")
+        if response.status_code == 401:
+            raise BackendError(f"HTTP error occurred: {http_err}")
+        else:
+            raise BackendError(f"HTTP error occurred: {http_err}")
     except requests.exceptions.RequestException as req_err:
         logger.error(f"Request exception occurred: {req_err}")
         raise BackendError(f"Request exception occurred: {req_err}")
@@ -621,7 +675,10 @@ def mutualGroups(access_token, id):
         return response_json
     except requests.exceptions.HTTPError as http_err:
         logger.error(f"HTTP error occurred: {http_err} - Response: {response.text}")
-        raise BackendError(f"HTTP error occurred: {http_err}")
+        if response.status_code == 401:
+            raise BackendError(f"HTTP error occurred: {http_err}")
+        else:
+            raise BackendError(f"HTTP error occurred: {http_err}")
     except requests.exceptions.RequestException as req_err:
         logger.error(f"Request exception occurred: {req_err}")
         raise BackendError(f"Request exception occurred: {req_err}")
@@ -651,7 +708,10 @@ def setStatus(access_token, userID, isonline, lastpresencetime):
         return response.json()
     except requests.exceptions.HTTPError as http_err:
         logger.error(f"HTTP error occurred: {http_err} - Response: {response.text}")
-        raise BackendError(f"HTTP error occurred: {http_err}")
+        if response.status_code == 401:
+            raise BackendError(f"HTTP error occurred: {http_err}")
+        else:
+            raise BackendError(f"HTTP error occurred: {http_err}")
     except requests.exceptions.RequestException as req_err:
         logger.error(f"Request exception occurred: {req_err}")
         raise BackendError(f"Request exception occurred: {req_err}")
@@ -687,7 +747,10 @@ def searchMessage(access_token, query, bubbleID=None, orderby=None, user_ids=Non
         return response.json()
     except requests.exceptions.HTTPError as http_err:
         logger.error(f"HTTP error occurred: {http_err} - Response: {response.text}")
-        raise BackendError(f"HTTP error occurred: {http_err}")
+        if response.status_code == 401:
+            raise BackendError(f"HTTP error occurred: {http_err}")
+        else:
+            raise BackendError(f"HTTP error occurred: {http_err}")
     except requests.exceptions.RequestException as req_err:
         logger.error(f"Request exception occurred: {req_err}")
         raise BackendError(f"Request exception occurred: {req_err}")

@@ -8,12 +8,13 @@ from bpro.readjson import getbubbleoverview, get_dms, get_categorized_bubbles, g
 auth_path, chats_path, bubbles_path, loginTokenJSONPath, authTokenJSONPath, verificationCodeResponseJSONPath, settings_path, encryption_path, logs_path, settingsJSONPath, keysJSONPath, bubbleOverviewJSONPath = createappfolders()
 
 accesstoken = getaccesstoken(authTokenJSONPath)
-#use this to bypass dynamic auth for testing
+if accesstoken:
+    print(f"Access token: {accesstoken}")
+else:
+    print("Access token not found or invalid")
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
-chat_html_path = os.path.join(current_dir, 'frontend', 'html', 'chat.html')
-
-
+html_path = os.path.join(current_dir, 'frontend', 'html', 'login.html')
 
 # Function to save response data to a file
 def save_response_to_file(response_data, file_path):
@@ -28,9 +29,12 @@ def getvalueLogin(file_path, value):
         with open(file_path, "r") as file:
             data = json.load(file)
             print(f"Loaded JSON data: {data}")  # Debugging statement
-            # Extract the login token and first name
-            value = data["users"][0][value]
-            return value
+            if "users" in data and len(data["users"]) > 0:
+                value = data["users"][0][value]
+                return value
+            else:
+                print("No users found in JSON data")
+                return None
     except Exception as e:
         print(f"Error reading JSON file: {e}")
         return None
@@ -47,7 +51,9 @@ class Api:
     def handle_email(self, email):
         if "stanford.edu" in email:
             self.email = email
+            response = requestVerificationEmail(email)
             print("Email accepted and verification code has been sent")
+            print("Response:", response)
             return "Email accepted"
         else:
             return "Invalid email domain"
@@ -58,7 +64,7 @@ class Api:
         if "ok" in response:
             print("Login token received")
         save_response_to_file(response, loginTokenJSONPath)
-        return "ok"
+        return self.accessToken()
     
     def accessToken(self):
         print("Access token method called")
@@ -69,7 +75,7 @@ class Api:
             print(f"Access token response: {response}")
             if response:
                 save_response_to_file(response, f"{authTokenJSONPath}")
-                print("Access token received")
+                print("Access token received============================================================")
                 print(response)
                 try:
                     with open(authTokenJSONPath, "r") as file:
@@ -151,7 +157,7 @@ api = Api(accesstoken)
 # Create a webview window with the specified HTML file and API
 window = webview.create_window(
     'Better Pronto Alpha',
-    f'file://{chat_html_path}',
+    f'file://{html_path}',
     js_api=api,
     text_select=True,  # Ensure text selection is enabled
     width=1200,  # Set the width of the window
@@ -159,4 +165,4 @@ window = webview.create_window(
 )
 
 # Start the webview with debug mode enabled
-webview.start(debug=False)
+webview.start(debug=True)

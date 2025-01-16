@@ -45,10 +45,11 @@ document.getElementById('verification-form').addEventListener('submit', async fu
     console.log(`Verification code entered: ${code}`);
     const response = await window.pywebview.api.handle_verification_code(code);
     console.log(response);
+    const errorMessage = document.getElementById('error-message');  // Define errorMessage here
     if (response === "error") {
-        document.getElementById('error-message').textContent = "Invalid verification code. Please try again.";
+        errorMessage.textContent = "Invalid verification code. Please try again.";
     } else {
         errorMessage.textContent = "";
-        window.location.href = "../html/chat.html";
+        window.location.href = "chat.html";
     }
 });

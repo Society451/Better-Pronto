@@ -18,8 +18,12 @@ def getvalueLogin(file_path, value):
     try:
         with open(file_path, "r") as file:
             data = json.load(file)
-            value = data["users"][0][f"{value}"]
-            return value
+            if "users" in data and len(data["users"]) > 0:
+                value = data["users"][0][value]
+                return value
+            else:
+                print("No users found in JSON data")
+                return None
     except Exception as e:
         print(f"Error reading JSON file: {e}")
         return None
@@ -28,8 +32,12 @@ def getaccesstoken(file_path):
     try:
         with open(file_path, "r") as file:
             data = json.load(file)
-            value = data["users"][0]["accesstoken"]
-            return value
+            if "users" in data and len(data["users"]) > 0:
+                value = data["users"][0]["accesstoken"]
+                return value
+            else:
+                print("No users found in JSON data")
+                return None
     except Exception as e:
         print(f"Error reading JSON file: {e}")
         return None
@@ -244,8 +252,6 @@ def create_bubble_folders(bubbleOverviewJSONPath, bubbles_path):
             print(f"Folder created for DM bubble {bubble_folder_name}: {bubble_folder_path}")
 
 # Example usage:
-categories = getbubbleoverview(bubbleOverviewJSONPath)
-print(categories)
 #print(get_dms(bubbleOverviewJSONPath))
 #print(get_categorized_bubbles(bubbleOverviewJSONPath))
 #print(get_uncategorized_bubbles(bubbleOverviewJSONPath))
