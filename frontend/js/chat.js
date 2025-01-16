@@ -120,10 +120,11 @@ class Category {
                     ${this.createDropdownOptions(['Option 1', 'Option 2', 'Option 3', 'Option 4'])}
                 </ul>
             `;
-            // Add event listener to call Python function when clicked
+            // Add event listener to call Python function and load messages when clicked
             chatItem.addEventListener('click', () => {
                 const chatID = chatItem.getAttribute('data-chat-id');
                 window.pywebview.api.print_chat_info(chat.title, chatID);
+                loadMessages(chatID, chat.title); // Load messages for the clicked chat and update heading
             });
             contentElement.appendChild(chatItem);
         });
@@ -231,14 +232,18 @@ async function initializeCategories() {
 }
 
 // Function to retrieve and display detailed messages for a specific bubble ID
-async function loadMessages(bubbleID) {
+async function loadMessages(bubbleID, bubbleName) {
     try {
+        console.log(`Loading messages for bubble ID: ${bubbleID}`); // Debug statement
         const messages = await window.pywebview.api.get_detailed_messages(bubbleID);
+        console.log('Messages retrieved:', messages); // Debug statement
         messagesContainer.innerHTML = ''; // Clear existing messages
         messages.forEach(msg => {
             const message = new Message(msg.content, msg.author, msg.time_of_sending);
             messagesContainer.appendChild(message.createElement());
         });
+        messagesContainer.scrollTop = messagesContainer.scrollHeight; // Scroll to the bottom
+        setChatHeading(bubbleName); // Update chat heading with the bubble name
     } catch (error) {
         console.error("Error loading messages:", error);
     }

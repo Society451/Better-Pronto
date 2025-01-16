@@ -111,8 +111,9 @@ class Api:
         return categories
     
     def get_detailed_messages(self, bubbleID):
+        print(f"Fetching detailed messages for bubble ID: {bubbleID}")  # Debug statement
         messages = get_bubble_messages(self.accesstoken, bubbleID)
-        print(f"Retrieved messages: {messages}")
+        print(f"Retrieved messages: {messages}")  # Debug statement
         detailed_messages = []
 
         if not messages:
