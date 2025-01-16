@@ -10,6 +10,11 @@ auth_path, chats_path, bubbles_path, loginTokenJSONPath, authTokenJSONPath, veri
 accesstoken = getaccesstoken(authTokenJSONPath)
 #use this to bypass dynamic auth for testing
 
+current_dir = os.path.dirname(os.path.abspath(__file__))
+chat_html_path = os.path.join(current_dir, 'frontend', 'html', 'chat.html')
+
+
+
 # Function to save response data to a file
 def save_response_to_file(response_data, file_path):
     try:
@@ -146,7 +151,7 @@ api = Api(accesstoken)
 # Create a webview window with the specified HTML file and API
 window = webview.create_window(
     'Better Pronto Alpha',
-    'file:///home/paul/Desktop/Better-Pronto-Alpha/frontend/html/chat.html',
+    f'file://{chat_html_path}',
     js_api=api,
     text_select=True,  # Ensure text selection is enabled
     width=1200,  # Set the width of the window
