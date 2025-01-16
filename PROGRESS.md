@@ -4,6 +4,10 @@ Paul Estrada
 - Added somewhat dynamic chat headings
 - Added dynamic html path for main.py
 - Began to fix auth process with corrected accesstoken handling
+- ^Fixed auth process with corrected accesstoken handling
+- Added function to get live bubbles upon page loading through chat.js
+- Began to only make login required if accesstoken has expired (do accesstokens even expire??) / upon 401 error
+
 ### 01-14-2025, 5:20:58 PM. CST
 Paul Estrada
 

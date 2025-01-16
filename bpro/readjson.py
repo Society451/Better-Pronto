@@ -24,6 +24,9 @@ def getvalueLogin(file_path, value):
             else:
                 print("No users found in JSON data")
                 return None
+    except json.JSONDecodeError:
+        print(f"Error reading JSON file: {file_path} is empty or invalid")
+        return None
     except Exception as e:
         print(f"Error reading JSON file: {e}")
         return None
@@ -38,6 +41,9 @@ def getaccesstoken(file_path):
             else:
                 print("No users found in JSON data")
                 return None
+    except json.JSONDecodeError:
+        print(f"Error reading JSON file: {file_path} is empty or invalid")
+        return None
     except Exception as e:
         print(f"Error reading JSON file: {e}")
         return None
@@ -98,6 +104,9 @@ def getdetailedbubbleoverview(bubbleOverviewJSONPath):
             ]
 
             return sorted_dm_bubbles, categorizedgroups, uncategorizedgroups, unread_bubbles
+    except json.JSONDecodeError:
+        print(f"Error reading JSON file: {bubbleOverviewJSONPath} is empty or invalid")
+        return None, None, None, None
     except Exception as e:
         print(f"Error reading JSON file: {e}")
         return None, None, None, None
@@ -158,6 +167,9 @@ def getbubbleoverview(bubbleOverviewJSONPath):
             ]
 
             return sorted_dm_bubbles, categorizedgroups, uncategorizedgroups, unread_bubbles
+    except json.JSONDecodeError:
+        print(f"Error reading JSON file: {bubbleOverviewJSONPath} is empty or invalid")
+        return None, None, None, None
     except Exception as e:
         print(f"Error reading JSON file: {e}")
         return None, None, None, None

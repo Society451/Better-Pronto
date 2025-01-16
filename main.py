@@ -66,6 +66,16 @@ class Api:
         save_response_to_file(response, loginTokenJSONPath)
         return self.accessToken()
     
+    ##
+    ##
+    ##
+    ##
+    ##
+    def get_live_bubbles(self, *args):
+        response = getUsersBubbles(self.accesstoken)
+        print("Response:", response)
+        save_response_to_file(response, bubbleOverviewJSONPath)
+    
     def accessToken(self):
         print("Access token method called")
         logintoken = getvalueLogin(loginTokenJSONPath, "logintoken")
