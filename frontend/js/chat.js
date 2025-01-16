@@ -111,14 +111,20 @@ class Category {
         this.chats.forEach(chat => {
             const chatItem = document.createElement('div');
             chatItem.classList.add('chat-item');
+            chatItem.setAttribute('data-chat-id', chat.id); // Set the data-chat-id attribute
             chatItem.innerHTML = `
-                ${chat}
-                <span class="unread-count">${this.unreadCounts[chat] || 0}</span>
+                ${chat.title}
+                <span class="unread-count">${this.unreadCounts[chat.title] || 0}</span>
                 <button class="menu-button">⋮</button>
                 <ul class="dropdown-menu">
                     ${this.createDropdownOptions(['Option 1', 'Option 2', 'Option 3', 'Option 4'])}
                 </ul>
             `;
+            // Add event listener to call Python function when clicked
+            chatItem.addEventListener('click', () => {
+                const chatID = chatItem.getAttribute('data-chat-id');
+                window.pywebview.api.print_chat_info(chat.title, chatID);
+            });
             contentElement.appendChild(chatItem);
         });
 

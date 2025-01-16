@@ -2,6 +2,9 @@ import json
 from .systemcheck import createappfolders
 import os
 
+#remember to change the .systemcheck to systemcheck if you are running this file directly
+
+
 auth_path, chats_path, bubbles_path, loginTokenJSONPath, authTokenJSONPath, verificationCodeResponseJSONPath, settings_path, encryption_path, logs_path, settingsJSONPath, keysJSONPath, bubbleOverviewJSONPath = createappfolders()
 
 def save_response_to_file(response_data, file_path):
@@ -104,8 +107,8 @@ def getbubbleoverview(bubbleOverviewJSONPath):
 
             # Separate and sort DM bubbles by name
             sorted_dm_bubbles = sorted(
-                [bubble["title"] for bubble in bubbles if bubble.get("isdm")],
-                key=lambda x: x
+                [{"id": bubble["id"], "title": bubble["title"]} for bubble in bubbles if bubble.get("isdm")],
+                key=lambda x: x["title"]
             )
 
             # Categorize and sort Non-DM bubbles
@@ -116,21 +119,22 @@ def getbubbleoverview(bubbleOverviewJSONPath):
             for bubble in (b for b in bubbles if not b.get("isdm")):
                 category = bubble.get("category")
                 category_title = category["title"] if category and "title" in category else None
+                bubble_info = {"id": bubble["id"], "title": bubble["title"]}
                 if category_title:
                     if category_title not in categorizedgroups:
                         categorizedgroups[category_title] = []
-                    categorizedgroups[category_title].append(bubble["title"])
+                    categorizedgroups[category_title].append(bubble_info)
                 else:
-                    uncategorizedgroups.append(bubble["title"])
+                    uncategorizedgroups.append(bubble_info)
 
             # Sort bubbles within each category
             for category in categorizedgroups:
-                categorizedgroups[category].sort()
+                categorizedgroups[category].sort(key=lambda x: x["title"])
             # Sort the categories themselves
             categorizedgroups = dict(sorted(categorizedgroups.items()))
 
             # Sort uncategorized groups
-            uncategorizedgroups.sort()
+            uncategorizedgroups.sort(key=lambda x: x["title"])
 
             # Identify unread bubbles
             bubble_id_to_title = {bubble["id"]: bubble["title"] for bubble in bubbles}
@@ -240,8 +244,8 @@ def create_bubble_folders(bubbleOverviewJSONPath, bubbles_path):
             print(f"Folder created for DM bubble {bubble_folder_name}: {bubble_folder_path}")
 
 # Example usage:
-#categories = get_categories(bubbleOverviewJSONPath)
-#print(categories)
+categories = getbubbleoverview(bubbleOverviewJSONPath)
+print(categories)
 #print(get_dms(bubbleOverviewJSONPath))
 #print(get_categorized_bubbles(bubbleOverviewJSONPath))
 #print(get_uncategorized_bubbles(bubbleOverviewJSONPath))

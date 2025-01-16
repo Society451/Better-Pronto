@@ -134,6 +134,12 @@ class Api:
     
         return detailed_messages
 
+    def print_chat_name(self, chat_name):
+        print(f"Clicked on chat: {chat_name}")
+
+    def print_chat_info(self, chat_name, chat_id):
+        print(f"Clicked on chat: {chat_name}, ID: {chat_id}")
+
 # Create an instance of the Api class with the accesstoken
 api = Api(accesstoken)
 # Create a webview window with the specified HTML file and API
@@ -141,7 +147,9 @@ window = webview.create_window(
     'Better Pronto Alpha',
     'file:///home/paul/Desktop/Better-Pronto-Alpha/frontend/html/chat.html',
     js_api=api,
-    text_select=True  # Ensure text selection is enabled
+    text_select=True,  # Ensure text selection is enabled
+    width=1200,  # Set the width of the window
+    height=800   # Set the height of the window
 )
 
 # Start the webview with debug mode enabled
