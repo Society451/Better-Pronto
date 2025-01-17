@@ -1,6 +1,4 @@
-import webview
-import json
-import os
+import webview, os, json
 from bpro.pronto import requestVerificationEmail, verification_code_to_login_token, login_token_to_access_token, getUsersBubbles, get_bubble_messages
 from bpro.systemcheck import createappfolders
 from bpro.readjson import getbubbleoverview, get_dms, get_categorized_bubbles, get_uncategorized_bubbles, get_unread_bubbles, get_categories, getaccesstoken
