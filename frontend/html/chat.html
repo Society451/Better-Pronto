@@ -30,6 +30,7 @@
     <div class="chat-container">
         <div class="chat-heading" id="chat-heading">Paul Estrada</div>
         <div class="messages" id="messages">
+            <!-- Messages will be displayed here -->
         </div>
         <div class="input-group">
             <textarea id="message-input" placeholder="Type a message. Use @ to mention..."></textarea>
@@ -37,4 +38,12 @@
     </div>
 </body>
 <script src="../js/chat.js"></script>
+<style>
+    /* Add this style to ensure messages are visible */
+    .messages {
+        background-color: #f9f9f9; /* Light background for messages */
+        padding: 10px; /* Padding inside messages container */
+        border-radius: 5px; /* Rounded corners */
+    }
+</style>
 </html>

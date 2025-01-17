@@ -12,7 +12,7 @@ else:
     print("Access token not found or invalid")
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
-html_path = os.path.join(current_dir, 'frontend', 'html', 'login.html')
+html_path = os.path.join(current_dir, 'frontend', 'html', 'chat.html')
 
 # Function to save response data to a file
 def save_response_to_file(response_data, file_path):
@@ -83,7 +83,7 @@ class Api:
             print(f"Access token response: {response}")
             if response:
                 save_response_to_file(response, f"{authTokenJSONPath}")
-                print("Access token received============================================================")
+                print("accesstoken received")
                 print(response)
                 try:
                     with open(authTokenJSONPath, "r") as file:
@@ -131,28 +131,44 @@ class Api:
     
     def get_detailed_messages(self, bubbleID):
         print(f"Fetching detailed messages for bubble ID: {bubbleID}")  # Debug statement
-        messages = get_bubble_messages(self.accesstoken, bubbleID)
-        print(f"Retrieved messages: {messages}")  # Debug statement
-        detailed_messages = []
+        try:
+            response = get_bubble_messages(self.accesstoken, bubbleID)
+            if response is None or 'messages' not in response:
+                print("401 Unauthorized: Access token may be invalid or expired.")
+                raise Exception("401 Unauthorized")  # Raise an error if a 401 status code is encountered
+            print(f"Retrieved response: {response}")  # Debug statement
 
-        if not messages:
-            print("No messages found.")
-            return detailed_messages
+            messages = response['messages']
+            detailed_messages = []
 
-        for message in messages:
-            if isinstance(message, dict):
-                detailed_message = {
-                    "time_of_sending": message.get("created_at"),
-                    "author": message.get("user", {}).get("fullname"),
-                    "message_id": message.get("id"),
-                    "edit_count": message.get("user_edited_version", 0),
-                    "last_edited": message.get("user_edited_at"),
-                    "parent_message": message.get("parentmessage_id"),
-                    "reactions": message.get("reactionsummary", [])
-                }
-                detailed_messages.append(detailed_message)
-    
-        return detailed_messages
+            if not messages:
+                print("No messages found.")
+                return detailed_messages
+
+            for message in messages:
+                if isinstance(message, dict):
+                    detailed_message = {
+                        "time_of_sending": message.get("created_at"),
+                        "author": message.get("user", {}).get("fullname"),
+                        "message_id": message.get("id"),
+                        "edit_count": message.get("user_edited_version", 0),
+                        "last_edited": message.get("user_edited_at"),
+                        "parent_message": message.get("parentmessage_id"),
+                        "reactions": message.get("reactionsummary", []),
+                        "content": message.get("message")  # Ensure message content is included
+                    }
+                    # Verify that all required fields are present
+                    if all([detailed_message["time_of_sending"], detailed_message["author"], detailed_message["content"]]):
+                        detailed_messages.append(detailed_message)
+                    else:
+                        print(f"Incomplete message data skipped: {detailed_message}")
+                else:
+                    print(f"Unexpected message format: {message}")
+
+            return {"messages": detailed_messages}
+        except Exception as e:
+            print(f"Error fetching detailed messages: {e}")
+            return {"messages": []}
 
     def print_chat_name(self, chat_name):
         print(f"Clicked on chat: {chat_name}")

@@ -229,22 +229,50 @@ async function initializeCategories() {
 async function loadMessages(bubbleID, bubbleName) {
     try {
         console.log(`Loading messages for bubble ID: ${bubbleID}`); // Debug statement
-        const messages = await window.pywebview.api.get_detailed_messages(bubbleID);
-        console.log('Messages retrieved:', messages); // Debug statement
+        const response = await window.pywebview.api.get_detailed_messages(bubbleID);
+        console.log('Response retrieved:', response); // Debug statement
+
+        if (!response || typeof response !== 'object' || !Array.isArray(response.messages)) {
+            console.error("Invalid response format received:", response);
+            return;
+        }
+
+        const messages = response.messages.reverse(); // Reverse the order of the messages
         messagesContainer.innerHTML = ''; // Clear existing messages
-        messages.forEach(msg => {
-            const message = new Message(msg.content, msg.author, msg.time_of_sending);
-            messagesContainer.appendChild(message.createElement());
-        });
+
+        if (messages.length === 0) {
+            const noMessages = document.createElement('div');
+            noMessages.textContent = 'No messages to display.';
+            messagesContainer.appendChild(noMessages);
+        } else {
+            messages.forEach(msg => {
+                // Verify that each message has the required properties
+                console.log('Processing message:', msg);
+                const content = msg.message || msg.content;
+                const author = msg.user ? msg.user.fullname : msg.author;
+                const timestamp = msg.created_at || msg.time_of_sending;
+
+                if (content && author && timestamp) {
+                    const message = new Message(content, author, timestamp);
+                    messagesContainer.appendChild(message.createElement()); // Display message in HTML
+                } else {
+                    console.warn('Incomplete message data:', msg);
+                }
+            });
+        }
         messagesContainer.scrollTop = messagesContainer.scrollHeight; // Scroll to the bottom
         setChatHeading(bubbleName); // Update chat heading with the bubble name
     } catch (error) {
         console.error("Error loading messages:", error);
+        if (error.message.includes('401')) {
+            window.location.href = 'login.html'; // Redirect to login.html on 401 error
+        }
     }
 }
 
 // Example usage of loadMessages
-// loadMessages('exampleBubbleID');
+// Uncomment or adjust the bubble ID/name as needed
+// loadMessages('3782064', 'AI Society DM');
 
 // Function to wait for pywebview API to be ready
 function waitForPywebview() {
@@ -263,6 +291,9 @@ async function initializeLiveBubbles() {
         initializeCategories(); // Call initializeCategories after fetching live bubbles
     } catch (error) {
         console.error("Error fetching live bubbles:", error);
+        if (error.message.includes('401')) {
+            window.location.href = 'login.html'; // Redirect to login.html on 401 error
+        }
     }
 }
 

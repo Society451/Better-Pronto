@@ -118,18 +118,22 @@ body {
     max-height: 80vh; /* Prevent the container from expanding beyond viewport */
     scroll-behavior: smooth; /* Smooth scrolling */
     user-select: text; /* Enable text selection */
+    background-color: #f9f9f9; /* Light background for messages */
+    padding: 10px; /* Padding inside messages container */
+    border-radius: 5px; /* Rounded corners */
 }
 
 .message {
     position: relative; /* Ensure positioning context for the delete icon */
-    padding: 5px; /* Padding inside each message */
-    margin-bottom: 5px; /* Space between messages */
+    padding: 10px; /* Increased padding for better readability */
+    margin-bottom: 10px; /* Increased space between messages */
     border-radius: 5px; /* Rounded corners */
-    background: none; /* Remove grey background */
+    background: #ffffff; /* White background for individual messages */
     font-size: 14px; /* Font size */
     word-wrap: break-word; /* Ensure long words break to the next line */
     white-space: pre-wrap; /* Preserve whitespace and wrap text */
     user-select: text; /* Enable text selection for messages */
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1); /* Subtle shadow for message boxes */
 }
 
 .message-sender {

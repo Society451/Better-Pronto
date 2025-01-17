@@ -177,42 +177,57 @@ def getbubbleoverview(bubbleOverviewJSONPath):
 def get_dms(bubbleOverviewJSONPath):
     try:
         sorted_dm_bubbles, _, _, _ = getbubbleoverview(bubbleOverviewJSONPath)
+        if sorted_dm_bubbles is None:
+            print("No Direct Messages found.")
+            return []
         return sorted_dm_bubbles
     except Exception as e:
-        print(f"Error reading JSON file: {e}")
-        return None
+        print(f"Error reading DMs: {e}")
+        return []
 
 def get_categorized_bubbles(bubbleOverviewJSONPath):
     try:
         _, categorizedgroups, _, _ = getbubbleoverview(bubbleOverviewJSONPath)
+        if categorizedgroups is None:
+            print("No categorized bubbles found.")
+            return {}
         return categorizedgroups
     except Exception as e:
-        print(f"Error reading JSON file: {e}")
-        return None
+        print(f"Error reading categorized bubbles: {e}")
+        return {}
 
 def get_uncategorized_bubbles(bubbleOverviewJSONPath):
     try:
         _, _, uncategorizedgroups, _ = getbubbleoverview(bubbleOverviewJSONPath)
+        if uncategorizedgroups is None:
+            print("No uncategorized bubbles found.")
+            return []
         return uncategorizedgroups
     except Exception as e:
-        print(f"Error reading JSON file: {e}")
-        return None
+        print(f"Error reading uncategorized bubbles: {e}")
+        return []
 
 def get_unread_bubbles(bubbleOverviewJSONPath):
     try:
         _, _, _, unread_bubbles = getbubbleoverview(bubbleOverviewJSONPath)
+        if unread_bubbles is None:
+            print("No unread bubbles found.")
+            return []
         return unread_bubbles
     except Exception as e:
-        print(f"Error reading JSON file: {e}")
-        return None
+        print(f"Error reading unread bubbles: {e}")
+        return []
 
 def get_categories(bubbleOverviewJSONPath):
     try:
         _, categorizedgroups, _, _ = getbubbleoverview(bubbleOverviewJSONPath)
+        if categorizedgroups is None:
+            print("No categories found.")
+            return []
         return list(categorizedgroups.keys())
     except Exception as e:
-        print(f"Error reading JSON file: {e}")
-        return None
+        print(f"Error reading categories: {e}")
+        return []
 
 
 #create bubbles

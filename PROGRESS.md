@@ -1,4 +1,15 @@
-### 01-15-2025, 4:00:58 PM. CST
+### 01-16-2025, 4:02:59 PM, CST
+Paul Estrada
+
+- Added dynamic message fetching (FINALLY)!!
+- Diana started working on custom themes
+- Added reroute to login.html after 401 error
+- Began research on websockets
+- Added requirements.txt
+- Updated auth process
+- Updated message parsing functions in chat.js
+
+### 01-15-2025, 4:00:58 PM, CST
 Paul Estrada
 
 - Added somewhat dynamic chat headings

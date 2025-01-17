@@ -11,3 +11,34 @@ document.getElementById('login-form').addEventListener('submit', async function(
         window.location.href = "verificationCode.html"; // Redirect to verificationCode.html
     }
 });
+
+// Ensure there are no errors and that any necessary functions are properly defined
+
+// Example: If there is a function to handle login, ensure it handles responses correctly
+async function handleLogin() {
+    const email = document.getElementById('email-input').value;
+    const password = document.getElementById('password-input').value;
+    try {
+        const response = await window.pywebview.api.login(email, password);
+        if (response === "Ok") {
+            window.location.href = 'chat.html'; // Redirect to chat on successful login
+        } else {
+            displayError(response); // Display error message
+        }
+    } catch (error) {
+        console.error("Login error:", error);
+        displayError("An unexpected error occurred.");
+    }
+}
+
+// Add event listener to login button
+document.getElementById('login-button').addEventListener('click', () => {
+    handleLogin();
+});
+
+// Function to display error messages
+function displayError(message) {
+    const errorElement = document.getElementById('error-message');
+    errorElement.textContent = message;
+    errorElement.style.display = 'block';
+}
