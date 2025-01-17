@@ -34,10 +34,11 @@ document.addEventListener('keyup', (event) => {
 
 // Message class to create message elements
 class Message {
-    constructor(content, sender, timestamp, isDefault = false) {
+    constructor(content, sender, timestamp, user, isDefault = false) {
         this.content = content;
         this.sender = sender;
         this.timestamp = timestamp;
+        this.user = user;
         this.isDefault = isDefault;
     }
 
@@ -59,6 +60,14 @@ class Message {
         contentElement.classList.add('message-content');
         contentElement.textContent = this.content;
         messageElement.appendChild(contentElement);
+
+        /* Add user data if available */
+        if (this.user) {
+            const userElement = document.createElement('div');
+            userElement.classList.add('message-user');
+            userElement.textContent = `User: ${this.user.fullname}, Email: ${this.user.email}`;
+            messageElement.appendChild(userElement);
+        }
 
         /* Add delete icon if permission is granted */
         if (hasDeletePermission) {
@@ -251,9 +260,10 @@ async function loadMessages(bubbleID, bubbleName) {
                 const content = msg.message || msg.content;
                 const author = msg.user ? msg.user.fullname : msg.author;
                 const timestamp = msg.created_at || msg.time_of_sending;
+                const user = msg.user;
 
                 if (content && author && timestamp) {
-                    const message = new Message(content, author, timestamp);
+                    const message = new Message(content, author, timestamp, user);
                     messagesContainer.appendChild(message.createElement()); // Display message in HTML
                 } else {
                     console.warn('Incomplete message data:', msg);
