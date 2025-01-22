@@ -1,5 +1,3 @@
-
-
 ### 01-16-2025, 4:02:59 PM, CST
 Paul Estrada
 
