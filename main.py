@@ -1,7 +1,7 @@
 import webview, os, json
 from bpro.pronto import requestVerificationEmail, verification_code_to_login_token, login_token_to_access_token, getUsersBubbles, get_bubble_messages
 from bpro.systemcheck import createappfolders
-from bpro.readjson import getbubbleoverview, get_dms, get_categorized_bubbles, get_uncategorized_bubbles, get_unread_bubbles, get_categories, getaccesstoken
+from bpro.readjson import get_dms, get_categorized_bubbles, get_uncategorized_bubbles, get_unread_bubbles, get_categories, getaccesstoken
 
 auth_path, chats_path, bubbles_path, loginTokenJSONPath, authTokenJSONPath, verificationCodeResponseJSONPath, settings_path, encryption_path, logs_path, settingsJSONPath, keysJSONPath, bubbleOverviewJSONPath = createappfolders()
 
@@ -43,6 +43,7 @@ def getvalueLogin(file_path, value):
         return None
 
 class Api:
+    getLocalAccesstoken()
     def __init__(self, accesstoken):
         self.email = ""
         self.accesstoken = accesstoken
@@ -66,7 +67,8 @@ class Api:
         if "ok" in response:
             print("Login token received")
         save_response_to_file(response, loginTokenJSONPath)
-        return self.accessToken()
+        self.accessToken()
+
     
     def accessToken(self):
         print("Access token method called")
@@ -79,6 +81,7 @@ class Api:
                 save_response_to_file(response, f"{authTokenJSONPath}")
                 print("accesstoken received")
                 print(response)
+                getLocalAccesstoken()
                 try:
                     with open(authTokenJSONPath, "r") as file:
                         written_data = json.load(file)
@@ -95,7 +98,7 @@ class Api:
 
     def get_live_bubbles(self, *args):
         getLocalAccesstoken()
-        response = getUsersBubbles(self.accesstoken)
+        response = getUsersBubbles(accesstoken)
         print("Response:", response)
         save_response_to_file(response, bubbleOverviewJSONPath)
 
@@ -138,7 +141,7 @@ class Api:
     def get_detailed_messages(self, bubbleID):
         print(f"Fetching detailed messages for bubble ID: {bubbleID}")  # Debug statement
         try:
-            response = get_bubble_messages(self.accesstoken, bubbleID)
+            response = get_bubble_messages(accesstoken, bubbleID)
             if response is None or 'messages' not in response:
                 print("401 Unauthorized: Access token may be invalid or expired.")
                 raise Exception("401 Unauthorized")  # Raise an error if a 401 status code is encountered
