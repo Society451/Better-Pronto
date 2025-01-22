@@ -155,11 +155,11 @@ async function initializeCategories() {
     try {
         console.log("Initializing categories and chats"); // New debug statement
 
-        const categories = await window.pywebview.api.get_categories();
-        const dms = await window.pywebview.api.get_dms();
-        const categorizedBubbles = await window.pywebview.api.get_categorized_bubbles();
-        const uncategorizedBubbles = await window.pywebview.api.get_uncategorized_bubbles();
-        const unreadBubbles = await window.pywebview.api.get_unread_bubbles();
+        const categories = await window.pywebview.api.get_Localcategories();
+        const dms = await window.pywebview.api.get_Localdms();
+        const categorizedBubbles = await window.pywebview.api.get_Localcategorized_bubbles();
+        const uncategorizedBubbles = await window.pywebview.api.get_Localuncategorized_bubbles();
+        const unreadBubbles = await window.pywebview.api.get_Localunread_bubbles();
 
         const unreadMap = {};
         unreadBubbles.forEach(item => {
