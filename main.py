@@ -1,7 +1,7 @@
 import webview, os, json
 from bpro.pronto import requestVerificationEmail, verification_code_to_login_token, login_token_to_access_token, getUsersBubbles, get_bubble_messages
 from bpro.systemcheck import createappfolders
-from bpro.readjson import get_dms, get_categorized_bubbles, get_uncategorized_bubbles, get_unread_bubbles, get_categories, getaccesstoken
+from bpro.readjson import get_dms, get_categorized_bubbles, get_uncategorized_bubbles, get_unread_bubbles, get_categories, getaccesstoken, create_bubble_folders
 
 auth_path, chats_path, bubbles_path, loginTokenJSONPath, authTokenJSONPath, verificationCodeResponseJSONPath, settings_path, encryption_path, logs_path, settingsJSONPath, keysJSONPath, bubbleOverviewJSONPath = createappfolders()
 
@@ -43,14 +43,17 @@ def getvalueLogin(file_path, value):
         return None
 
 class Api:
+    ## makes a new window, and we're prolly never gonna use this 
+    def makeNewWindow(windowName, windowURL, api):
+        window = webview.create_window(windowName, windowURL, js_api=api)
+        return window
+    ## Auth process
+    ## ensures all future calls have a valid accesstoken
+    ## should be more or less complete
     getLocalAccesstoken()
     def __init__(self, accesstoken):
         self.email = ""
         self.accesstoken = accesstoken
-
-    def makeNewWindow(windowName, windowURL, api):
-        window = webview.create_window(windowName, windowURL, js_api=api)
-        return window
 
     def handle_email(self, email):
         if "stanford.edu" in email:
@@ -69,7 +72,6 @@ class Api:
         save_response_to_file(response, loginTokenJSONPath)
         self.accessToken()
 
-    
     def accessToken(self):
         print("Access token method called")
         logintoken = getvalueLogin(loginTokenJSONPath, "logintoken")
@@ -79,13 +81,12 @@ class Api:
             print(f"Access token response: {response}")
             if response:
                 save_response_to_file(response, f"{authTokenJSONPath}")
-                print("accesstoken received")
+                print("Accesstoken received")
                 print(response)
                 getLocalAccesstoken()
                 try:
                     with open(authTokenJSONPath, "r") as file:
                         written_data = json.load(file)
-                        print("Written data:", written_data)
                 except Exception as e:
                     print(f"Error reading written file: {e}")
                 return "Ok"
@@ -96,48 +97,15 @@ class Api:
             print("Login token not found")
             return None
 
+    ## Dynamic Data Fetching
+    ## dynamic and local data fetching should be called at the same, possibly through a threading system,
+    ## although local data fetching is fast enough that this complexity may not be necessary
     def get_live_bubbles(self, *args):
-        getLocalAccesstoken()
         response = getUsersBubbles(accesstoken)
-        print("Response:", response)
         save_response_to_file(response, bubbleOverviewJSONPath)
+        ## function to make bubble folders for all the individual bubbles in the overview
+        create_bubble_folders(bubbleOverviewJSONPath, bubbles_path)
 
-    ## Local JSON Fetching and Parsing
-    ##
-    ##
-    ##
-    ##
-    ##
-    def get_Localdms(self, *args):
-        print("Fetching DMs")
-        dms = get_dms(bubbleOverviewJSONPath)
-        print("DMs:", dms)
-        return dms
-
-    def get_Localcategorized_bubbles(self, *args):
-        print("Fetching categorized bubbles")
-        categorized_bubbles = get_categorized_bubbles(bubbleOverviewJSONPath)
-        print("Categorized Bubbles:", categorized_bubbles)
-        return categorized_bubbles
-
-    def get_Localuncategorized_bubbles(self, *args):
-        print("Fetching uncategorized bubbles")
-        uncategorized_bubbles = get_uncategorized_bubbles(bubbleOverviewJSONPath)
-        print("Uncategorized Bubbles:", uncategorized_bubbles)
-        return uncategorized_bubbles
-
-    def get_Localunread_bubbles(self, *args):
-        print("Fetching unread bubbles")
-        unread_bubbles = get_unread_bubbles(bubbleOverviewJSONPath)
-        print("Unread Bubbles:", unread_bubbles)
-        return unread_bubbles
-
-    def get_Localcategories(self, *args):
-        print("Fetching categories")
-        categories = get_categories(bubbleOverviewJSONPath)
-        print("Categories:", categories)
-        return categories
-    
     def get_detailed_messages(self, bubbleID):
         print(f"Fetching detailed messages for bubble ID: {bubbleID}")  # Debug statement
         try:
@@ -174,11 +142,54 @@ class Api:
                 else:
                     print(f"Unexpected message format: {message}")
 
+            # Save detailed messages to a JSON file within the specific folder for the bubble
+            bubble_folder_path = os.path.join(bubbles_path, "DMs", f"{bubbleID} - {detailed_messages[0]['author']}")
+            if not os.path.exists(bubble_folder_path):
+                os.makedirs(bubble_folder_path, exist_ok=True)
+            messages_file_path = os.path.join(bubble_folder_path, "messages.json")
+            with open(messages_file_path, "w") as file:
+                json.dump({"messages": detailed_messages}, file, indent=4)
+            print(f"Messages saved to {messages_file_path}")
+
             return {"messages": detailed_messages}
         except Exception as e:
             print(f"Error fetching detailed messages: {e}")
             return {"messages": []}
+    
+    ## Local JSON Fetching and Parsing
+    ## These functions should be called first to fetch the data from the local JSON files
+    ## while the dynamic data is also fetched
 
+    def get_Localdms(self, *args):
+        print("Fetching DMs")
+        dms = get_dms(bubbleOverviewJSONPath)
+        print("DMs:", dms)
+        return dms
+
+    def get_Localcategorized_bubbles(self, *args):
+        print("Fetching categorized bubbles")
+        categorized_bubbles = get_categorized_bubbles(bubbleOverviewJSONPath)
+        print("Categorized Bubbles:", categorized_bubbles)
+        return categorized_bubbles
+
+    def get_Localuncategorized_bubbles(self, *args):
+        print("Fetching uncategorized bubbles")
+        uncategorized_bubbles = get_uncategorized_bubbles(bubbleOverviewJSONPath)
+        print("Uncategorized Bubbles:", uncategorized_bubbles)
+        return uncategorized_bubbles
+
+    def get_Localunread_bubbles(self, *args):
+        print("Fetching unread bubbles")
+        unread_bubbles = get_unread_bubbles(bubbleOverviewJSONPath)
+        print("Unread Bubbles:", unread_bubbles)
+        return unread_bubbles
+
+    def get_Localcategories(self, *args):
+        print("Fetching categories")
+        categories = get_categories(bubbleOverviewJSONPath)
+        print("Categories:", categories)
+        return categories
+    
     def print_chat_name(self, chat_name):
         print(f"Clicked on chat: {chat_name}")
 

@@ -1,3 +1,10 @@
+### 01-22-2025, 3:15:29 PM, CST
+Paul Estrada
+
+- Modified the create_bubble_folders function to not create the folder if it already exists
+- Added proper handling of authtoken within main.py
+- Added automatic local message storage
+
 ### 01-16-2025, 4:02:59 PM, CST
 Paul Estrada
 
