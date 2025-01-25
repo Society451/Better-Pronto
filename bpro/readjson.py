@@ -5,7 +5,7 @@ import os
 
 auth_path, chats_path, bubbles_path, loginTokenJSONPath, authTokenJSONPath, verificationCodeResponseJSONPath, settings_path, encryption_path, logs_path, settingsJSONPath, keysJSONPath, bubbleOverviewJSONPath = createappfolders()
 
-def create_bubble_folders(bubbleOverviewJSONPath, bubbles_path):
+def create_bubble_folders(bubbleOverviewJSONPath, bubbles_path, sanitize_folder_name):
     bubbles = getdetailedbubbleoverview(bubbleOverviewJSONPath)
     # Create folders for each category and bubble ID
     if bubbles:
@@ -13,7 +13,8 @@ def create_bubble_folders(bubbleOverviewJSONPath, bubbles_path):
         
         # Create folders for categorized bubbles
         for category, bubble_list in categorizedgroups.items():
-            category_folder_path = os.path.join(bubbles_path, category)
+            category_folder_path = os.path.join(bubbles_path, sanitize_folder_name(category))
+            print(f"Creating category folder: {category_folder_path}")  # Debug statement
             if not os.path.exists(category_folder_path):
                 os.makedirs(category_folder_path, exist_ok=True)
                 print(f"Folder created for category {category}: {category_folder_path}")
@@ -23,8 +24,9 @@ def create_bubble_folders(bubbleOverviewJSONPath, bubbles_path):
             for bubble in bubble_list:
                 bubble_id = bubble["id"]
                 bubble_title = bubble["title"]
-                bubble_folder_name = f"{bubble_id} - {bubble_title}"
+                bubble_folder_name = sanitize_folder_name(f"{bubble_id} - {bubble_title}")
                 bubble_folder_path = os.path.join(category_folder_path, bubble_folder_name)
+                print(f"Creating bubble folder: {bubble_folder_path}")  # Debug statement
                 if not os.path.exists(bubble_folder_path):
                     os.makedirs(bubble_folder_path, exist_ok=True)
                     print(f"Folder created for bubble {bubble_folder_name} in category {category}: {bubble_folder_path}")
@@ -32,7 +34,8 @@ def create_bubble_folders(bubbleOverviewJSONPath, bubbles_path):
                     print(f"Folder already exists for bubble {bubble_folder_name} in category {category}: {bubble_folder_path}")
         
         # Create folders for uncategorized bubbles
-        uncategorized_folder_path = os.path.join(bubbles_path, "Uncategorized")
+        uncategorized_folder_path = os.path.join(bubbles_path, sanitize_folder_name("Uncategorized"))
+        print(f"Creating uncategorized folder: {uncategorized_folder_path}")  # Debug statement
         if not os.path.exists(uncategorized_folder_path):
             os.makedirs(uncategorized_folder_path, exist_ok=True)
             print(f"Folder created for Uncategorized bubbles: {uncategorized_folder_path}")
@@ -42,8 +45,9 @@ def create_bubble_folders(bubbleOverviewJSONPath, bubbles_path):
         for bubble in uncategorizedgroups:
             bubble_id = bubble["id"]
             bubble_title = bubble["title"]
-            bubble_folder_name = f"{bubble_id} - {bubble_title}"
+            bubble_folder_name = sanitize_folder_name(f"{bubble_id} - {bubble_title}")
             bubble_folder_path = os.path.join(uncategorized_folder_path, bubble_folder_name)
+            print(f"Creating uncategorized bubble folder: {bubble_folder_path}")  # Debug statement
             if not os.path.exists(bubble_folder_path):
                 os.makedirs(bubble_folder_path, exist_ok=True)
                 print(f"Folder created for uncategorized bubble {bubble_folder_name}: {bubble_folder_path}")
@@ -51,7 +55,8 @@ def create_bubble_folders(bubbleOverviewJSONPath, bubbles_path):
                 print(f"Folder already exists for uncategorized bubble {bubble_folder_name}: {bubble_folder_path}")
         
         # Create folders for DM bubbles
-        dm_folder_path = os.path.join(bubbles_path, "DMs")
+        dm_folder_path = os.path.join(bubbles_path, sanitize_folder_name("DMs"))
+        print(f"Creating DM folder: {dm_folder_path}")  # Debug statement
         if not os.path.exists(dm_folder_path):
             os.makedirs(dm_folder_path, exist_ok=True)
             print(f"Folder created for DM bubbles: {dm_folder_path}")
@@ -61,8 +66,9 @@ def create_bubble_folders(bubbleOverviewJSONPath, bubbles_path):
         for bubble in sorted_dm_bubbles:
             bubble_id = bubble["id"]
             bubble_title = bubble["title"]
-            bubble_folder_name = f"{bubble_id} - {bubble_title}"
+            bubble_folder_name = sanitize_folder_name(f"{bubble_id} - {bubble_title}")
             bubble_folder_path = os.path.join(dm_folder_path, bubble_folder_name)
+            print(f"Creating DM bubble folder: {bubble_folder_path}")  # Debug statement
             if not os.path.exists(bubble_folder_path):
                 os.makedirs(bubble_folder_path, exist_ok=True)
                 print(f"Folder created for DM bubble {bubble_folder_name}: {bubble_folder_path}")

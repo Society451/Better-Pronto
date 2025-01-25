@@ -42,6 +42,14 @@ def getvalueLogin(file_path, value):
         print(f"Error reading JSON file: {e}")
         return None
 
+import re
+
+# Function to sanitize folder names
+def sanitize_folder_name(name):
+    sanitized_name = re.sub(r'[<>:"/\\|?*]', '_', name)
+    print(f"Sanitized folder name: {sanitized_name}")  # Debug statement
+    return sanitized_name
+
 class Api:
     ## makes a new window, and we're prolly never gonna use this 
     def makeNewWindow(windowName, windowURL, api):
@@ -104,7 +112,7 @@ class Api:
         response = getUsersBubbles(accesstoken)
         save_response_to_file(response, bubbleOverviewJSONPath)
         ## function to make bubble folders for all the individual bubbles in the overview
-        create_bubble_folders(bubbleOverviewJSONPath, bubbles_path)
+        create_bubble_folders(bubbleOverviewJSONPath, bubbles_path, sanitize_folder_name)
 
     def get_detailed_messages(self, bubbleID):
         print(f"Fetching detailed messages for bubble ID: {bubbleID}")  # Debug statement
