@@ -4,7 +4,6 @@ from bpro.systemcheck import createappfolders
 from bpro.readjson import get_dms, get_categorized_bubbles, get_uncategorized_bubbles, get_unread_bubbles, get_categories, getaccesstoken, create_bubble_folders
 
 auth_path, chats_path, bubbles_path, loginTokenJSONPath, authTokenJSONPath, verificationCodeResponseJSONPath, settings_path, encryption_path, logs_path, settingsJSONPath, keysJSONPath, bubbleOverviewJSONPath = createappfolders()
-
 accesstoken = ""
 
 def getLocalAccesstoken():
