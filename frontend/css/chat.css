@@ -111,6 +111,8 @@ body {
 }
 
 .messages {
+    display: flex;
+    flex-direction: column;
     flex: 1; /* Take up remaining space */
     overflow-y: auto; /* Enable vertical scrolling */
     margin-top: 20px; /* Space between the chat heading and messages */
@@ -125,20 +127,25 @@ body {
 
 .message {
     position: relative; /* Ensure positioning context for the delete icon */
-    padding: 10px; /* Increased padding for better readability */
-    margin-bottom: 10px; /* Increased space between messages */
-    border-radius: 5px; /* Rounded corners */
-    background: #ffffff; /* White background for individual messages */
+    padding: 10px 15px; /* Padding inside each message */
+    margin-bottom: 10px; /* Space between messages */
+    border-radius: 15px; /* Rounded corners */
+    border-left: 10px solid rgb(250, 248, 248);
+    background: rgba(255, 255, 255, 0.8); /* Remove grey background */
     font-size: 14px; /* Font size */
     word-wrap: break-word; /* Ensure long words break to the next line */
     white-space: pre-wrap; /* Preserve whitespace and wrap text */
     user-select: text; /* Enable text selection for messages */
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1); /* Subtle shadow for message boxes */
+    color: var(text-color);
+    max-width: 75%; /* limit width of message */
+    display: inline-block;
+    align-self: flex-start;
 }
 
 .message-sender {
     font-weight: bold; /* Bold font for sender */
-    margin-bottom: 2px; /* Space between sender and content */
+    margin-bottom: 2px;
+    color:#888; /* Space between sender and content */
 }
 
 .message-content {
@@ -328,6 +335,10 @@ body {
     /* Position the unread count */
     margin-left: auto;
     margin-right: 10px;
+}
+
+.hidden {
+    display: none;
 }
 
 /* Ensure all child elements inherit text selection */

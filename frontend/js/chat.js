@@ -11,6 +11,21 @@ let lastSender = null; // Track the last message sender
 const hasDeletePermission = true; // Message Delete permission
 let isShiftPressed = false; // Track if Shift key is pressed
 
+
+function updateUnreadCounts() {
+    document.querySelectorAll('.chat-item').forEach(chatItem => {
+        const unreadCountElement = chatItem.querySelector('.unread-count');
+        const unreadCount = parseInt(unreadCountElement.textContent, 10);
+
+        if (unreadCount === 0) {
+            unreadCountElement.style.display = 'none'; // Hide unread count bubble with 0 unread messages
+        } else {
+            unreadCountElement.style.display = 'inline-block'; // Show unread count bubble with unread messages
+        }
+    });
+}
+
+
 // Function to set chat heading dynamically
 function setChatHeading(name) {
     chatHeading.textContent = name;
@@ -53,13 +68,18 @@ class Message {
         /* Always show sender and timestamp */
         const senderElement = document.createElement('div');
         senderElement.classList.add('message-sender');
-        senderElement.textContent = `${this.sender} - ${this.timestamp}`;
+        senderElement.textContent = this.sender;
         messageElement.appendChild(senderElement);
 
         const contentElement = document.createElement('div');
         contentElement.classList.add('message-content');
         contentElement.textContent = this.content;
         messageElement.appendChild(contentElement);
+
+        const timestampElement = document.createElement('div');
+        timestampElement.classList.add('message-timestamp');
+        timestampElement.textContent = this.timestamp;
+        messageElement.appendChild(timestampElement);
 
         /* Add user data if available */
         if (this.user) {
@@ -97,56 +117,49 @@ class Message {
     }
 }
 
-// Category class to create category elements
-class Category {
-    constructor(name, chats, unreadCounts = {}) {
-        this.name = name;
-        this.chats = chats;
-        this.unreadCounts = unreadCounts;
-    }
+// Function to retrieve and display detailed messages for a specific bubble ID
+async function loadMessages(bubbleID, bubbleName) {
+    try {
+        console.log(`Loading messages for bubble ID: ${bubbleID}`); // Debug statement
+        const response = await window.pywebview.api.get_detailed_messages(bubbleID);
+        console.log('Response retrieved:', response); // Debug statement
 
-    // Create a category element
-    createElement() {
-        const categoryElement = document.createElement('div');
-        categoryElement.classList.add('category');
+        if (!response || typeof response !== 'object' || !Array.isArray(response.messages)) {
+            console.error("Invalid response format received:", response);
+            return;
+        }
 
-        const headerElement = document.createElement('div');
-        headerElement.classList.add('category-header');
-        headerElement.textContent = this.name;
+        const messages = response.messages.reverse(); // Reverse the order of the messages
+        messagesContainer.innerHTML = ''; // Clear existing messages
 
-        const contentElement = document.createElement('div');
-        contentElement.classList.add('category-content', 'expanded');
+        if (messages.length === 0) {
+            const noMessages = document.createElement('div');
+            noMessages.textContent = 'No messages to display.';
+            messagesContainer.appendChild(noMessages);
+        } else {
+            messages.forEach(msg => {
+                // Verify that each message has the required properties
+                console.log('Processing message:', msg);
+                const content = msg.message || msg.content;
+                const author = msg.user ? msg.user.fullname : msg.author;
+                const timestamp = msg.created_at || msg.time_of_sending;
+                const user = msg.user;
 
-        this.chats.forEach(chat => {
-            const chatItem = document.createElement('div');
-            chatItem.classList.add('chat-item');
-            chatItem.setAttribute('data-chat-id', chat.id); // Set the data-chat-id attribute
-            chatItem.innerHTML = `
-                ${chat.title}
-                <span class="unread-count">${this.unreadCounts[chat.title] || 0}</span>
-                <button class="menu-button">⋮</button>
-                <ul class="dropdown-menu">
-                    ${this.createDropdownOptions(['Option 1', 'Option 2', 'Option 3', 'Option 4'])}
-                </ul>
-            `;
-            // Add event listener to call Python function and load messages when clicked
-            chatItem.addEventListener('click', () => {
-                const chatID = chatItem.getAttribute('data-chat-id');
-                window.pywebview.api.print_chat_info(chat.title, chatID);
-                loadMessages(chatID, chat.title); // Load messages for the clicked chat and update heading
+                if (content && author && timestamp) {
+                    const message = new Message(content, author, timestamp, user);
+                    messagesContainer.appendChild(message.createElement()); // Display message in HTML
+                } else {
+                    console.warn('Incomplete message data:', msg);
+                }
             });
-            contentElement.appendChild(chatItem);
-        });
-
-        categoryElement.appendChild(headerElement);
-        categoryElement.appendChild(contentElement);
-
-        return categoryElement;
-    }
-
-    // Create dropdown options
-    createDropdownOptions(options) {
-        return options.map(option => `<li>${option}</li>`).join('');
+        }
+        messagesContainer.scrollTop = messagesContainer.scrollHeight; // Scroll to the bottom
+        setChatHeading(bubbleName); // Update chat heading with the bubble name
+    } catch (error) {
+        console.error("Error loading messages:", error);
+        if (error.message.includes('401')) {
+            window.location.href = 'login.html'; // Redirect to login.html on 401 error
+        }
     }
 }
 
@@ -229,60 +242,66 @@ async function initializeCategories() {
             });
         });
 
+        // Update unread counts visibility after rendering
+        updateUnreadCounts();
+
     } catch (error) {
         console.error("Error initializing categories:", error); // Existing debug statement
     }
 }
 
-// Function to retrieve and display detailed messages for a specific bubble ID
-async function loadMessages(bubbleID, bubbleName) {
-    try {
-        console.log(`Loading messages for bubble ID: ${bubbleID}`); // Debug statement
-        const response = await window.pywebview.api.get_detailed_messages(bubbleID);
-        console.log('Response retrieved:', response); // Debug statement
+// Category class to create category elements
+class Category {
+    constructor(name, chats, unreadCounts = {}) {
+        this.name = name;
+        this.chats = chats;
+        this.unreadCounts = unreadCounts;
+    }
 
-        if (!response || typeof response !== 'object' || !Array.isArray(response.messages)) {
-            console.error("Invalid response format received:", response);
-            return;
-        }
+    // Create a category element
+    createElement() {
+        const categoryElement = document.createElement('div');
+        categoryElement.classList.add('category');
 
-        const messages = response.messages.reverse(); // Reverse the order of the messages
-        messagesContainer.innerHTML = ''; // Clear existing messages
+        const headerElement = document.createElement('div');
+        headerElement.classList.add('category-header');
+        headerElement.textContent = this.name;
 
-        if (messages.length === 0) {
-            const noMessages = document.createElement('div');
-            noMessages.textContent = 'No messages to display.';
-            messagesContainer.appendChild(noMessages);
-        } else {
-            messages.forEach(msg => {
-                // Verify that each message has the required properties
-                console.log('Processing message:', msg);
-                const content = msg.message || msg.content;
-                const author = msg.user ? msg.user.fullname : msg.author;
-                const timestamp = msg.created_at || msg.time_of_sending;
-                const user = msg.user;
+        const contentElement = document.createElement('div');
+        contentElement.classList.add('category-content', 'expanded');
 
-                if (content && author && timestamp) {
-                    const message = new Message(content, author, timestamp, user);
-                    messagesContainer.appendChild(message.createElement()); // Display message in HTML
-                } else {
-                    console.warn('Incomplete message data:', msg);
-                }
+        this.chats.forEach(chat => {
+            const chatItem = document.createElement('div');
+            chatItem.classList.add('chat-item');
+            chatItem.setAttribute('data-chat-id', chat.id); // Set the data-chat-id attribute
+            chatItem.innerHTML = `
+                ${chat.title}
+                <span class="unread-count">${this.unreadCounts[chat.title] || 0}</span>
+                <button class="menu-button">⋮</button>
+                <ul class="dropdown-menu">
+                    ${this.createDropdownOptions(['Option 1', 'Option 2', 'Option 3', 'Option 4'])}
+                </ul>
+            `;
+            // Add event listener to call Python function and load messages when clicked
+            chatItem.addEventListener('click', () => {
+                const chatID = chatItem.getAttribute('data-chat-id');
+                window.pywebview.api.print_chat_info(chat.title, chatID);
+                loadMessages(chatID, chat.title); // Load messages for the clicked chat and update heading
             });
-        }
-        messagesContainer.scrollTop = messagesContainer.scrollHeight; // Scroll to the bottom
-        setChatHeading(bubbleName); // Update chat heading with the bubble name
-    } catch (error) {
-        console.error("Error loading messages:", error);
-        if (error.message.includes('401')) {
-            window.location.href = 'login.html'; // Redirect to login.html on 401 error
-        }
+            contentElement.appendChild(chatItem);
+        });
+
+        categoryElement.appendChild(headerElement);
+        categoryElement.appendChild(contentElement);
+
+        return categoryElement;
+    }
+
+    // Create dropdown options
+    createDropdownOptions(options) {
+        return options.map(option => `<li>${option}</li>`).join('');
     }
 }
-
-// Example usage of loadMessages
-// Uncomment or adjust the bubble ID/name as needed
-// loadMessages('3782064', 'AI Society DM');
 
 // Function to wait for pywebview API to be ready
 function waitForPywebview() {
@@ -347,11 +366,10 @@ toggleAllButton.addEventListener('click', () => {
         header.classList.toggle('collapsed', isCollapsing);
     });
 
-    // Update button text
     toggleAllButton.textContent = isCollapsing ? 'Expand All' : 'Collapse All';
 });
 
-// Add event listener to toggle search input
+// Add event listener to show search input
 searchButton.addEventListener('click', () => {
     searchButton.style.display = 'none';
     searchContainer.style.display = 'flex';

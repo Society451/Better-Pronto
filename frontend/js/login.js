@@ -1,3 +1,14 @@
+function waitForPywebview() {
+    return new Promise((resolve) => {
+        if (window.pywebview && window.pywebview.api) {
+            resolve();
+        } else {
+            document.addEventListener('pywebviewready', resolve);
+        }
+    });
+    }
+
+
 document.getElementById('login-form').addEventListener('submit', async function(event) {
     event.preventDefault();
     const email = document.getElementById('email').value;
