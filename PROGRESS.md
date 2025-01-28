@@ -1,5 +1,5 @@
 ### 01-28-25, 11:39:28 PM, CST
-Paul Estrada
+[@Society451](https://github.com/Society451)
 
 Backend Team:
 - Ensured first login with empty accesstoken.json doesn't require a restart of the program upon initial login
@@ -12,14 +12,14 @@ Frontend Team ([@di4rm4d4](https://github.com/di4rm4d4)):
 - Began work on timestamps and tags
 ----
 ### 01-22-2025, 3:15:29 PM, CST
-Paul Estrada
+[@Society451](https://github.com/Society451)
 
 - Modified the create_bubble_folders function to not create the folder if it already exists
 - Added proper handling of authtoken within main.py
 - Added automatic local message storage
 ----
 ### 01-16-2025, 4:02:59 PM, CST
-Paul Estrada
+[@Society451](https://github.com/Society451)
 
 - Added dynamic message fetching (FINALLY)!!
 - [@di4rm4d4](https://github.com/di4rm4d4) started working on custom themes
@@ -30,7 +30,7 @@ Paul Estrada
 - Updated message parsing functions in chat.js
 ----
 ### 01-15-2025, 4:00:58 PM, CST
-Paul Estrada
+[@Society451](https://github.com/Society451)
 
 - Added somewhat dynamic chat headings
 - Added dynamic html path for main.py
@@ -40,7 +40,7 @@ Paul Estrada
 - Began to only make login required if accesstoken has expired (do accesstokens even expire??) / upon 401 error
 ----
 ### 01-14-2025, 5:20:58 PM. CST
-Paul Estrada
+[@Society451](https://github.com/Society451)
 
 - Fixed main.py to use updated bubble fetching for local JSON without using auth token
 - Updated chat.js api endpoints
@@ -50,7 +50,7 @@ Paul Estrada
 - Added a function within readjson.py to create a bubble folder that contains folders for the individual bubbles in the format of "{bubbleID} - {bubbleTitlte}"
 ----
 ### 01-13-2025, 5:11:20 PM, CST
-Paul Estrada
+[@Society451](https://github.com/Society451)
 
 - Fixed json and html paths within main.py
 ----
