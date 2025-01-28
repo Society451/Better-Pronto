@@ -10,14 +10,14 @@ Frontend Team ([@di4rm4d4](https://github.com/di4rm4d4)):
 - Removed red unread bubble icon when there are not any unread messages in said bubble
 - Improved message rendering within bubbles
 - Began work on timestamps and tags
-
+----
 ### 01-22-2025, 3:15:29 PM, CST
 Paul Estrada
 
 - Modified the create_bubble_folders function to not create the folder if it already exists
 - Added proper handling of authtoken within main.py
 - Added automatic local message storage
-
+----
 ### 01-16-2025, 4:02:59 PM, CST
 Paul Estrada
 
@@ -28,7 +28,7 @@ Paul Estrada
 - Added requirements.txt
 - Updated auth process
 - Updated message parsing functions in chat.js
-
+----
 ### 01-15-2025, 4:00:58 PM, CST
 Paul Estrada
 
@@ -38,7 +38,7 @@ Paul Estrada
 - ^Fixed auth process with corrected accesstoken handling
 - Added function to get live bubbles upon page loading through chat.js
 - Began to only make login required if accesstoken has expired (do accesstokens even expire??) / upon 401 error
-
+----
 ### 01-14-2025, 5:20:58 PM. CST
 Paul Estrada
 
@@ -48,8 +48,9 @@ Paul Estrada
 - Updated chat.html structure
 - Began working on chatjson.py and messages.py to allow for dynamically loading messages in a given bubble on the frontend
 - Added a function within readjson.py to create a bubble folder that contains folders for the individual bubbles in the format of "{bubbleID} - {bubbleTitlte}"
-
+----
 ### 01-13-2025, 5:11:20 PM, CST
 Paul Estrada
 
 - Fixed json and html paths within main.py
+----
