@@ -22,7 +22,7 @@ Paul Estrada
 Paul Estrada
 
 - Added dynamic message fetching (FINALLY)!!
-- Diana started working on custom themes
+- [@di4rm4d4](https://github.com/di4rm4d4) started working on custom themes
 - Added reroute to login.html after 401 error
 - Began research on websockets
 - Added requirements.txt
