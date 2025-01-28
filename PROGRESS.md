@@ -1,3 +1,16 @@
+### 01-28-25, 11:39:28 PM, CST
+Paul Estrada
+
+Backend Team:
+- Ensured first login with empty accesstoken.json doesn't require a restart of the program upon initial login
+- Worked on automatic writing of messages/bubbles
+- Added getLocal and getDynamic functions for each bubble/message method, which will first get local messages and then dynamic messages from the Pronto servers
+
+Frontend Team (@[di4rm4d4](https://github.com/di4rm4d4)):
+- Removed red unread bubble icon when there are not any unread messages in said bubble
+- Improved message rendering within bubbles
+- Began work on timestamps and tags
+
 ### 01-22-2025, 3:15:29 PM, CST
 Paul Estrada
 
