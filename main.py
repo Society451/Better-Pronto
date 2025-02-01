@@ -168,11 +168,6 @@ class Api:
     ## These functions should be called first to fetch the data from the local JSON files
     ## while the dynamic data is also fetched
 
-    def get_LocalUserID(self, *args):
-        print("Fetching user ID")
-        #userID = get_userid(bubbleOverviewJSONPath)
-        #print("User ID:", userID)
-        #return userID
     
     
 
