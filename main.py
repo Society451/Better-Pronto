@@ -2,6 +2,7 @@ import webview, os, json
 from bpro.pronto import *
 from bpro.systemcheck import createappfolders
 from bpro.readjson import *
+import time, uuid
 
 auth_path, chats_path, bubbles_path, loginTokenJSONPath, authTokenJSONPath, verificationCodeResponseJSONPath, settings_path, encryption_path, logs_path, settingsJSONPath, keysJSONPath, bubbleOverviewJSONPath = createappfolders()
 accesstoken = ""
@@ -167,6 +168,14 @@ class Api:
     ## These functions should be called first to fetch the data from the local JSON files
     ## while the dynamic data is also fetched
 
+    def get_LocalUserID(self, *args):
+        print("Fetching user ID")
+        userID = get_userid(bubbleOverviewJSONPath)
+        print("User ID:", userID)
+        return userID
+    
+    
+
     def get_Localdms(self, *args):
         print("Fetching DMs")
         dms = get_dms(bubbleOverviewJSONPath)
@@ -202,6 +211,23 @@ class Api:
 
     def print_chat_info(self, chat_name, chat_id):
         print(f"Clicked on chat: {chat_name}, ID: {chat_id}")
+
+    
+
+    ## Sending data
+    ## such as updating bubbles
+    ## sending messages
+    ## updating profiles
+    ## possibly custom reactions
+    ##
+
+    def send_message(self, bubbleID, message, userID, parentmessage_id=None):
+        print(f"Sending message to bubble ID {bubbleID}: {message}")
+        created_at = time.time()
+        uuid = str(uuid.uuid4())
+        response = send_message_to_bubble(accesstoken, bubbleID, created_at, message, userID, uuid, parentmessage_id=None)
+        print(f"Response: {response}")
+        return response
 
 # Create an instance of the Api class with the accesstoken
 api = Api(accesstoken)
