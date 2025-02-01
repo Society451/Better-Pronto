@@ -170,9 +170,9 @@ class Api:
 
     def get_LocalUserID(self, *args):
         print("Fetching user ID")
-        userID = get_userid(bubbleOverviewJSONPath)
-        print("User ID:", userID)
-        return userID
+        #userID = get_userid(bubbleOverviewJSONPath)
+        #print("User ID:", userID)
+        #return userID
     
     
 
