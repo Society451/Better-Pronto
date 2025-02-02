@@ -3,7 +3,7 @@ from .systemcheck import createappfolders
 import os
 #remember to change the .systemcheck to systemcheck if you are running this file directly
 
-auth_path, chats_path, bubbles_path, loginTokenJSONPath, authTokenJSONPath, verificationCodeResponseJSONPath, settings_path, encryption_path, logs_path, settingsJSONPath, keysJSONPath, bubbleOverviewJSONPath = createappfolders()
+auth_path, chats_path, bubbles_path, loginTokenJSONPath, authTokenJSONPath, verificationCodeResponseJSONPath, settings_path, encryption_path, logs_path, settingsJSONPath, keysJSONPath, bubbleOverviewJSONPath, users_path = createappfolders()
 
 def create_bubble_folders(bubbleOverviewJSONPath, bubbles_path, sanitize_folder_name):
     bubbles = getdetailedbubbleoverview(bubbleOverviewJSONPath)
