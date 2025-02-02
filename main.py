@@ -168,9 +168,6 @@ class Api:
     ## These functions should be called first to fetch the data from the local JSON files
     ## while the dynamic data is also fetched
 
-    
-    
-
     def get_Localdms(self, *args):
         print("Fetching DMs")
         dms = get_dms(bubbleOverviewJSONPath)
