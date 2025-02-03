@@ -1,4 +1,4 @@
-import webview, os, json
+import webview, os, json, re
 from bpro.pronto import *
 from bpro.systemcheck import createappfolders
 from bpro.readjson import *
@@ -41,8 +41,6 @@ def getvalueLogin(file_path, value):
     except Exception as e:
         print(f"Error reading JSON file: {e}")
         return None
-
-import re
 
 # Function to sanitize folder names
 def sanitize_folder_name(name):
