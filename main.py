@@ -205,7 +205,7 @@ class Api:
     def print_chat_info(self, chat_name, chat_id):
         print(f"Clicked on chat: {chat_name}, ID: {chat_id}")
 
-    
+
 
     ## Sending data
     ## such as updating bubbles
