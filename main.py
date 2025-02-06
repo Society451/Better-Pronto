@@ -1,4 +1,4 @@
-import webview, os, json
+import webview, os, json, re
 from bpro.pronto import *
 from bpro.systemcheck import createappfolders
 from bpro.readjson import *
@@ -6,6 +6,9 @@ import time, uuid
 
 auth_path, chats_path, bubbles_path, loginTokenJSONPath, authTokenJSONPath, verificationCodeResponseJSONPath, settings_path, encryption_path, logs_path, settingsJSONPath, keysJSONPath, bubbleOverviewJSONPath, users_path = createappfolders()
 accesstoken = ""
+user_info = get_clientUserInfo(authTokenJSONPath)
+userID = user_info["id"] if user_info else None
+print(f"User ID: {userID}")
 
 def getLocalAccesstoken():
     global accesstoken
@@ -41,8 +44,6 @@ def getvalueLogin(file_path, value):
     except Exception as e:
         print(f"Error reading JSON file: {e}")
         return None
-
-import re
 
 # Function to sanitize folder names
 def sanitize_folder_name(name):
@@ -204,7 +205,7 @@ class Api:
     def print_chat_info(self, chat_name, chat_id):
         print(f"Clicked on chat: {chat_name}, ID: {chat_id}")
 
-    
+
 
     ## Sending data
     ## such as updating bubbles
