@@ -300,3 +300,29 @@ def get_categories(bubbleOverviewJSONPath):
         return []
 
 
+def get_clientUserInfo(authTokenJSONPath):
+    try:
+        with open(authTokenJSONPath, "r") as file:
+            data = json.load(file)
+            if data.get("ok") and "users" in data and len(data["users"]) > 0:
+                user_info = data["users"][0].get("user")
+                if not user_info:
+                    print("User details not found in JSON data.")
+                    return None
+                # Return only the required fields
+                return {
+                    "id": user_info.get("id"),
+                    "firstname": user_info.get("firstname"),
+                    "lastname": user_info.get("lastname"),
+                    "lastseen": user_info.get("lastseen"),
+                    "profilepicurl": user_info.get("profilepicurl")
+                }
+            else:
+                print("Invalid JSON structure: Missing 'ok' flag or 'users'.")
+                return None
+    except json.JSONDecodeError:
+        print(f"Error reading JSON file: {authTokenJSONPath} is empty or invalid.")
+        return None
+    except Exception as e:
+        print(f"Error retrieving client user info: {e}")
+        return None

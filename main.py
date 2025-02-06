@@ -6,6 +6,9 @@ import time, uuid
 
 auth_path, chats_path, bubbles_path, loginTokenJSONPath, authTokenJSONPath, verificationCodeResponseJSONPath, settings_path, encryption_path, logs_path, settingsJSONPath, keysJSONPath, bubbleOverviewJSONPath, users_path = createappfolders()
 accesstoken = ""
+user_info = get_clientUserInfo(authTokenJSONPath)
+userID = user_info["id"] if user_info else None
+print(f"User ID: {userID}")
 
 def getLocalAccesstoken():
     global accesstoken
