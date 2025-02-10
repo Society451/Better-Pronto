@@ -1,3 +1,10 @@
+### 02-6-25, 12:38:34 PM, CST
+[@Society451](https://github.com/Society451)
+
+Backend Team:
+- Simply imported everything from readjson.py and pronto.py in main.py
+- Added method within main.yp and readjson.py to get userinfo
+
 ### 01-28-25, 11:39:28 PM, CST
 [@Society451](https://github.com/Society451)
 
