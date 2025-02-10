@@ -1,5 +1,5 @@
 import json
-from .systemcheck import createappfolders
+from systemcheck import createappfolders
 import os
 #remember to change the .systemcheck to systemcheck if you are running this file directly
 
@@ -327,25 +327,35 @@ def get_clientUserInfo(authTokenJSONPath):
         print(f"Error retrieving client user info: {e}")
         return None
 
-def get_channelcodes(bubbleOverviewJSONPath):
+def get_channelcodes(bubbleOverviewJSONPath, bubble_id=None):
     try:
         with open(bubbleOverviewJSONPath, "r") as file:
             data = json.load(file)
             if not data or "bubbles" not in data:
                 print("Invalid JSON structure or empty file.")
-                return {}
+                return {} if bubble_id is None else None
+
             bubbles = data["bubbles"]
-            channelcodes = {}
-            for bubble in bubbles:
-                # Only add the channelcode if it exists in the bubble data
-                if "channelcode" in bubble:
-                    channelcodes[bubble["id"]] = bubble["channelcode"]
-            return channelcodes
+
+            if bubble_id is None:
+                # Return all channelcodes as a dictionary: {bubble_id: channelcode, ...}
+                channelcodes = {}
+                for bubble in bubbles:
+                    if "channelcode" in bubble:
+                        channelcodes[bubble["id"]] = bubble["channelcode"]
+                return channelcodes
+            else:
+                # Return the channelcode for the specific bubble ID, if it exists.
+                for bubble in bubbles:
+                    if bubble.get("id") == bubble_id and "channelcode" in bubble:
+                        return bubble["channelcode"]
+                print(f"No channelcode found for bubble id {bubble_id}.")
+                return None
     except json.JSONDecodeError:
         print(f"Error reading JSON file: {bubbleOverviewJSONPath} is empty or invalid.")
-        return {}
+        return {} if bubble_id is None else None
     except Exception as e:
         print(f"Error reading channel codes from JSON file: {e}")
-        return {}
-
-print(get_channelcodes(bubbleOverviewJSONPath))
+        return {} if bubble_id is None else None
+    
+#print(get_channelcodes(bubbleOverviewJSONPath, bubble_id=2747415))
