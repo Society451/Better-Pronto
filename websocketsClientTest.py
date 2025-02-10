@@ -3,20 +3,17 @@ import asyncio            # Import asyncio for asynchronous programming
 import json               # Import json for parsing and generating JSON data
 import requests           # Import requests for making HTTP requests
 import sys                # Import sys module for system-specific parameters and functions
+from bpro.readjson import * 
 
-# Define the API base URL for HTTP requests
 api_base_url = "https://stanfordohs.pronto.io/"
-print("you're welcome estrada")   # Print a welcome message
-print("this websocket just works, and i left the actually fun part for u to do")  # Print an explanatory message
-print("you can parse the stuff (including other using typing, them seeing messages, editing, and more)")  # Print more info
-print("for this showcase ill just send msgs on the other side or wtv")  # Print a message describing functionality
-print("i rec using 'Better Pronto Dev Team' as an example chat for this but you can use it for any chat, just examples are given")  # Provide additional context
 
-# Prompt the user to enter their access token and store it in 'accesstoken'
-accesstoken = input("Enter Access Token: ")
-# Prompt the user to enter their user ID and store it in 'user_id'
-user_id = input("Enter User ID: (paul urs is 5302367, hardcoding = bad)")
-# Ask the user for the chat link and assign it to 'chat_link'
+auth_path, chats_path, bubbles_path, loginTokenJSONPath, authTokenJSONPath, verificationCodeResponseJSONPath, settings_path, encryption_path, logs_path, settingsJSONPath, keysJSONPath, bubbleOverviewJSONPath, users_path = createappfolders()
+# UPDATED: Retrieve access token instead of an empty string.
+accesstoken = getaccesstoken(authTokenJSONPath)
+user_info = get_clientUserInfo(authTokenJSONPath)
+user_id = user_info["id"] if user_info else None
+print(f"User ID: {user_id}")
+
 chat_link = input("Enter the LINK of the chat you'd like to websocket into (or the last 7 digits, 4066670 for the 'Better Pronto Dev Team'): ")
 # Extract the last 7 characters of the chat link to obtain the bubble_id
 bubble_id = chat_link[-7:]
