@@ -326,3 +326,26 @@ def get_clientUserInfo(authTokenJSONPath):
     except Exception as e:
         print(f"Error retrieving client user info: {e}")
         return None
+
+def get_channelcodes(bubbleOverviewJSONPath):
+    try:
+        with open(bubbleOverviewJSONPath, "r") as file:
+            data = json.load(file)
+            if not data or "bubbles" not in data:
+                print("Invalid JSON structure or empty file.")
+                return {}
+            bubbles = data["bubbles"]
+            channelcodes = {}
+            for bubble in bubbles:
+                # Only add the channelcode if it exists in the bubble data
+                if "channelcode" in bubble:
+                    channelcodes[bubble["id"]] = bubble["channelcode"]
+            return channelcodes
+    except json.JSONDecodeError:
+        print(f"Error reading JSON file: {bubbleOverviewJSONPath} is empty or invalid.")
+        return {}
+    except Exception as e:
+        print(f"Error reading channel codes from JSON file: {e}")
+        return {}
+
+print(get_channelcodes(bubbleOverviewJSONPath))
