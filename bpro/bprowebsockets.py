@@ -59,7 +59,7 @@ def start_push_with_channelcode(bubble_id):
          uri = "wss://ws-mt1.pusher.com/app/f44139496d9b75f37d27?protocol=7&client=js&version=8.3.0&flash=false"
 
          # Open a websocket connection to the specified URI
-         async with websockets.connect(uri) as websocket:
+         async with websockets.connect(uri, open_timeout=20) as websocket:
               # Wait for the initial connection message, which is expected to contain the socket_id
               response = await websocket.recv()
               print(f"Received: {response}")  # Print the received message
