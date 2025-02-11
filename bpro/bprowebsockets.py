@@ -1,9 +1,5 @@
-import websockets     # Import the websockets library for websocket communications
-import asyncio            # Import asyncio for asynchronous programming
-import json               # Import json for parsing and generating JSON data
-import requests           # Import requests for making HTTP requests
-import sys                # Import sys module for system-specific parameters and functions
 from readjson import * 
+import sys, json, asyncio, requests, websockets
 
 api_base_url = "https://stanfordohs.pronto.io/"
 
