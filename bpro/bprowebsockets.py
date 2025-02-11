@@ -10,9 +10,7 @@ user_info = get_clientUserInfo(authTokenJSONPath)
 user_id = user_info["id"] if user_info else None
 print(f"User ID: {user_id}")
 
-chat_link = "4066670"
-# Convert chat_link to string to extract the last 7 characters as bubble_id
-bubble_id = str(chat_link)[-7:]
+bubble_id = "4066670"
 
 # Check if bubble_id consists only of digits to verify it's valid
 if bubble_id.isdigit():
