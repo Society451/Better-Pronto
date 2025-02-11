@@ -345,9 +345,9 @@ def get_channelcodes(bubbleOverviewJSONPath, bubble_id=None):
                         channelcodes[bubble["id"]] = bubble["channelcode"]
                 return channelcodes
             else:
-                # Return the channelcode for the specific bubble ID, if it exists.
+                # Compare bubble IDs as strings
                 for bubble in bubbles:
-                    if bubble.get("id") == bubble_id and "channelcode" in bubble:
+                    if str(bubble.get("id")) == str(bubble_id) and "channelcode" in bubble:
                         return bubble["channelcode"]
                 print(f"No channelcode found for bubble id {bubble_id}.")
                 return None
