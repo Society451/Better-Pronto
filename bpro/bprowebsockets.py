@@ -1,9 +1,5 @@
-import websockets     # Import the websockets library for websocket communications
-import asyncio            # Import asyncio for asynchronous programming
-import json               # Import json for parsing and generating JSON data
-import requests           # Import requests for making HTTP requests
-import sys                # Import sys module for system-specific parameters and functions
 from readjson import * 
+import sys, json, asyncio, requests, websockets
 
 api_base_url = "https://stanfordohs.pronto.io/"
 
@@ -14,9 +10,7 @@ user_info = get_clientUserInfo(authTokenJSONPath)
 user_id = user_info["id"] if user_info else None
 print(f"User ID: {user_id}")
 
-chat_link = "4066670"
-# Convert chat_link to string to extract the last 7 characters as bubble_id
-bubble_id = str(chat_link)[-7:]
+bubble_id = "4003845"
 
 # Check if bubble_id consists only of digits to verify it's valid
 if bubble_id.isdigit():
@@ -65,7 +59,7 @@ def start_push_with_channelcode(bubble_id):
          uri = "wss://ws-mt1.pusher.com/app/f44139496d9b75f37d27?protocol=7&client=js&version=8.3.0&flash=false"
 
          # Open a websocket connection to the specified URI
-         async with websockets.connect(uri) as websocket:
+         async with websockets.connect(uri, open_timeout=20) as websocket:
               # Wait for the initial connection message, which is expected to contain the socket_id
               response = await websocket.recv()
               print(f"Received: {response}")  # Print the received message
@@ -111,6 +105,3 @@ def start_push_with_channelcode(bubble_id):
 
     # Run the main asynchronous function using asyncio's event loop
     asyncio.run(main())
-
-# Use the new function instead of prompting for a secure chat ID.
-start_push_with_channelcode(bubble_id)

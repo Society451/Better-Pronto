@@ -1,6 +1,6 @@
 import webview, os, json, re
 from bpro.pronto import *
-from bpro.systemcheck import createappfolders
+from bpro.systemcheck import *
 from bpro.readjson import *
 import time, uuid
 
