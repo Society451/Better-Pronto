@@ -10,7 +10,7 @@ user_info = get_clientUserInfo(authTokenJSONPath)
 user_id = user_info["id"] if user_info else None
 print(f"User ID: {user_id}")
 
-bubble_id = "4066670"
+bubble_id = "4003845"
 
 # Check if bubble_id consists only of digits to verify it's valid
 if bubble_id.isdigit():
@@ -105,6 +105,3 @@ def start_push_with_channelcode(bubble_id):
 
     # Run the main asynchronous function using asyncio's event loop
     asyncio.run(main())
-
-# Use the new function instead of prompting for a secure chat ID.
-start_push_with_channelcode(bubble_id)
