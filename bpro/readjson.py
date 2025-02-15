@@ -28,9 +28,9 @@ def create_bubble_folders(bubbleOverviewJSONPath, bubbles_path, sanitize_folder_
                 print(f"Creating bubble folder: {bubble_folder_path}")  # Debug statement
                 if not os.path.exists(bubble_folder_path):
                     os.makedirs(bubble_folder_path, exist_ok=True)
-                    print(f"Folder created for bubble {bubble_folder_name} in category {category}: {bubble_folder_path}")
+                    print(f"Folder created for bubble {bubble_id} in category {category}: {bubble_folder_path}")
                 else:
-                    print(f"Folder already exists for bubble {bubble_folder_name} in category {category}: {bubble_folder_path}")
+                    print(f"Folder already exists for bubble {bubble_id} in category {category}: {bubble_folder_path}")
         
         # Create folders for uncategorized bubbles
         uncategorized_folder_path = os.path.join(bubbles_path, sanitize_folder_name("Uncategorized"))
@@ -48,9 +48,9 @@ def create_bubble_folders(bubbleOverviewJSONPath, bubbles_path, sanitize_folder_
             print(f"Creating uncategorized bubble folder: {bubble_folder_path}")  # Debug statement
             if not os.path.exists(bubble_folder_path):
                 os.makedirs(bubble_folder_path, exist_ok=True)
-                print(f"Folder created for uncategorized bubble {bubble_folder_name}: {bubble_folder_path}")
+                print(f"Folder created for uncategorized bubble {bubble_id}: {bubble_folder_path}")
             else:
-                print(f"Folder already exists for uncategorized bubble {bubble_folder_name}: {bubble_folder_path}")
+                print(f"Folder already exists for uncategorized bubble {bubble_id}: {bubble_folder_path}")
         
         # Create folders for DM bubbles
         dm_folder_path = os.path.join(bubbles_path, sanitize_folder_name("DMs"))
@@ -68,11 +68,9 @@ def create_bubble_folders(bubbleOverviewJSONPath, bubbles_path, sanitize_folder_
             print(f"Creating DM bubble folder: {bubble_folder_path}")  # Debug statement
             if not os.path.exists(bubble_folder_path):
                 os.makedirs(bubble_folder_path, exist_ok=True)
-                print(f"Folder created for DM bubble {bubble_folder_name}: {bubble_folder_path}")
+                print(f"Folder created for DM bubble {bubble_id}: {bubble_folder_path}")
             else:
-                print(f"Folder already exists for DM bubble {bubble_folder_name}: {bubble_folder_path}")
-
-
+                print(f"Folder already exists for DM bubble {bubble_id}: {bubble_folder_path}")
 
 def save_response_to_file(response_data, file_path):
     try:
