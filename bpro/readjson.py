@@ -1,5 +1,5 @@
 import json
-from systemcheck import createappfolders
+from .systemcheck import createappfolders
 import os
 #remember to change the .systemcheck to systemcheck if you are running this file directly
 
@@ -23,8 +23,7 @@ def create_bubble_folders(bubbleOverviewJSONPath, bubbles_path, sanitize_folder_
             
             for bubble in bubble_list:
                 bubble_id = bubble["id"]
-                bubble_title = bubble["title"]
-                bubble_folder_name = sanitize_folder_name(f"{bubble_id} - {bubble_title}")
+                bubble_folder_name = sanitize_folder_name(f"{bubble_id}")
                 bubble_folder_path = os.path.join(category_folder_path, bubble_folder_name)
                 print(f"Creating bubble folder: {bubble_folder_path}")  # Debug statement
                 if not os.path.exists(bubble_folder_path):
@@ -44,8 +43,7 @@ def create_bubble_folders(bubbleOverviewJSONPath, bubbles_path, sanitize_folder_
         
         for bubble in uncategorizedgroups:
             bubble_id = bubble["id"]
-            bubble_title = bubble["title"]
-            bubble_folder_name = sanitize_folder_name(f"{bubble_id} - {bubble_title}")
+            bubble_folder_name = sanitize_folder_name(f"{bubble_id}")
             bubble_folder_path = os.path.join(uncategorized_folder_path, bubble_folder_name)
             print(f"Creating uncategorized bubble folder: {bubble_folder_path}")  # Debug statement
             if not os.path.exists(bubble_folder_path):
@@ -65,8 +63,7 @@ def create_bubble_folders(bubbleOverviewJSONPath, bubbles_path, sanitize_folder_
         
         for bubble in sorted_dm_bubbles:
             bubble_id = bubble["id"]
-            bubble_title = bubble["title"]
-            bubble_folder_name = sanitize_folder_name(f"{bubble_id} - {bubble_title}")
+            bubble_folder_name = sanitize_folder_name(f"{bubble_id}")
             bubble_folder_path = os.path.join(dm_folder_path, bubble_folder_name)
             print(f"Creating DM bubble folder: {bubble_folder_path}")  # Debug statement
             if not os.path.exists(bubble_folder_path):
