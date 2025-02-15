@@ -48,7 +48,8 @@ def getvalueLogin(file_path, value):
 # Function to sanitize folder names
 def sanitize_folder_name(name):
     sanitized_name = re.sub(r'[<>:"/\\|?*]', '_', name)
-    print(f"Sanitized folder name: {sanitized_name}")  # Debug statement
+    # Comment out or remove the debug statement after verification
+    # print(f"Sanitized folder name: {sanitized_name}")  # Debug statement
     return sanitized_name
 
 class Api:
@@ -151,10 +152,22 @@ class Api:
                 else:
                     print(f"Unexpected message format: {message}")
 
+            # Search for the folder with the matching bubble ID in the entire chats_path
+            sanitized_bubble_id = sanitize_folder_name(f"{bubbleID}")
+            bubble_folder_path = None
+            for root, dirs, files in os.walk(chats_path):
+                for dir_name in dirs:
+                    if dir_name == sanitized_bubble_id:
+                        bubble_folder_path = os.path.join(root, dir_name)
+                        break
+                if bubble_folder_path:
+                    break
+
+            if not bubble_folder_path:
+                print(f"No folder found for bubble ID: {bubbleID}")
+                return {"messages": detailed_messages}
+
             # Save detailed messages to a JSON file within the specific folder for the bubble
-            bubble_folder_path = os.path.join(bubbles_path, "DMs", f"{bubbleID} - {detailed_messages[0]['author']}")
-            if not os.path.exists(bubble_folder_path):
-                os.makedirs(bubble_folder_path, exist_ok=True)
             messages_file_path = os.path.join(bubble_folder_path, "messages.json")
             with open(messages_file_path, "w") as file:
                 json.dump({"messages": detailed_messages}, file, indent=4)
