@@ -115,7 +115,7 @@ class Api:
         ## function to make bubble folders for all the individual bubbles in the overview
         create_bubble_folders(bubbleOverviewJSONPath, bubbles_path, sanitize_folder_name)
 
-    def get_detailed_messages(self, bubbleID):
+    def get_dynamicdetailed_messages(self, bubbleID):
         print(f"Fetching detailed messages for bubble ID: {bubbleID}")  # Debug statement
         try:
             response = get_bubble_messages(accesstoken, bubbleID)
@@ -181,6 +181,53 @@ class Api:
     ## These functions should be called first to fetch the data from the local JSON files
     ## while the dynamic data is also fetched
 
+    def get_Localmessages(self, bubbleID):
+        print(f"Fetching local messages for bubble ID: {bubbleID}")  # Debug statement
+        try:
+            # Search for the folder with the matching bubble ID in the entire chats_path
+            sanitized_bubble_id = sanitize_folder_name(f"{bubbleID}")
+            bubble_folder_path = None
+            for root, dirs, files in os.walk(chats_path):
+                for dir_name in dirs:
+                    if dir_name == sanitized_bubble_id:
+                        bubble_folder_path = os.path.join(root, dir_name)
+                        break
+                if bubble_folder_path:
+                    break
+
+            if not bubble_folder_path:
+                print(f"No folder found for bubble ID: {bubbleID}")
+                return {"messages": []}
+
+            # Read messages from the JSON file within the specific folder for the bubble
+            messages_file_path = os.path.join(bubble_folder_path, "messages.json")
+            with open(messages_file_path, "r") as file:
+                data = json.load(file)
+                messages = data.get("messages", [])
+                detailed_messages = []
+
+                for message in messages:
+                    detailed_message = {
+                        "time_of_sending": message.get("time_of_sending"),
+                        "author": message.get("author"),
+                        "message_id": message.get("message_id"),
+                        "edit_count": message.get("edit_count", 0),
+                        "last_edited": message.get("last_edited"),
+                        "parent_message": message.get("parent_message"),
+                        "reactions": message.get("reactions", []),
+                        "content": message.get("content")
+                    }
+                    # Verify that all required fields are present
+                    if all([detailed_message["time_of_sending"], detailed_message["author"], detailed_message["content"]]):
+                        detailed_messages.append(detailed_message)
+                    else:
+                        print(f"Incomplete message data skipped: {detailed_message}")
+
+                return {"messages": detailed_messages}
+        except Exception as e:
+            print(f"Error fetching local messages: {e}")
+            return {"messages": []}
+
     def get_Localdms(self, *args):
         print("Fetching DMs")
         dms = get_dms(bubbleOverviewJSONPath)
@@ -211,13 +258,8 @@ class Api:
         print("Categories:", categories)
         return categories
     
-    def print_chat_name(self, chat_name):
-        print(f"Clicked on chat: {chat_name}")
-
     def print_chat_info(self, chat_name, chat_id):
         print(f"Clicked on chat: {chat_name}, ID: {chat_id}")
-
-
 
     ## Sending data
     ## such as updating bubbles
