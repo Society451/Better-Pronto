@@ -1,4 +1,4 @@
-# Better-Pronto-Alpha
+# Better-Pronto
 
 An alpha client for [pronto](https://pronto.io), a messaging platform used by Stanford Online High School.
 

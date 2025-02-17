@@ -1,3 +1,11 @@
+### 02-17-25, 4:42:10 PM, CST
+[@Society451](https://github.com/Society451)
+
+- Added to frontend:
+    - Profile Pictures
+    - Names
+    - Timestamps
+
 ### 02-15-25, 10:19:28 PM, CST
 [@Society451](https://github.com/Society451)
 

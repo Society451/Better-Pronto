@@ -169,7 +169,7 @@ body {
 
 .message + .message .message-sender,
 .message + .message .message-timestamp {
-    display: none;
+    display: block; /* Ensure the timestamp is shown for every message */
 }
 
 /* Optional: Adjust spacing for messages without sender info */
@@ -367,4 +367,15 @@ body {
     border-radius: 50%; /* Make the profile picture circular */
     margin-right: 10px; /* Space between the profile picture and the message */
     float: left; /* Align the profile picture to the left */
+}
+
+.message-header {
+    display: flex;
+    align-items: center;
+}
+
+.message-header .message-timestamp {
+    margin-left: 10px; /* Space between the name and timestamp */
+    font-size: 12px; /* Smaller font size for timestamp */
+    color: #888; /* Grey color for timestamp */
 }
