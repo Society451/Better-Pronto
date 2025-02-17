@@ -46,11 +46,17 @@ jobs:
           MESSAGE=$(printf '%s\n' "========================================" \
             "AUTOMATED GITHUB ACTIONS MESSAGE:" \
             "----------------------------------------" \
-            "Commit made by ${{ github.actor }}: $COMMIT_MESSAGE" \
+            "Commit made by: ${{ github.actor }}" \
+            "Commit Author: ${{ github.event.head_commit.author.name }}" \
+            "Commit Author Email: ${{ github.event.head_commit.author.email }}" \
+            "Commit URL: ${{ github.event.head_commit.url }}" \
             "Commit SHA: ${{ github.sha }}" \
+            "Commit Message: $COMMIT_MESSAGE" \
             "Repository: ${{ github.repository }}" \
             "Branch: ${{ github.ref }}" \
             "Timestamp: $TIMESTAMP" \
+            "Committer: ${{ github.event.head_commit.committer.name }}" \
+            "Committer Email: ${{ github.event.head_commit.committer.email }}" \
             "Changes:" \
             "$COMMIT_STATS" \
             "========================================")
