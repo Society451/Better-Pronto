@@ -3,7 +3,8 @@ name: Send Message on Commit
 on:
   push:
     branches:
-      - main, Latest-Unstable
+      - main
+      - Latest-Unstable
 
 jobs:
   send-message:
