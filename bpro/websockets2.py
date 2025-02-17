@@ -1,5 +1,6 @@
+from pronto import *
 from readjson import * 
-import sys, json, asyncio, requests, websockets
+import json, asyncio, requests, websockets
 
 api_base_url = "https://stanfordohs.pronto.io/"
 auth_path, chats_path, bubbles_path, loginTokenJSONPath, authTokenJSONPath, verificationCodeResponseJSONPath, settings_path, encryption_path, logs_path, settingsJSONPath, keysJSONPath, bubbleOverviewJSONPath, users_path = createappfolders()

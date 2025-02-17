@@ -168,18 +168,18 @@ class Api:
 
             # Save detailed messages to a JSON file within the specific folder for the bubble
             messages_file_path = os.path.join(bubble_folder_path, "messages.json")
+            full_messages_file_path = os.path.join(bubble_folder_path, "fullmessages.json")
             with open(messages_file_path, "w") as file:
                 json.dump({"messages": detailed_messages}, file, indent=4)
+            with open(full_messages_file_path, "w") as file:
+                json.dump(response, file, indent=4)
             print(f"Messages saved to {messages_file_path}")
+            print(f"Full response saved to {full_messages_file_path}")
 
             return {"messages": detailed_messages}
         except Exception as e:
             print(f"Error fetching detailed messages: {e}")
             return {"messages": []}
-    
-    ## Local JSON Fetching and Parsing
-    ## These functions should be called first to fetch the data from the local JSON files
-    ## while the dynamic data is also fetched
 
     def get_Localmessages(self, bubbleID):
         print(f"Fetching local messages for bubble ID: {bubbleID}")  # Debug statement
@@ -201,6 +201,7 @@ class Api:
 
             # Read messages from the JSON file within the specific folder for the bubble
             messages_file_path = os.path.join(bubble_folder_path, "messages.json")
+            full_messages_file_path = os.path.join(bubble_folder_path, "fullmessages.json")
             with open(messages_file_path, "r") as file:
                 data = json.load(file)
                 messages = data.get("messages", [])
@@ -223,10 +224,19 @@ class Api:
                     else:
                         print(f"Incomplete message data skipped: {detailed_message}")
 
+                # Save the full response to fullmessages.json
+                with open(full_messages_file_path, "w") as file:
+                    json.dump(data, file, indent=4)
+                print(f"Full response saved to {full_messages_file_path}")
+
                 return {"messages": detailed_messages}
         except Exception as e:
             print(f"Error fetching local messages: {e}")
             return {"messages": []}
+
+    ## Local JSON Fetching and Parsing
+    ## These functions should be called first to fetch the data from the local JSON files
+    ## while the dynamic data is also fetched
 
     def get_Localdms(self, *args):
         print("Fetching DMs")
@@ -257,7 +267,7 @@ class Api:
         categories = get_categories(bubbleOverviewJSONPath)
         print("Categories:", categories)
         return categories
-    
+
     def print_chat_info(self, chat_name, chat_id):
         print(f"Clicked on chat: {chat_name}, ID: {chat_id}")
 
