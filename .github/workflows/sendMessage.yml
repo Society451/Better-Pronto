@@ -43,16 +43,17 @@ jobs:
           COMMIT_STATS=$(cat commit_stats.txt)
           TIMESTAMP=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
           COMMIT_MESSAGE="${{ github.event.head_commit.message }}"
-          MESSAGE="========================================\n"
-          MESSAGE+="AUTOMATED GITHUB ACTIONS MESSAGE:\n"
-          MESSAGE+="----------------------------------------\n"
-          MESSAGE+="Commit made by ${{ github.actor }}: $COMMIT_MESSAGE\n"
-          MESSAGE+="Commit SHA: ${{ github.sha }}\n"
-          MESSAGE+="Repository: ${{ github.repository }}\n"
-          MESSAGE+="Branch: ${{ github.ref }}\n"
-          MESSAGE+="Timestamp: $TIMESTAMP\n"
-          MESSAGE+="Changes:\n$COMMIT_STATS\n"
-          MESSAGE+="========================================"
+          MESSAGE=$(printf '%s\n' "========================================" \
+            "AUTOMATED GITHUB ACTIONS MESSAGE:" \
+            "----------------------------------------" \
+            "Commit made by ${{ github.actor }}: $COMMIT_MESSAGE" \
+            "Commit SHA: ${{ github.sha }}" \
+            "Repository: ${{ github.repository }}" \
+            "Branch: ${{ github.ref }}" \
+            "Timestamp: $TIMESTAMP" \
+            "Changes:" \
+            "$COMMIT_STATS" \
+            "========================================")
           
           # Ensure bubble_id is not missing
           BUBBLE_ID="4066670"
@@ -73,7 +74,8 @@ jobs:
             '{bubble_id: $bubble_id, created_at: $created_at, id: $id, message: $message, messagemedia: $messagemedia, user_id: $user_id, uuid: $uuid}')
           
           # Print the JSON payload for debugging
-          echo "Sending JSON Payload: $JSON_PAYLOAD"
+          echo "Sending JSON Payload:"
+          echo "$JSON_PAYLOAD"
 
           # Send the API request with verbose output
           curl -v -X POST "https://stanfordohs.pronto.io/api/v1/message.create" \
