@@ -15,9 +15,28 @@ jobs:
         run: |
           echo "UUID=$(uuidgen)" >> $GITHUB_ENV
 
+      - name: Get Detailed Commit Information
+        id: commit_info
+        run: |
+          echo "========================================"
+          echo "AUTOMATED GITHUB ACTIONS MESSAGE:"
+          echo "----------------------------------------"
+          echo "Commit Author: ${{ github.actor }}"
+          echo "Commit SHA: ${{ github.sha }}"
+          echo "Commit Message: ${{ github.event.head_commit.message }}"
+          echo "Repository: ${{ github.repository }}"
+          echo "Branch: ${{ github.ref }}"
+          echo "Timestamp: $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+
+          # Get the stats of the commit
+          git diff --stat ${{ github.event.before }} ${{ github.sha }} > commit_stats.txt
+          cat commit_stats.txt
+          echo "========================================"
+
       - name: Send message to API
         run: |
+          COMMIT_STATS=$(cat commit_stats.txt)
           curl -X POST "https://stanfordohs.pronto.io/api/v1/message.create" \
           -H "Content-Type: application/json" \
           -H "Authorization: Bearer ${{ secrets.API_KEY }}" \
-          -d "{\"bubble_id\": 4066670, \"created_at\": \"$(date -u +'%Y-%m-%dT%H:%M:%SZ')\", \"id\": \"null\", \"message\": \"Commit made by ${{ github.actor }}: ${{ github.event.head_commit.message }}\", \"messagemedia\": [], \"user_id\": \"5302367\", \"uuid\": \"${{ env.UUID }}\"}"
+          -d "{\"bubble_id\": 4066670, \"created_at\": \"$(date -u +'%Y-%m-%dT%H:%M:%SZ')\", \"id\": \"null\", \"message\": \"========================================\\nAUTOMATED GITHUB ACTIONS MESSAGE:\\n----------------------------------------\\nCommit made by ${{ github.actor }}: ${{ github.event.head_commit.message }}\\nCommit SHA: ${{ github.sha }}\\nRepository: ${{ github.repository }}\\nBranch: ${{ github.ref }}\\nTimestamp: \$(date -u +'%Y-%m-%dT%H:%M:%SZ')\\nChanges:\\n\$COMMIT_STATS\\n========================================\", \"messagemedia\": [], \"user_id\": \"5302367\", \"uuid\": \"${{ env.UUID }}\"}"
