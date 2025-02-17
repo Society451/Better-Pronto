@@ -64,30 +64,49 @@ class Message {
         if (this.isDefault) {
             messageElement.style.fontStyle = 'italic';
         }
+        
+        // Create a wrapper with flex layout for profile picture and text content
+        const wrapper = document.createElement('div');
+        wrapper.classList.add('message-wrapper');
 
-        /* Always show sender and timestamp */
+        // Always render profile picture (or fallback default)
+        const profilePicElement = document.createElement('img');
+        profilePicElement.classList.add('profile-pic');
+        profilePicElement.alt = `${this.user && this.user.fullname ? this.user.fullname : "User"}'s profile picture`;
+        if (this.user && this.user.profilepicurl) {
+            profilePicElement.src = this.user.profilepicurl;
+            profilePicElement.onerror = () => {
+                console.error("Failed to load image:", this.user.profilepicurl);
+                // Optionally assign a fallback local image if desired:
+                profilePicElement.src = "../images/default-avatar.png";
+            };
+        } else {
+            // Use a local default image instead of the ui-avatars.com fallback
+            profilePicElement.src = "../images/default-avatar.png";
+        }
+        wrapper.appendChild(profilePicElement);
+
+        // Create container for text content
+        const textContainer = document.createElement('div');
+        textContainer.classList.add('message-text');
+
         const senderElement = document.createElement('div');
         senderElement.classList.add('message-sender');
         senderElement.textContent = this.sender;
-        messageElement.appendChild(senderElement);
+        textContainer.appendChild(senderElement);
 
         const contentElement = document.createElement('div');
         contentElement.classList.add('message-content');
         contentElement.textContent = this.content;
-        messageElement.appendChild(contentElement);
+        textContainer.appendChild(contentElement);
 
         const timestampElement = document.createElement('div');
         timestampElement.classList.add('message-timestamp');
         timestampElement.textContent = this.timestamp;
-        messageElement.appendChild(timestampElement);
+        textContainer.appendChild(timestampElement);
 
-        /* Add user data if available */
-        if (this.user) {
-            const userElement = document.createElement('div');
-            userElement.classList.add('message-user');
-            userElement.textContent = `User: ${this.user.fullname}, Email: ${this.user.email}`;
-            messageElement.appendChild(userElement);
-        }
+        wrapper.appendChild(textContainer);
+        messageElement.appendChild(wrapper);
 
         /* Add delete icon if permission is granted */
         if (hasDeletePermission) {
@@ -141,9 +160,9 @@ async function loadMessages(bubbleID, bubbleName) {
                 // Verify that each message has the required properties
                 console.log('Processing local message:', msg);
                 const content = msg.message || msg.content;
-                const author = msg.user ? msg.user.fullname : msg.author;
-                const timestamp = msg.created_at || msg.time_of_sending;
-                const user = msg.user;
+                const author = msg.author;
+                const timestamp = msg.time_of_sending;
+                const user = { fullname: msg.author, profilepicurl: msg.profilepicurl };
 
                 if (content && author && timestamp) {
                     const message = new Message(content, author, timestamp, user);
@@ -175,9 +194,9 @@ async function loadMessages(bubbleID, bubbleName) {
                 // Verify that each message has the required properties
                 console.log('Processing dynamic message:', msg);
                 const content = msg.message || msg.content;
-                const author = msg.user ? msg.user.fullname : msg.author;
-                const timestamp = msg.created_at || msg.time_of_sending;
-                const user = msg.user;
+                const author = msg.author;
+                const timestamp = msg.time_of_sending;
+                const user = { fullname: msg.author, profilepicurl: msg.profilepicurl };
 
                 if (content && author && timestamp) {
                     const message = new Message(content, author, timestamp, user);
@@ -364,8 +383,6 @@ async function initializeLiveBubbles() {
 // Display a default message when the page loads
 window.addEventListener('DOMContentLoaded', async () => {
     console.log('chat.html DOMContentLoaded');  // Debugging statement
-    const defaultMessage = new Message('Started a private chat with Paul Estrada', 'System', new Date().toLocaleString(), true);
-    messagesContainer.appendChild(defaultMessage.createElement());
 
     waitForPywebview(); // Wait for pywebview API to be ready
 
