@@ -43,20 +43,16 @@ jobs:
           COMMIT_STATS=$(cat commit_stats.txt)
           TIMESTAMP=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
           COMMIT_MESSAGE="${{ github.event.head_commit.message }}"
-          MESSAGE=$(cat <<EOF
-========================================
-AUTOMATED GITHUB ACTIONS MESSAGE:
-----------------------------------------
-Commit made by ${{ github.actor }}: $COMMIT_MESSAGE
-Commit SHA: ${{ github.sha }}
-Repository: ${{ github.repository }}
-Branch: ${{ github.ref }}
-Timestamp: $TIMESTAMP
-Changes:
-$COMMIT_STATS
-========================================
-EOF
-          )
+          MESSAGE="========================================\n"
+          MESSAGE+="AUTOMATED GITHUB ACTIONS MESSAGE:\n"
+          MESSAGE+="----------------------------------------\n"
+          MESSAGE+="Commit made by ${{ github.actor }}: $COMMIT_MESSAGE\n"
+          MESSAGE+="Commit SHA: ${{ github.sha }}\n"
+          MESSAGE+="Repository: ${{ github.repository }}\n"
+          MESSAGE+="Branch: ${{ github.ref }}\n"
+          MESSAGE+="Timestamp: $TIMESTAMP\n"
+          MESSAGE+="Changes:\n$COMMIT_STATS\n"
+          MESSAGE+="========================================"
           
           # Ensure bubble_id is not missing
           BUBBLE_ID="4066670"
