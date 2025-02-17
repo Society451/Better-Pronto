@@ -45,13 +45,13 @@ jobs:
           MESSAGE="========================================\\nAUTOMATED GITHUB ACTIONS MESSAGE:\\n----------------------------------------\\nCommit made by ${{ github.actor }}: ${{ github.event.head_commit.message }}\\nCommit SHA: ${{ github.sha }}\\nRepository: ${{ github.repository }}\\nBranch: ${{ github.ref }}\\nTimestamp: $TIMESTAMP\\nChanges:\\n$COMMIT_STATS\\n========================================"
           
           # Create JSON payload
-          JSON_PAYLOAD="{\"bubble_id\": 4066670, \"created_at\": \"$TIMESTAMP\", \"id\": \"null\", \"message\": \"$MESSAGE\", \"messagemedia\": [], \"user_id\": \"5302367\", \"uuid\": \"${{ env.UUID }}\"}"
+          JSON_PAYLOAD="{\"bubble_id\": \"4066670\", \"created_at\": \"$TIMESTAMP\", \"id\": \"null\", \"message\": \"$MESSAGE\", \"messagemedia\": [], \"user_id\": \"5302367\", \"uuid\": \"${{ env.UUID }}\"}"
           
           # Print the JSON payload for debugging
           echo "Sending JSON Payload: $JSON_PAYLOAD"
 
-          # Send the API request
-          curl -X POST "https://stanfordohs.pronto.io/api/v1/message.create" \
+          # Send the API request with verbose output
+          curl -v -X POST "https://stanfordohs.pronto.io/api/v1/message.create" \
           -H "Content-Type: application/json" \
           -H "Authorization: Bearer ${{ secrets.API_KEY }}" \
           -d "$JSON_PAYLOAD"
