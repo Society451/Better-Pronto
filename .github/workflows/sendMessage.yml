@@ -10,6 +10,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0  # Fetch all history for all branches and tags
+
       - name: Generate UUID
         id: generate_uuid
         run: |
@@ -29,7 +34,7 @@ jobs:
           echo "Timestamp: $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
 
           # Get the stats of the commit
-          git diff --stat ${{ github.event.before }} ${{ github.sha }} > commit_stats.txt
+          git diff --stat ${{ github.event.before }} ${{ github.sha }} > commit_stats.txt || echo "No changes to report"
           cat commit_stats.txt
           echo "========================================"
 
