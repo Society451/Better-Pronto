@@ -105,13 +105,6 @@ class Message {
         timestampElement.textContent = this.timestamp;
         textContainer.appendChild(timestampElement);
 
-        if (this.user) {
-            const userElement = document.createElement('div');
-            userElement.classList.add('message-user');
-            userElement.textContent = `User: ${this.user.fullname}, Email: ${this.user.email}`;
-            textContainer.appendChild(userElement);
-        }
-
         wrapper.appendChild(textContainer);
         messageElement.appendChild(wrapper);
 
