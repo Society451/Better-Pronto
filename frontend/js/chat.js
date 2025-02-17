@@ -90,20 +90,15 @@ class Message {
         const textContainer = document.createElement('div');
         textContainer.classList.add('message-text');
 
-        const senderElement = document.createElement('div');
-        senderElement.classList.add('message-sender');
-        senderElement.textContent = this.sender;
-        textContainer.appendChild(senderElement);
+        const headerElement = document.createElement('div');
+        headerElement.classList.add('message-header');
+        headerElement.innerHTML = `<strong>${this.sender}</strong> <span class="message-timestamp">${this.timestamp}</span>`;
+        textContainer.appendChild(headerElement);
 
         const contentElement = document.createElement('div');
         contentElement.classList.add('message-content');
         contentElement.textContent = this.content;
         textContainer.appendChild(contentElement);
-
-        const timestampElement = document.createElement('div');
-        timestampElement.classList.add('message-timestamp');
-        timestampElement.textContent = this.timestamp;
-        textContainer.appendChild(timestampElement);
 
         wrapper.appendChild(textContainer);
         messageElement.appendChild(wrapper);
@@ -189,7 +184,6 @@ async function loadMessages(bubbleID, bubbleName) {
             noMessages.textContent = 'No messages to display.';
             messagesContainer.appendChild(noMessages);
         } else {
-            messagesContainer.innerHTML = ''; // Clear existing messages before adding dynamic messages
             dynamicMessages.forEach(msg => {
                 // Verify that each message has the required properties
                 console.log('Processing dynamic message:', msg);
