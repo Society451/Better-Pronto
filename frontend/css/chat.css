@@ -250,6 +250,8 @@ body {
     border-radius: 5px; /* Rounded corners */
     cursor: pointer; /* Pointer cursor */
     font-size: 14px; /* Font size */
+    position: relative; /* Ensure it stays above the search container */
+    z-index: 2; /* Higher than the search container */
 }
 
 .search-button {
@@ -272,6 +274,7 @@ body {
     right: -10px; /* Move the search bar 10 pixels to the right */
     display: flex; /* Use flexbox for layout */
     align-items: center; /* Center items vertically */
+    z-index: 1; /* Ensure it appears above other elements */
 }
 
 .search-input {

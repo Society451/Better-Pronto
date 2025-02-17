@@ -374,6 +374,7 @@ searchButton.addEventListener('click', () => {
     searchButton.style.display = 'none';
     searchContainer.style.display = 'flex';
     searchInput.focus();
+    toggleAllButton.style.zIndex = '2'; // Ensure the toggle-all button is above the search container
 });
 
 // Add event listener to clear and exit search input
@@ -381,6 +382,7 @@ clearSearch.addEventListener('click', () => {
     searchInput.value = '';
     searchContainer.style.display = 'none';
     searchButton.style.display = 'block';
+    toggleAllButton.style.zIndex = ''; // Reset the z-index of the toggle-all button
 });
 
 // Remove any event listeners that might prevent text selection
