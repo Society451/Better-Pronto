@@ -1,3 +1,8 @@
+### 02-15-25, 10:19:28 PM, CST
+[@Society451](https://github.com/Society451)
+
+- Found out that Pronto ignores parentmessageid payload :(
+
 ### 02-6-25, 12:38:34 PM, CST
 [@Society451](https://github.com/Society451)
 
