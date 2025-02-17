@@ -42,7 +42,21 @@ jobs:
         run: |
           COMMIT_STATS=$(cat commit_stats.txt)
           TIMESTAMP=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
-          MESSAGE="========================================\\nAUTOMATED GITHUB ACTIONS MESSAGE:\\n----------------------------------------\\nCommit made by ${{ github.actor }}: ${{ github.event.head_commit.message }}\\nCommit SHA: ${{ github.sha }}\\nRepository: ${{ github.repository }}\\nBranch: ${{ github.ref }}\\nTimestamp: $TIMESTAMP\\nChanges:\\n$COMMIT_STATS\\n========================================"
+          COMMIT_MESSAGE="${{ github.event.head_commit.message }}"
+          MESSAGE=$(cat <<EOF
+========================================
+AUTOMATED GITHUB ACTIONS MESSAGE:
+----------------------------------------
+Commit made by ${{ github.actor }}: $COMMIT_MESSAGE
+Commit SHA: ${{ github.sha }}
+Repository: ${{ github.repository }}
+Branch: ${{ github.ref }}
+Timestamp: $TIMESTAMP
+Changes:
+$COMMIT_STATS
+========================================
+EOF
+          )
           
           # Ensure bubble_id is not missing
           BUBBLE_ID="4066670"
@@ -55,7 +69,6 @@ jobs:
           JSON_PAYLOAD=$(jq -n \
             --arg bubble_id "$BUBBLE_ID" \
             --arg created_at "$TIMESTAMP" \
-            --arg id "null" \
             --arg message "$MESSAGE" \
             --argjson messagemedia "[]" \
             --arg user_id "5302367" \
