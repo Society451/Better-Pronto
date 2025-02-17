@@ -120,26 +120,26 @@ class Message {
 // Function to retrieve and display detailed messages for a specific bubble ID
 async function loadMessages(bubbleID, bubbleName) {
     try {
-        console.log(`Loading messages for bubble ID: ${bubbleID}`); // Debug statement
-        const response = await window.pywebview.api.get_detailed_messages(bubbleID);
-        console.log('Response retrieved:', response); // Debug statement
+        console.log(`Loading local messages for bubble ID: ${bubbleID}`); // Debug statement
+        const localResponse = await window.pywebview.api.get_Localmessages(bubbleID);
+        console.log('Local response retrieved:', localResponse); // Debug statement
 
-        if (!response || typeof response !== 'object' || !Array.isArray(response.messages)) {
-            console.error("Invalid response format received:", response);
+        if (!localResponse || typeof localResponse !== 'object' || !Array.isArray(localResponse.messages)) {
+            console.error("Invalid local response format received:", localResponse);
             return;
         }
 
-        const messages = response.messages.reverse(); // Reverse the order of the messages
+        const localMessages = localResponse.messages.reverse(); // Reverse the order of the messages
         messagesContainer.innerHTML = ''; // Clear existing messages
 
-        if (messages.length === 0) {
+        if (localMessages.length === 0) {
             const noMessages = document.createElement('div');
             noMessages.textContent = 'No messages to display.';
             messagesContainer.appendChild(noMessages);
         } else {
-            messages.forEach(msg => {
+            localMessages.forEach(msg => {
                 // Verify that each message has the required properties
-                console.log('Processing message:', msg);
+                console.log('Processing local message:', msg);
                 const content = msg.message || msg.content;
                 const author = msg.user ? msg.user.fullname : msg.author;
                 const timestamp = msg.created_at || msg.time_of_sending;
@@ -149,10 +149,45 @@ async function loadMessages(bubbleID, bubbleName) {
                     const message = new Message(content, author, timestamp, user);
                     messagesContainer.appendChild(message.createElement()); // Display message in HTML
                 } else {
-                    console.warn('Incomplete message data:', msg);
+                    console.warn('Incomplete local message data:', msg);
                 }
             });
         }
+
+        console.log(`Loading dynamic messages for bubble ID: ${bubbleID}`); // Debug statement
+        const dynamicResponse = await window.pywebview.api.get_dynamicdetailed_messages(bubbleID);
+        console.log('Dynamic response retrieved:', dynamicResponse); // Debug statement
+
+        if (!dynamicResponse || typeof dynamicResponse !== 'object' || !Array.isArray(dynamicResponse.messages)) {
+            console.error("Invalid dynamic response format received:", dynamicResponse);
+            return;
+        }
+
+        const dynamicMessages = dynamicResponse.messages.reverse(); // Reverse the order of the messages
+
+        if (dynamicMessages.length === 0) {
+            const noMessages = document.createElement('div');
+            noMessages.textContent = 'No messages to display.';
+            messagesContainer.appendChild(noMessages);
+        } else {
+            messagesContainer.innerHTML = ''; // Clear existing messages before adding dynamic messages
+            dynamicMessages.forEach(msg => {
+                // Verify that each message has the required properties
+                console.log('Processing dynamic message:', msg);
+                const content = msg.message || msg.content;
+                const author = msg.user ? msg.user.fullname : msg.author;
+                const timestamp = msg.created_at || msg.time_of_sending;
+                const user = msg.user;
+
+                if (content && author && timestamp) {
+                    const message = new Message(content, author, timestamp, user);
+                    messagesContainer.appendChild(message.createElement()); // Display message in HTML
+                } else {
+                    console.warn('Incomplete dynamic message data:', msg);
+                }
+            });
+        }
+
         messagesContainer.scrollTop = messagesContainer.scrollHeight; // Scroll to the bottom
         setChatHeading(bubbleName); // Update chat heading with the bubble name
     } catch (error) {
