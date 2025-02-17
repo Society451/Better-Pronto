@@ -1,8 +1,7 @@
-import webview, os, json, re
+import webview, os, json, re, time, uuid
 from bpro.pronto import *
 from bpro.systemcheck import *
 from bpro.readjson import *
-import time, uuid
 
 auth_path, chats_path, bubbles_path, loginTokenJSONPath, authTokenJSONPath, verificationCodeResponseJSONPath, settings_path, encryption_path, logs_path, settingsJSONPath, keysJSONPath, bubbleOverviewJSONPath, users_path = createappfolders()
 accesstoken = ""
