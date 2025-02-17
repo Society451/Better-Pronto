@@ -52,7 +52,15 @@ jobs:
           fi
 
           # Create JSON payload
-          JSON_PAYLOAD="{\"bubble_id\": \"$BUBBLE_ID\", \"created_at\": \"$TIMESTAMP\", \"id\": \"null\", \"message\": \"$MESSAGE\", \"messagemedia\": [], \"user_id\": \"5302367\", \"uuid\": \"${{ env.UUID }}\"}"
+          JSON_PAYLOAD=$(jq -n \
+            --arg bubble_id "$BUBBLE_ID" \
+            --arg created_at "$TIMESTAMP" \
+            --arg id "null" \
+            --arg message "$MESSAGE" \
+            --argjson messagemedia "[]" \
+            --arg user_id "5302367" \
+            --arg uuid "${{ env.UUID }}" \
+            '{bubble_id: $bubble_id, created_at: $created_at, id: $id, message: $message, messagemedia: $messagemedia, user_id: $user_id, uuid: $uuid}')
           
           # Print the JSON payload for debugging
           echo "Sending JSON Payload: $JSON_PAYLOAD"
