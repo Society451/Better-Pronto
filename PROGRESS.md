@@ -1,9 +1,7 @@
-### 02-13-25, 8:18:45 PM, CST
+### 02-15-25, 10:19:28 PM, CST
 [@Society451](https://github.com/Society451)
 
-Backend Team:
-- Add automatic local storage for message retrieval 
-- Added updated folder system names with only bubble ID
+- Found out that Pronto ignores parentmessageid payload :(
 
 ### 02-6-25, 12:38:34 PM, CST
 [@Society451](https://github.com/Society451)
