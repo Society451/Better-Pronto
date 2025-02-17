@@ -1,0 +1,23 @@
+name: Send Message on Commit
+
+on:
+  push:
+    branches:
+      - main  # Change this if your default branch is different
+
+jobs:
+  send-message:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Generate UUID
+        id: generate_uuid
+        run: |
+          echo "UUID=$(uuidgen)" >> $GITHUB_ENV
+
+      - name: Send message to API
+        run: |
+          curl -X POST "https://stanfordohs.pronto.io/api/v1/message.create" \
+          -H "Content-Type: application/json" \
+          -H "Authorization: Bearer ${{ secrets.ACCESS_TOKEN }}" \
+          -d "{\"bubble_id\": 4066670, \"created_at\": \"$(date -u +'%Y-%m-%dT%H:%M:%SZ')\", \"id\": \"null\", \"message\": \"Commit made by ${{ github.actor }}: ${{ github.event.head_commit.message }}\", \"messagemedia\": [], \"user_id\": \"5302367\", \"uuid\": \"${{ env.UUID }}\"}"
