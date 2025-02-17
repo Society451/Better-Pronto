@@ -383,8 +383,6 @@ async function initializeLiveBubbles() {
 // Display a default message when the page loads
 window.addEventListener('DOMContentLoaded', async () => {
     console.log('chat.html DOMContentLoaded');  // Debugging statement
-    const defaultMessage = new Message('Started a private chat with Paul Estrada', 'System', new Date().toLocaleString(), true);
-    messagesContainer.appendChild(defaultMessage.createElement());
 
     waitForPywebview(); // Wait for pywebview API to be ready
 
