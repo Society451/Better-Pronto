@@ -61,10 +61,11 @@ jobs:
             exit 1
           fi
 
-          # Create JSON payload
+          # Create JSON payload with id defined as JSON null
           JSON_PAYLOAD=$(jq -n \
             --arg bubble_id "$BUBBLE_ID" \
             --arg created_at "$TIMESTAMP" \
+            --argjson id null \
             --arg message "$MESSAGE" \
             --argjson messagemedia "[]" \
             --arg user_id "5302367" \
