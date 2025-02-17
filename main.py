@@ -136,6 +136,7 @@ class Api:
                     detailed_message = {
                         "time_of_sending": message.get("created_at"),
                         "author": message.get("user", {}).get("fullname"),
+                        "profilepicurl": message.get("user", {}).get("profilepicurl"),
                         "message_id": message.get("id"),
                         "edit_count": message.get("user_edited_version", 0),
                         "last_edited": message.get("user_edited_at"),
@@ -211,6 +212,7 @@ class Api:
                     detailed_message = {
                         "time_of_sending": message.get("time_of_sending"),
                         "author": message.get("author"),
+                        "profilepicurl": message.get("profilepicurl"),
                         "message_id": message.get("message_id"),
                         "edit_count": message.get("edit_count", 0),
                         "last_edited": message.get("last_edited"),
@@ -299,4 +301,4 @@ window = webview.create_window(
 )
 
 # Start the webview with debug mode enabled
-webview.start(debug=False)
+webview.start(debug=True)

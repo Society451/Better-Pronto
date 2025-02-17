@@ -142,6 +142,15 @@ body {
     align-self: flex-start;
 }
 
+.message-wrapper {
+    display: flex;
+    align-items: flex-start;
+}
+
+.message-text {
+    flex: 1;
+}
+
 .message-sender {
     font-weight: bold; /* Bold font for sender */
     margin-bottom: 2px;
@@ -350,4 +359,12 @@ body {
 .messages *,
 .input-group * {
     user-select: text;
+}
+
+.profile-pic {
+    width: 40px; /* Width of the profile picture */
+    height: 40px; /* Height of the profile picture */
+    border-radius: 50%; /* Make the profile picture circular */
+    margin-right: 10px; /* Space between the profile picture and the message */
+    float: left; /* Align the profile picture to the left */
 }
