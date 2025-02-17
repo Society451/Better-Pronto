@@ -3,7 +3,7 @@ name: Send Message on Commit
 on:
   push:
     branches:
-      - main  # Change this if your default branch is different
+      - main 
 
 jobs:
   send-message:
