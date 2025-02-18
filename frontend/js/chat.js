@@ -408,6 +408,7 @@ async function initializeLiveBubbles() {
 
 // Display a default message when the page loads
 window.addEventListener('DOMContentLoaded', async () => {
+    showLoading();
     console.log('chat.html DOMContentLoaded');  // Debugging statement
 
     waitForPywebview(); // Wait for pywebview API to be ready
