@@ -131,8 +131,35 @@ class Message {
     }
 }
 
+// Function to show loading animation and hide screen contents
+function showLoading() {
+    const loadingScreen = document.getElementById('loading-screen');
+    const chatContainer = document.querySelector('.chat-container');
+    const sidebar = document.querySelector('.sidebar');
+    loadingScreen.style.display = 'flex';
+    loadingScreen.style.opacity = '1';
+    // Hide other UI elements
+    if (chatContainer) chatContainer.style.display = 'none';
+    if (sidebar) sidebar.style.display = 'none';
+}
+
+// Function to hide loading animation with fade effect and show screen contents
+function hideLoading() {
+    const loadingScreen = document.getElementById('loading-screen');
+    const chatContainer = document.querySelector('.chat-container');
+    const sidebar = document.querySelector('.sidebar');
+    loadingScreen.style.opacity = '0';
+    setTimeout(() => {
+        loadingScreen.style.display = 'none';
+        // Show the previously hidden UI elements
+        if (chatContainer) chatContainer.style.display = 'flex';
+        if (sidebar) sidebar.style.display = 'block';
+    }, 500); // Match the transition duration
+}
+
 // Function to retrieve and display detailed messages for a specific bubble ID
 async function loadMessages(bubbleID, bubbleName) {
+    // Removed showLoading() call so that hamster animation is not shown when loading messages
     try {
         console.log(`Loading local messages for bubble ID: ${bubbleID}`); // Debug statement
         const localResponse = await window.pywebview.api.get_Localmessages(bubbleID);
@@ -168,6 +195,8 @@ async function loadMessages(bubbleID, bubbleName) {
             });
         }
 
+        // Clear messagesContainer before adding dynamic messages to avoid duplication
+        messagesContainer.innerHTML = '';
         console.log(`Loading dynamic messages for bubble ID: ${bubbleID}`); // Debug statement
         const dynamicResponse = await window.pywebview.api.get_dynamicdetailed_messages(bubbleID);
         console.log('Dynamic response retrieved:', dynamicResponse); // Debug statement
@@ -209,10 +238,12 @@ async function loadMessages(bubbleID, bubbleName) {
             window.location.href = 'login.html'; // Redirect to login.html on 401 error
         }
     }
+    // Removed hideLoading() call so that the hamster animation is only handled by bubble loading functions
 }
 
 // Function to initialize categories and chats dynamically from backend
 async function initializeCategories() {
+    showLoading(); // Show loading animation
     try {
         console.log("Initializing categories and chats"); // New debug statement
 
@@ -295,6 +326,8 @@ async function initializeCategories() {
 
     } catch (error) {
         console.error("Error initializing categories:", error); // Existing debug statement
+    } finally {
+        hideLoading(); // Hide loading animation
     }
 }
 
@@ -376,6 +409,7 @@ async function initializeLiveBubbles() {
 
 // Display a default message when the page loads
 window.addEventListener('DOMContentLoaded', async () => {
+    showLoading();
     console.log('chat.html DOMContentLoaded');  // Debugging statement
 
     waitForPywebview(); // Wait for pywebview API to be ready

@@ -301,4 +301,4 @@ window = webview.create_window(
 )
 
 # Start the webview with debug mode enabled
-webview.start(debug=True)
+webview.start(debug=False)
