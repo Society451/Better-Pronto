@@ -159,7 +159,7 @@ function hideLoading() {
 
 // Function to retrieve and display detailed messages for a specific bubble ID
 async function loadMessages(bubbleID, bubbleName) {
-    showLoading(); // Show loading animation
+    // Removed showLoading() call so that hamster animation is not shown when loading messages
     try {
         console.log(`Loading local messages for bubble ID: ${bubbleID}`); // Debug statement
         const localResponse = await window.pywebview.api.get_Localmessages(bubbleID);
@@ -195,6 +195,8 @@ async function loadMessages(bubbleID, bubbleName) {
             });
         }
 
+        // Clear messagesContainer before adding dynamic messages to avoid duplication
+        messagesContainer.innerHTML = '';
         console.log(`Loading dynamic messages for bubble ID: ${bubbleID}`); // Debug statement
         const dynamicResponse = await window.pywebview.api.get_dynamicdetailed_messages(bubbleID);
         console.log('Dynamic response retrieved:', dynamicResponse); // Debug statement
@@ -235,9 +237,8 @@ async function loadMessages(bubbleID, bubbleName) {
         if (error.message.includes('401')) {
             window.location.href = 'login.html'; // Redirect to login.html on 401 error
         }
-    } finally {
-        hideLoading(); // Hide loading animation
     }
+    // Removed hideLoading() call so that the hamster animation is only handled by bubble loading functions
 }
 
 // Function to initialize categories and chats dynamically from backend
