@@ -131,8 +131,35 @@ class Message {
     }
 }
 
+// Function to show loading animation and hide screen contents
+function showLoading() {
+    const loadingScreen = document.getElementById('loading-screen');
+    const chatContainer = document.querySelector('.chat-container');
+    const sidebar = document.querySelector('.sidebar');
+    loadingScreen.style.display = 'flex';
+    loadingScreen.style.opacity = '1';
+    // Hide other UI elements
+    if (chatContainer) chatContainer.style.display = 'none';
+    if (sidebar) sidebar.style.display = 'none';
+}
+
+// Function to hide loading animation with fade effect and show screen contents
+function hideLoading() {
+    const loadingScreen = document.getElementById('loading-screen');
+    const chatContainer = document.querySelector('.chat-container');
+    const sidebar = document.querySelector('.sidebar');
+    loadingScreen.style.opacity = '0';
+    setTimeout(() => {
+        loadingScreen.style.display = 'none';
+        // Show the previously hidden UI elements
+        if (chatContainer) chatContainer.style.display = 'flex';
+        if (sidebar) sidebar.style.display = 'block';
+    }, 500); // Match the transition duration
+}
+
 // Function to retrieve and display detailed messages for a specific bubble ID
 async function loadMessages(bubbleID, bubbleName) {
+    showLoading(); // Show loading animation
     try {
         console.log(`Loading local messages for bubble ID: ${bubbleID}`); // Debug statement
         const localResponse = await window.pywebview.api.get_Localmessages(bubbleID);
@@ -208,11 +235,14 @@ async function loadMessages(bubbleID, bubbleName) {
         if (error.message.includes('401')) {
             window.location.href = 'login.html'; // Redirect to login.html on 401 error
         }
+    } finally {
+        hideLoading(); // Hide loading animation
     }
 }
 
 // Function to initialize categories and chats dynamically from backend
 async function initializeCategories() {
+    showLoading(); // Show loading animation
     try {
         console.log("Initializing categories and chats"); // New debug statement
 
@@ -295,6 +325,8 @@ async function initializeCategories() {
 
     } catch (error) {
         console.error("Error initializing categories:", error); // Existing debug statement
+    } finally {
+        hideLoading(); // Hide loading animation
     }
 }
 
