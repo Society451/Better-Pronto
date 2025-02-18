@@ -297,7 +297,10 @@ window = webview.create_window(
     js_api=api,
     text_select=True,  # Ensure text selection is enabled
     width=1200,  # Set the width of the window
-    height=800   # Set the height of the window
+    height=800,   # Set the height of the window
+    easy_drag=True,
+    maximized=True,
+    zoomable=True,
 )
 
 # Start the webview with debug mode enabled
