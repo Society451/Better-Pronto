@@ -49,12 +49,14 @@ document.addEventListener('keyup', (event) => {
 
 // Message class to create message elements
 class Message {
-    constructor(content, sender, timestamp, user, isDefault = false) {
+    constructor(content, sender, timestamp, user, isDefault = false, editCount = 0, lastEdited = null) {
         this.content = content;
         this.sender = sender;
         this.timestamp = timestamp;
         this.user = user;
         this.isDefault = isDefault;
+        this.editCount = editCount;
+        this.lastEdited = lastEdited;
     }
 
     // Create a message element
@@ -102,6 +104,17 @@ class Message {
 
         wrapper.appendChild(textContainer);
         messageElement.appendChild(wrapper);
+
+        // Add edit info if the message has been edited
+        if (this.editCount > 0) {
+            const editInfoElement = document.createElement('div');
+            editInfoElement.classList.add('edit-info');
+            editInfoElement.innerHTML = `<i class="fa fa-pencil"></i> x${this.editCount}`;
+            if (this.lastEdited) {
+                editInfoElement.title = `Last edited: ${this.lastEdited}`;
+            }
+            messageElement.appendChild(editInfoElement);
+        }
 
         /* Add delete icon if permission is granted */
         if (hasDeletePermission) {
@@ -187,7 +200,7 @@ async function loadMessages(bubbleID, bubbleName) {
                 const user = { fullname: msg.author, profilepicurl: msg.profilepicurl };
 
                 if (content && author && timestamp) {
-                    const message = new Message(content, author, timestamp, user);
+                    const message = new Message(content, author, timestamp, user, false, msg.edit_count, msg.last_edited);
                     messagesContainer.appendChild(message.createElement()); // Display message in HTML
                 } else {
                     console.warn('Incomplete local message data:', msg);
@@ -222,7 +235,7 @@ async function loadMessages(bubbleID, bubbleName) {
                 const user = { fullname: msg.author, profilepicurl: msg.profilepicurl };
 
                 if (content && author && timestamp) {
-                    const message = new Message(content, author, timestamp, user);
+                    const message = new Message(content, author, timestamp, user, false, msg.edit_count, msg.last_edited);
                     messagesContainer.appendChild(message.createElement()); // Display message in HTML
                 } else {
                     console.warn('Incomplete dynamic message data:', msg);
