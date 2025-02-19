@@ -119,6 +119,8 @@ class Api:
         print(f"Fetching detailed messages for bubble ID: {bubbleID}")  # Debug statement
         try:
             response = get_bubble_messages(accesstoken, bubbleID)
+            #markbubbleAsRead = markBubble(accesstoken, bubbleID) requires messageID for some reason idk why
+            #print(f"Marked bubble as read: {markbubbleAsRead}")
             if response is None or 'messages' not in response:
                 print("401 Unauthorized: Access token may be invalid or expired.")
                 raise Exception("401 Unauthorized")  # Raise an error if a 401 status code is encountered

@@ -273,6 +273,11 @@ async function initializeCategories() {
 
         const categoryElements = [];
 
+        // Add unread bubbles as a separate category at the top
+        if (unreadBubbles.length > 0) {
+            categoryElements.push(new Category('Unread', unreadBubbles, unreadMap));
+        }
+
         // Add DM category
         if (dms.length > 0) {
             categoryElements.push(new Category('Direct Messages', dms, unreadMap));
