@@ -116,9 +116,14 @@ class Api:
         create_bubble_folders(bubbleOverviewJSONPath, bubbles_path, sanitize_folder_name)
 
     def get_dynamicdetailed_messages(self, bubbleID):
+        if not bubbleID:
+            print("Bubble ID is undefined")
+            return {"messages": []}
         print(f"Fetching detailed messages for bubble ID: {bubbleID}")  # Debug statement
         try:
             response = get_bubble_messages(accesstoken, bubbleID)
+            #markbubbleAsRead = markBubble(accesstoken, bubbleID) requires messageID for some reason idk why
+            #print(f"Marked bubble as read: {markbubbleAsRead}")
             if response is None or 'messages' not in response:
                 print("401 Unauthorized: Access token may be invalid or expired.")
                 raise Exception("401 Unauthorized")  # Raise an error if a 401 status code is encountered
@@ -183,6 +188,9 @@ class Api:
             return {"messages": []}
 
     def get_Localmessages(self, bubbleID):
+        if not bubbleID:
+            print("Bubble ID is undefined")
+            return {"messages": []}
         print(f"Fetching local messages for bubble ID: {bubbleID}")  # Debug statement
         try:
             # Search for the folder with the matching bubble ID in the entire chats_path
@@ -297,7 +305,10 @@ window = webview.create_window(
     js_api=api,
     text_select=True,  # Ensure text selection is enabled
     width=1200,  # Set the width of the window
-    height=800   # Set the height of the window
+    height=800,   # Set the height of the window
+    easy_drag=True,
+    maximized=True,
+    zoomable=True,
 )
 
 # Start the webview with debug mode enabled

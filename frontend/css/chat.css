@@ -160,6 +160,8 @@ body {
 .message-content {
     margin-bottom: 2px; /* Space between content and timestamp */
     margin-left: 0; /* Align content properly */
+    word-break: break-word;
+    overflow-wrap: anywhere;
 }
 
 .message-timestamp {
@@ -393,4 +395,19 @@ body {
     z-index: 1000; /* Ensure it appears above other elements */
     transition: opacity 0.5s ease; /* Smooth fade transition */
     opacity: 0; /* Fully transparent */
+}
+
+.edit-info {
+    position: absolute;
+    right: 10px;
+    bottom: 5px;
+    font-size: 12px;
+    color: #888;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+.edit-info i {
+    margin-right: 2px;
 }
