@@ -116,6 +116,9 @@ class Api:
         create_bubble_folders(bubbleOverviewJSONPath, bubbles_path, sanitize_folder_name)
 
     def get_dynamicdetailed_messages(self, bubbleID):
+        if not bubbleID:
+            print("Bubble ID is undefined")
+            return {"messages": []}
         print(f"Fetching detailed messages for bubble ID: {bubbleID}")  # Debug statement
         try:
             response = get_bubble_messages(accesstoken, bubbleID)
@@ -185,6 +188,9 @@ class Api:
             return {"messages": []}
 
     def get_Localmessages(self, bubbleID):
+        if not bubbleID:
+            print("Bubble ID is undefined")
+            return {"messages": []}
         print(f"Fetching local messages for bubble ID: {bubbleID}")  # Debug statement
         try:
             # Search for the folder with the matching bubble ID in the entire chats_path

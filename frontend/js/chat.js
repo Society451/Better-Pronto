@@ -16,11 +16,23 @@ function updateUnreadCounts() {
     document.querySelectorAll('.chat-item').forEach(chatItem => {
         const unreadCountElement = chatItem.querySelector('.unread-count');
         const unreadCount = parseInt(unreadCountElement.textContent, 10);
+        const hasUnreadMentions = chatItem.getAttribute('data-has-unread-mentions') === 'true';
+        const isDM = chatItem.getAttribute('data-is-dm') === 'true';
 
         if (unreadCount === 0) {
             unreadCountElement.style.display = 'none'; // Hide unread count bubble with 0 unread messages
         } else {
             unreadCountElement.style.display = 'inline-block'; // Show unread count bubble with unread messages
+            if (isDM) {
+                unreadCountElement.style.backgroundColor = 'red'; // Red background for DMs
+                unreadCountElement.style.color = 'white'; // White text for DMs
+            } else if (hasUnreadMentions) {
+                unreadCountElement.style.backgroundColor = 'red'; // Red background for unread mentions
+                unreadCountElement.style.color = 'white'; // White text for unread mentions
+            } else {
+                unreadCountElement.style.backgroundColor = 'grey'; // Grey background for simple unread messages
+                unreadCountElement.style.color = 'white'; // White text for simple unread messages
+            }
         }
     });
 }
@@ -271,16 +283,45 @@ async function initializeCategories() {
             unreadMap[item.title] = item.unread;
         });
 
+        // Combine all bubbles from DM, categorized and uncategorized for lookup.
+        let allBubbles = [];
+        if (Array.isArray(dms)) {
+            allBubbles = allBubbles.concat(dms);
+        }
+        if (categorizedBubbles && typeof categorizedBubbles === 'object') {
+            Object.values(categorizedBubbles).forEach(chats => {
+                allBubbles = allBubbles.concat(chats);
+            });
+        }
+        if (Array.isArray(uncategorizedBubbles)) {
+            allBubbles = allBubbles.concat(uncategorizedBubbles);
+        }
+
+        // Process unread bubbles: if bubble.id is undefined, try to find it in allBubbles based on title.
+        const processedUnreadBubbles = unreadBubbles.map(bubble => {
+            if (!bubble.id) {
+                const match = allBubbles.find(b => b.title === bubble.title);
+                if (match && match.id) {
+                    bubble.id = match.id;
+                } else {
+                    console.warn(`No matching bubble found for title: ${bubble.title}`);
+                    // Optionally disable click functionality later by setting bubble.id to empty string.
+                    bubble.id = "";
+                }
+            }
+            return bubble;
+        });
+
         const categoryElements = [];
 
         // Add unread bubbles as a separate category at the top
-        if (unreadBubbles.length > 0) {
-            categoryElements.push(new Category('Unread', unreadBubbles, unreadMap));
+        if (processedUnreadBubbles.length > 0) {
+            categoryElements.push(new Category('Unread', processedUnreadBubbles, unreadMap));
         }
 
         // Add DM category
         if (dms.length > 0) {
-            categoryElements.push(new Category('Direct Messages', dms, unreadMap));
+            categoryElements.push(new Category('Direct Messages', dms, unreadMap, true));
         }
 
         // Add categorized bubbles
@@ -351,10 +392,11 @@ async function initializeCategories() {
 
 // Category class to create category elements
 class Category {
-    constructor(name, chats, unreadCounts = {}) {
+    constructor(name, chats, unreadCounts = {}, isDM = false) {
         this.name = name;
         this.chats = chats;
         this.unreadCounts = unreadCounts;
+        this.isDM = isDM;
     }
 
     // Create a category element
@@ -372,7 +414,9 @@ class Category {
         this.chats.forEach(chat => {
             const chatItem = document.createElement('div');
             chatItem.classList.add('chat-item');
-            chatItem.setAttribute('data-chat-id', chat.id); // Set the data-chat-id attribute
+            chatItem.setAttribute('data-chat-id', chat.id); // Ensure chat.id is correctly set
+            chatItem.setAttribute('data-has-unread-mentions', chat.hasUnreadMentions); // Set the data-has-unread-mentions attribute
+            chatItem.setAttribute('data-is-dm', this.isDM || chat.isDM); // Set the data-is-dm attribute
             chatItem.innerHTML = `
                 ${chat.title}
                 <span class="unread-count">${this.unreadCounts[chat.title] || 0}</span>
@@ -384,8 +428,12 @@ class Category {
             // Add event listener to call Python function and load messages when clicked
             chatItem.addEventListener('click', () => {
                 const chatID = chatItem.getAttribute('data-chat-id');
-                window.pywebview.api.print_chat_info(chat.title, chatID);
-                loadMessages(chatID, chat.title); // Load messages for the clicked chat and update heading
+                if (chatID) {
+                    window.pywebview.api.print_chat_info(chat.title, chatID);
+                    loadMessages(chatID, chat.title); // Load messages for the clicked chat and update heading
+                } else {
+                    console.error('Chat ID is undefined');
+                }
             });
             contentElement.appendChild(chatItem);
         });
