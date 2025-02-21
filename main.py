@@ -296,6 +296,15 @@ class Api:
         print(f"Response: {response}")
         return response
 
+    def markBubbleAsRead(self, bubbleID):
+        try:
+            response = markBubble(accesstoken, bubbleID)
+            print(f"Marked bubble {bubbleID} as read: {response}")
+            return response
+        except Exception as e:
+            print(f"Error marking bubble as read: {e}")
+            return None
+
 # Create an instance of the Api class with the accesstoken
 api = Api(accesstoken)
 # Create a webview window with the specified HTML file and API

@@ -1,5 +1,5 @@
 import json
-from .systemcheck import createappfolders
+from systemcheck import createappfolders
 import os
 #remember to change the .systemcheck to systemcheck if you are running this file directly
 
@@ -294,7 +294,6 @@ def get_categories(bubbleOverviewJSONPath):
         print(f"Error reading categories: {e}")
         return []
 
-
 def get_clientUserInfo(authTokenJSONPath):
     try:
         with open(authTokenJSONPath, "r") as file:
@@ -321,6 +320,34 @@ def get_clientUserInfo(authTokenJSONPath):
     except Exception as e:
         print(f"Error retrieving client user info: {e}")
         return None
+
+def get_org_id(authTokenJSONPath):
+    try:
+        with open(authTokenJSONPath, "r") as file:
+            data = json.load(file)
+            if data.get("ok") and "users" in data and len(data["users"]) > 0:
+                user_info = data["users"][0].get("user")
+                if user_info and "organization" in user_info:
+                    org_id = user_info["organization"].get("id")
+                    if org_id:
+                        return org_id
+                    else:
+                        print("Organization ID not found in user info.")
+                        return None
+                else:
+                    print("User details or organization not found in JSON data.")
+                    return None
+            else:
+                print("Invalid JSON structure: Missing 'ok' flag or 'users'.")
+                return None
+    except json.JSONDecodeError:
+        print(f"Error reading JSON file: {authTokenJSONPath} is empty or invalid.")
+        return None
+    except Exception as e:
+        print(f"Error retrieving organization ID: {e}")
+        return None
+
+#print(get_org_id(authTokenJSONPath))
 
 def get_channelcodes(bubbleOverviewJSONPath, bubble_id=None):
     try:
@@ -352,5 +379,4 @@ def get_channelcodes(bubbleOverviewJSONPath, bubble_id=None):
     except Exception as e:
         print(f"Error reading channel codes from JSON file: {e}")
         return {} if bubble_id is None else None
-    
-#print(get_channelcodes(bubbleOverviewJSONPath, bubble_id=2747415))
+
