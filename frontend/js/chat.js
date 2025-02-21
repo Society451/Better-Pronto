@@ -422,7 +422,7 @@ class Category {
                 <span class="unread-count">${this.unreadCounts[chat.title] || 0}</span>
                 <button class="menu-button">⋮</button>
                 <ul class="dropdown-menu">
-                    ${this.createDropdownOptions(['Option 1', 'Option 2', 'Option 3', 'Option 4'])}
+                    ${this.createDropdownOptions(['Mark as Read', 'Option 1', 'Option 2', 'Option 3', 'Option 4'])}
                 </ul>
             `;
             // Add event listener to call Python function and load messages when clicked
@@ -534,4 +534,21 @@ clearSearch.addEventListener('click', () => {
 // Remove any event listeners that might prevent text selection
 document.addEventListener('mousedown', (event) => {
     // Do not call event.preventDefault()
+});
+
+document.querySelectorAll('.dropdown-menu li').forEach(option => {
+    option.addEventListener('click', async (event) => {
+        const optionText = event.target.textContent;
+        const chatItem = event.target.closest('.chat-item');
+        const chatID = chatItem.getAttribute('data-chat-id');
+        if (optionText === 'Mark as Read' && chatID) {
+            try {
+                await window.pywebview.api.markBubbleAsRead(chatID);
+                chatItem.querySelector('.unread-count').textContent = '0';
+                updateUnreadCounts();
+            } catch (error) {
+                console.error('Error marking bubble as read:', error);
+            }
+        }
+    });
 });

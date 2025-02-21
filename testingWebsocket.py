@@ -60,7 +60,6 @@ def user_info(info):
         "user_id": '1',
     }
     response = requests.post(url, headers=headers, json=data)
-    check_if_ok(response)
     infolist = response.json().get('user')
     piece = infolist.get(info)
     return piece
@@ -420,5 +419,5 @@ async def main(bubble_id):
 
 # Start message listener asynchronously
 #chat = int(input("Bubble ID: "))
-chat = '4169598'
+chat = '3640189'
 asyncio.run(main(chat))
