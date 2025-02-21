@@ -1,7 +1,4 @@
-import websocket
-import json
-import requests
-import uuid
+import websocket, json, requests, uuid
 from bpro.pronto import *
 from bpro.systemcheck import *
 from bpro.readjson import *
@@ -79,4 +76,20 @@ def init_auth(socket_id, channel_name_id):
     print("User Connection Established.")
     print(f"User Auth: {privuser_auth}")
 
-
+def chat_auth(bubble_id, channelcode, socketid):
+    url = f"{api_base_url}api/v1/pusher.auth"
+    data = {
+        "socket_id:": socketid,
+        "channel_name": f"private-chat.{bubble_id}.{channelcode}"
+    }
+    headers = {
+        "Authorization": f"Bearer {accesstoken}",
+        "Content-Type": "application/json"
+    }
+    response = requests.post(url, headers=headers, json=data)
+    response.raise_for_status()  # Check for HTTP errors
+    print(f"Auth response: {response.json()}")
+    chat_auth = response.json().get("auth")
+    print("Chat Connection Established.")
+    print(f"Chat Auth: {chat_auth}")
+    return chat_auth
