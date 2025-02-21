@@ -4,33 +4,22 @@ import sys, json, asyncio, requests, websockets
 api_base_url = "https://stanfordohs.pronto.io/"
 
 auth_path, chats_path, bubbles_path, loginTokenJSONPath, authTokenJSONPath, verificationCodeResponseJSONPath, settings_path, encryption_path, logs_path, settingsJSONPath, keysJSONPath, bubbleOverviewJSONPath, users_path = createappfolders()
-# UPDATED: Retrieve access token instead of an empty string.
 accesstoken = getaccesstoken(authTokenJSONPath)
 user_info = get_clientUserInfo(authTokenJSONPath)
 user_id = user_info["id"] if user_info else None
 print(f"User ID: {user_id}")
-
 bubble_id = "4003845"
+print(f"Bubble ID: {bubble_id}")
 # 3640189 for bulletin
 # 4003845 for oocc
 # Check if bubble_id consists only of digits to verify it's valid
-if bubble_id.isdigit():
-    print("Chat Registered")  # If valid, print confirmation
-else:
-    print("Error: Not a valid link.")  # If not, print error message
-    sys.exit()  # Exit the program
 
 # NEW: Retrieve channelcode automatically using get_channelcodes.
 channelcode = get_channelcodes(bubbleOverviewJSONPath, bubble_id)
 if not channelcode:
-    print(f"No channelcode found for bubble id {bubble_id}. Exiting.")
-    sys.exit()
+    print(f"No channelcode found for bubble id {bubble_id}.")
 
 # Set up HTTP request headers with JSON content type and authorization using the access token
-headers = {
- "Content-Type": "application/json",
- "Authorization": f"Bearer {accesstoken}",
-}
 
 # Define a function to handle chat authentication over websocket
 def chat_auth(bubble_id, channelcode, socket_id):
@@ -42,7 +31,10 @@ def chat_auth(bubble_id, channelcode, socket_id):
          "socket_id": socket_id,
          "channel_name": f"private-bubble.{bubble_id}.{channelcode}"
     }
-
+    headers = {
+          "Content-Type": "application/json",
+          "Authorization": f"Bearer {accesstoken}",
+     }
     # Make a POST request to the authentication endpoint with the headers and JSON payload
     response = requests.post(url, headers=headers, json=data)
     response.raise_for_status()  # Raise an error if the request was unsuccessful
@@ -58,13 +50,11 @@ def start_push_with_channelcode(bubble_id):
     async def connect_and_listen():
          # Set the URI for Pusher websocket connection with required parameters
          uri = "wss://ws-mt1.pusher.com/app/f44139496d9b75f37d27?protocol=7&client=js&version=8.3.0&flash=false"
-
          # Open a websocket connection to the specified URI
          async with websockets.connect(uri, open_timeout=20) as websocket:
               # Wait for the initial connection message, which is expected to contain the socket_id
               response = await websocket.recv()
               print(f"Received: {response}")  # Print the received message
-
               # Parse the response JSON
               data = json.loads(response)
               if "data" in data:
@@ -72,7 +62,6 @@ def start_push_with_channelcode(bubble_id):
                     inner_data = json.loads(data["data"])
                     # Extract the socket_id from the inner data if available
                     socket_id = inner_data.get("socket_id", None)
-
                     # Prepare a subscription message including the channel name and auth token
                     payload = {
                          "event": "pusher:subscribe",
@@ -81,16 +70,13 @@ def start_push_with_channelcode(bubble_id):
                               "auth": str(chat_auth(bubble_id, channelcode, socket_id))
                          }
                     }
-
                     # Send the subscription message to the websocket server
                     await websocket.send(json.dumps(payload))
-
                     # If socket_id is found, print it; otherwise, indicate that it was not found
                     if socket_id:
                          print(f"Socket ID: {socket_id}")
                     else:
                          print("Socket ID not found in response")
-
               # Enter a loop that continuously listens for messages from the websocket connection
               async for message in websocket:
                     # If the server sends a ping message, reply with pong for keeping the connection alive
@@ -107,5 +93,4 @@ def start_push_with_channelcode(bubble_id):
     # Run the main asynchronous function using asyncio's event loop
     asyncio.run(main())
 
-# Use the new function instead of prompting for a secure chat ID.
 start_push_with_channelcode(bubble_id)
