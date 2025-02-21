@@ -1,4 +1,5 @@
 from readjson import * 
+from websocketParsing import *
 import sys, json, asyncio, requests, websockets
 
 api_base_url = "https://stanfordohs.pronto.io/"
@@ -84,7 +85,7 @@ def start_push_with_channelcode(bubble_id):
                          await websocket.send("pong")  # Respond with pong to the ping
                     else:
                          # For any other type of message, print it out
-                         print(f"Received: {message}")
+                         parse_event(message)  # Parse the event message using the provided function
 
     # Define the main async function that initiates connection and listening
     async def main():
