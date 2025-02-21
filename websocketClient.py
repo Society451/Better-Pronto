@@ -1,17 +1,33 @@
 import websocket
 import json
 import requests
+from bpro.pronto import *
+from bpro.systemcheck import *
+from bpro.readjson import *
 
-# Define the WebSocket URL
+auth_path, chats_path, bubbles_path, loginTokenJSONPath, authTokenJSONPath, verificationCodeResponseJSONPath, settings_path, encryption_path, logs_path, settingsJSONPath, keysJSONPath, bubbleOverviewJSONPath, users_path = createappfolders()
+accesstoken = ""
+user_info = get_clientUserInfo(authTokenJSONPath)
+userID = user_info["id"] if user_info else None
+print(f"User ID: {userID}")
+
+def getLocalAccesstoken():
+    global accesstoken
+    accesstoken = getaccesstoken(authTokenJSONPath)
+    if accesstoken:
+        print(f"Access token: {accesstoken}")
+    else:
+        print("Access token not found or invalid")
+getLocalAccesstoken()
+
 url = "wss://ws-mt1.pusher.com/app/f44139496d9b75f37d27?protocol=7&client=js&version=8.3.0&flash=false"
 
 # Define your access token
 api_base_url = "https://stanfordohs.pronto.io/"
 headers = {
     "Content-Type": "application/json",
-    "Authorization": f"Bearer {access_token}",
+    "Authorization": f"Bearer {accesstoken}",
 }
-
 
 # Function to authenticate the subscription
 def authenticate_channel(socket_id, channel_name):
@@ -21,7 +37,7 @@ def authenticate_channel(socket_id, channel_name):
         "channel_name": channel_name
     }
     headers = {
-        "Authorization": f"Bearer {access_token}",
+        "Authorization": f"Bearer {accesstoken}",
         "Content-Type": "application/json"
     }
 
