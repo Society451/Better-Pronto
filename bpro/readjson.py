@@ -1,5 +1,5 @@
 import json
-from .systemcheck import createappfolders
+from systemcheck import createappfolders
 import os
 #remember to change the .systemcheck to systemcheck if you are running this file directly
 
