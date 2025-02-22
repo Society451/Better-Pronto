@@ -4,6 +4,8 @@ An alpha client for [pronto](https://pronto.io), a messaging platform used by St
 
 Aims to improve the application interface by completely rewriting the client from the ground up.
 
+Documentation can be found at [this page here](https://society451.github.io/Better-Pronto-Documentation/)
+
 Dependencies:
 - `pywebview` 
 
