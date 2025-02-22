@@ -13,7 +13,7 @@ def getLocalAccesstoken():
     global accesstoken
     accesstoken = getaccesstoken(authTokenJSONPath)
     if accesstoken:
-        print(f"Access token: {accesstoken}")
+        print(f"Access token retrieved successfully: {accesstoken[:5]}...{accesstoken[-5:]}")
     else:
         print("Access token not found or invalid")
 getLocalAccesstoken()
