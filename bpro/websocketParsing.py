@@ -4,6 +4,11 @@ from colorama import Fore, Style, init
 # Initialize colorama
 init()
 
+def parse_event(event_data):
+    """Parse websocket event data"""
+    # Add your parsing logic here
+    return event_data
+
 def parse_event(message):
     try:
         event_data = json.loads(message)

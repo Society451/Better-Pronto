@@ -2,6 +2,9 @@ import webview, os, json, re, time, uuid
 from bpro.pronto import *
 from bpro.systemcheck import *
 from bpro.readjson import *
+from bpro.websocket_manager import WebSocketManager
+import asyncio
+import threading
 
 auth_path, chats_path, bubbles_path, loginTokenJSONPath, authTokenJSONPath, verificationCodeResponseJSONPath, settings_path, encryption_path, logs_path, settingsJSONPath, keysJSONPath, bubbleOverviewJSONPath, users_path = createappfolders()
 accesstoken = ""
@@ -52,6 +55,77 @@ def sanitize_folder_name(name):
     return sanitized_name
 
 class Api:
+    def __init__(self, accesstoken):
+        self.email = ""
+        self.accesstoken = accesstoken
+        self.websocket_manager = None
+        self.ws_thread = None
+        self.loop = None
+        # Initialize websocket manager and loop immediately
+        self.loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(self.loop)
+        self.setup_websocket_manager()
+
+    def setup_websocket_manager(self):
+        self.websocket_manager = WebSocketManager(self.accesstoken, userID)
+        self.websocket_manager.add_message_callback(self.handle_ws_message)
+
+    def connect_to_bubble(self, bubble_id):
+        if not self.websocket_manager:
+            self.setup_websocket_manager()
+            
+        channelcode = get_channelcodes(bubbleOverviewJSONPath, bubble_id)
+        if channelcode:
+            # Create a new event loop for this thread if needed
+            try:
+                loop = asyncio.get_event_loop()
+            except RuntimeError:
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+            
+            # Run the connection coroutine
+            loop.run_until_complete(
+                self.websocket_manager.connect_to_bubble(bubble_id, channelcode)
+            )
+            return True
+        return False
+
+    def disconnect_from_bubble(self, bubble_id):
+        if self.websocket_manager:
+            try:
+                loop = asyncio.get_event_loop()
+            except RuntimeError:
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+            
+            loop.run_until_complete(
+                self.websocket_manager.disconnect_from_bubble(bubble_id)
+            )
+            return True
+        return False
+
+    async def handle_ws_message(self, bubble_id, message):
+        try:
+            data = json.loads(message)
+            event_type = data.get('event', '')
+            
+            # Skip logging for common events to reduce noise
+            if not any(x in event_type for x in ['UserTyping', 'UserStoppedTyping']):
+                print(f"\n[WebSocket] Forwarding {event_type} to frontend")
+            
+            # Always forward to frontend
+            window.evaluate_js(f'window.handleWebSocketMessage({json.dumps(data)})')
+            
+        except Exception as e:
+            print(f"[WebSocket] Error forwarding message: {e}")
+
+    def process_websocket_message(self, message):
+        try:
+            return json.loads(message)
+        except Exception as e:
+            print(f"[WebSocket] Error processing message: {e}")
+            return None
+
     ## makes a new window, and we're prolly never gonna use this 
     def makeNewWindow(windowName, windowURL, api):
         window = webview.create_window(windowName, windowURL, js_api=api)
@@ -63,6 +137,38 @@ class Api:
     def __init__(self, accesstoken):
         self.email = ""
         self.accesstoken = accesstoken
+        self.websocket_manager = None
+        self.ws_thread = None
+        self.loop = None
+
+    async def setup_websocket_manager(self):
+        self.websocket_manager = WebSocketManager(self.accesstoken, userID)
+        self.websocket_manager.add_message_callback(self.handle_ws_message)
+
+    def connect_to_bubble(self, bubble_id):
+        if not self.websocket_manager:
+            if not self.loop:
+                self.loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(self.loop)
+                self.loop.run_until_complete(self.setup_websocket_manager())
+            
+        channelcode = get_channelcodes(bubbleOverviewJSONPath, bubble_id)
+        if channelcode:
+            asyncio.run_coroutine_threadsafe(
+                self.websocket_manager.connect_to_bubble(bubble_id, channelcode),
+                self.loop
+            )
+            return True
+        return False
+
+    def disconnect_from_bubble(self, bubble_id):
+        if self.websocket_manager and self.loop:
+            asyncio.run_coroutine_threadsafe(
+                self.websocket_manager.disconnect_from_bubble(bubble_id),
+                self.loop
+            )
+            return True
+        return False
 
     def handle_email(self, email):
         if "stanford.edu" in email:
@@ -295,9 +401,26 @@ class Api:
         print(f"Sending message to bubble ID {bubbleID}: {message}")
         created_at = time.time()
         unique_uuid = str(uuid.uuid4())
-        response = send_message_to_bubble(accesstoken, bubbleID, created_at, message, userID, unique_uuid, parentmessage_id=None)
-        print(f"Response: {response}")
-        return response
+        try:
+            response = send_message_to_bubble(accesstoken, bubbleID, created_at, message, userID, unique_uuid, parentmessage_id=None)
+            print(f"Response: {response}")
+            
+            # If response is successful, return formatted response
+            if isinstance(response, dict) and response.get('ok'):
+                return {
+                    'ok': True,
+                    'message': response['message']
+                }
+            return {
+                'ok': False,
+                'error': 'Failed to send message'
+            }
+        except Exception as e:
+            print(f"Error sending message: {e}")
+            return {
+                'ok': False,
+                'error': str(e)
+            }
 
     def markBubbleAsRead(self, bubbleID):
         try:
@@ -312,10 +435,36 @@ class Api:
         try:
             response = deleteMessage(accesstoken, messageID)
             print(f"Deleted message {messageID}: {response}")
-            return {"ok": True, "response": response}
+            
+            # Check if response is a dictionary and has an 'ok' key
+            if isinstance(response, dict):
+                if response.get('ok'):
+                    return {"ok": True, "response": response}
+                else:
+                    # Return the specific error message from the response
+                    return {
+                        "ok": False, 
+                        "error": response.get('error', 'Unknown error occurred')
+                    }
+            else:
+                return {"ok": False, "error": "Invalid response format"}
+                
         except Exception as e:
             print(f"Error deleting message: {e}")
             return {"ok": False, "error": str(e)}
+
+    def notify_typing(self, bubble_id):
+        """Typing notifications disabled - read-only mode"""
+        pass
+
+    def notify_stopped_typing(self, bubble_id):
+        """Typing notifications disabled - read-only mode"""
+        pass
+
+# Modify the window creation to start the WebSocket event loop
+def start_websocket_loop(loop):
+    asyncio.set_event_loop(loop)
+    loop.run_forever()
 
 # Create an instance of the Api class with the accesstoken
 api = Api(accesstoken)
@@ -332,5 +481,4 @@ window = webview.create_window(
     zoomable=True,
 )
 
-# Start the webview with debug mode enabled
 webview.start(debug=True)
