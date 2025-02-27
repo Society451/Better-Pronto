@@ -10,6 +10,7 @@ const chatHeading = document.getElementById('chat-heading');
 let lastSender = null; // Track the last message sender
 const hasDeletePermission = true; // Message Delete permission
 let isShiftPressed = false; // Track if Shift key is pressed
+let currentChatID = null; // Track the current chat ID
 
 
 function updateUnreadCounts() {
@@ -430,7 +431,10 @@ class Category {
                 const chatID = chatItem.getAttribute('data-chat-id');
                 if (chatID) {
                     window.pywebview.api.print_chat_info(chat.title, chatID);
+                    currentChatID = chatID; // Update the current chat ID
+                    console.log(chatID);
                     loadMessages(chatID, chat.title); // Load messages for the clicked chat and update heading
+                    
                 } else {
                     console.error('Chat ID is undefined');
                 }
@@ -490,12 +494,21 @@ messageInput.addEventListener('keypress', (event) => {
         event.preventDefault(); // Prevent default Enter key behavior
         const messageText = messageInput.value.trim();
         if (messageText) {
-            const sender = 'You'; // Replace with dynamic sender if needed
-            const timestamp = new Date().toLocaleString();
-            const message = new Message(messageText, sender, timestamp);
-            messagesContainer.appendChild(message.createElement());
+            const parentID = null; // Replace with dynamic parent ID if needed
+            //const sender = 'You'; // Replace with dynamic sender if needed
+            //const timestamp = new Date().toLocaleString();
+            //const message = new Message(messageText, sender, timestamp);
+            //messagesContainer.appendChild(message.createElement());
             messageInput.value = ''; // Clear the input after sending
             messagesContainer.scrollTop = messagesContainer.scrollHeight; // Scroll to the bottom
+            console.log("Sending message:, " + currentChatID + ", chatID, " + messageText + ", messageText, " + sender + ", sender"); // Debug statement
+            try {
+            window.pywebview.api.send_message(currentChatID, messageText, window.pywebview.api.get_user_id(), parentID );
+            }
+            catch (error) {
+                console.error("Error sending message:", error);
+            }
+            
         }
     }
 });
