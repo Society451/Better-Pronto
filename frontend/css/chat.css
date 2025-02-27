@@ -280,29 +280,27 @@ body {
 }
 
 .search-container {
-    position: absolute; /* Position absolutely within the parent */
-    top: 0; /* Align to the top */
-    right: -10px; /* Move the search bar 10 pixels to the right */
-    display: flex; /* Use flexbox for layout */
-    align-items: center; /* Center items vertically */
-    z-index: 1; /* Ensure it appears above other elements */
+    position: absolute;
+    top: 0;
+    right: 15px;
+    display: flex;
+    align-items: center;
+    z-index: 3; /* Increased z-index to ensure it's above other elements */
+    background-color: #f4f4f4; /* Match sidebar background */
+    padding: 5px;
+    border-radius: 5px;
 }
 
 .search-input {
-    margin-left: 170px; /* Space to the left */
-    padding: 5px 10px; /* Padding inside the input */
-    margin-top: 5px; /* Adjust this value to move it up */
-    border: 1px solid #ccc; /* Light grey border */
-    border-radius: 5px; /* Rounded corners */
-    font-size: 14px; /* Font size */
-    vertical-align: middle; /* Align the search input vertically */
-    position: relative; /* Position relative for absolute positioning of children */
-    top: -5px; /* Move the search input upwards */
-    word-wrap: break-word; /* Ensure long words break to the next line */
-    white-space: pre-wrap; /* Preserve whitespace and wrap text */
-    overflow-wrap: break-word; /* Ensure long words break to the next line */
+    margin-left: 0; /* Remove left margin */
+    padding: 5px 10px;
+    margin-top: 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
     width: 200px;
     transition: all 0.3s ease;
+    position: relative;
 }
 
 .search-input:focus {
@@ -321,9 +319,14 @@ body {
     background: none; /* No background */
     border: none; /* No border */
     cursor: pointer; /* Pointer cursor */
-    margin-top: -6px; /* Move the clear search button 5px down */
-    font-size: 14px; /* Font size */
-    margin-left: 1px; /* Space to the left */
+    padding: 5px;
+    margin-left: 5px;
+    color: #666;
+    transition: color 0.3s ease;
+}
+
+.clear-search:hover {
+    color: #ff4444;
 }
 
 .clear-search .fa-times {

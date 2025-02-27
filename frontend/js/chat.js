@@ -560,9 +560,9 @@ toggleAllButton.addEventListener('click', () => {
 // Add event listener to show search input
 searchButton.addEventListener('click', () => {
     searchButton.style.display = 'none';
+    toggleAllButton.style.display = 'none'; // Hide the toggle-all button
     searchContainer.style.display = 'flex';
     searchInput.focus();
-    toggleAllButton.style.zIndex = '2'; // Ensure the toggle-all button is above the search container
 });
 
 // Add event listener to clear and exit search input
@@ -570,7 +570,19 @@ clearSearch.addEventListener('click', () => {
     searchInput.value = '';
     searchContainer.style.display = 'none';
     searchButton.style.display = 'block';
-    toggleAllButton.style.zIndex = ''; // Reset the z-index of the toggle-all button
+    toggleAllButton.style.display = 'block'; // Show the toggle-all button again
+    
+    // Reset all chat items visibility
+    const chatItems = document.querySelectorAll('.chat-item');
+    chatItems.forEach(chat => {
+        chat.style.display = 'flex';
+    });
+    
+    // Reset all categories visibility
+    const categories = document.querySelectorAll('.category');
+    categories.forEach(category => {
+        category.style.display = 'block';
+    });
 });
 
 // Remove any event listeners that might prevent text selection
