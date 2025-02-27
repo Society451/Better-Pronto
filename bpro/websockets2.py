@@ -1,5 +1,5 @@
 from readjson import * 
-from websocketParsing import *
+from websocketParsing import parse_event
 import sys, json, asyncio, requests, websockets
 
 api_base_url = "https://stanfordohs.pronto.io/"
@@ -13,6 +13,7 @@ bubble_id = "4003845"
 print(f"Bubble ID: {bubble_id}")
 # 3640189 for bulletin
 # 4003845 for oocc
+# 3775720 for OHSMP
 # Check if bubble_id consists only of digits to verify it's valid
 
 # NEW: Retrieve channelcode automatically using get_channelcodes.
