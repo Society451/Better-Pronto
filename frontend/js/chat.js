@@ -62,7 +62,7 @@ document.addEventListener('keyup', (event) => {
 
 // Message class to create message elements
 class Message {
-    constructor(content, sender, timestamp, user, isDefault = false, editCount = 0, lastEdited = null) {
+    constructor(content, sender, timestamp, user, isDefault = false, editCount = 0, lastEdited = null, messageId = null) {
         this.content = content;
         this.sender = sender;
         this.timestamp = timestamp;
@@ -70,6 +70,7 @@ class Message {
         this.isDefault = isDefault;
         this.editCount = editCount;
         this.lastEdited = lastEdited;
+        this.messageId = messageId;
     }
 
     // Create a message element
@@ -78,6 +79,9 @@ class Message {
         messageElement.classList.add('message');
         if (this.isDefault) {
             messageElement.style.fontStyle = 'italic';
+        }
+        if (this.messageId) {
+            messageElement.setAttribute('data-message-id', this.messageId);
         }
         
         // Create a wrapper with flex layout for profile picture and text content
@@ -132,12 +136,27 @@ class Message {
         /* Add delete icon if permission is granted */
         if (hasDeletePermission) {
             const deleteIcon = document.createElement('i');
-            deleteIcon.classList.add('fas', 'fa-trash-alt', 'delete-icon');
+            deleteIcon.classList.add('fas', 'fa-trash', 'delete-icon');
             deleteIcon.title = 'Delete Message';
             // Add event listener for deletion if needed
-            deleteIcon.addEventListener('click', (event) => {
+            deleteIcon.addEventListener('click', async (event) => {
                 event.stopPropagation(); /* Prevent triggering message click */
-                messagesContainer.removeChild(messageElement);
+                if (this.messageId) {
+                    if (confirm('Are you sure you want to delete this message?')) {
+                        try {
+                            const response = await window.pywebview.api.delete_message(this.messageId);
+                            if (response && response.ok) {
+                                messageElement.remove();
+                            } else {
+                                console.error('Failed to delete message:', response);
+                            }
+                        } catch (error) {
+                            console.error('Error deleting message:', error);
+                        }
+                    }
+                } else {
+                    console.error('No message ID available for deletion');
+                }
             });
             messageElement.appendChild(deleteIcon); /* Ensure deleteIcon is inside messageElement */
 
@@ -246,9 +265,19 @@ async function loadMessages(bubbleID, bubbleName) {
                 const author = msg.author;
                 const timestamp = msg.time_of_sending;
                 const user = { fullname: msg.author, profilepicurl: msg.profilepicurl };
+                const messageId = msg.message_id;  // Add message ID
 
                 if (content && author && timestamp) {
-                    const message = new Message(content, author, timestamp, user, false, msg.edit_count, msg.last_edited);
+                    const message = new Message(
+                        content, 
+                        author, 
+                        timestamp, 
+                        user, 
+                        false, 
+                        msg.edit_count, 
+                        msg.last_edited,
+                        messageId  // Pass message ID to constructor
+                    );
                     messagesContainer.appendChild(message.createElement()); // Display message in HTML
                 } else {
                     console.warn('Incomplete dynamic message data:', msg);

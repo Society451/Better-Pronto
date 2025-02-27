@@ -319,21 +319,34 @@ body {
 
 .delete-icon {
     position: absolute;
-    top: 5px;
-    right: 5px;
-    display: none; /* Hide by default */
+    top: 8px;
+    right: 8px;
+    display: none;
     color: #888;
     cursor: pointer;
-    font-size: 18px; /* Increase size */
-    z-index: 10; /* Ensure it appears above other elements */
-    pointer-events: auto; /* Allow click events */
-    transition: opacity 0.3s ease; /* Smooth transition */
-    opacity: 0; /* Fully transparent */
+    font-size: 14px;
+    z-index: 10;
+    padding: 4px;
+    background-color: transparent;
+    border-radius: 3px;
+    transition: all 0.2s ease;
 }
 
 .message:hover .delete-icon {
-    display: block; /* Show the delete icon */
-    opacity: 1; /* Fully opaque */
+    display: block;
+}
+
+.delete-icon:hover {
+    color: #ff4444;
+    background-color: rgba(255, 68, 68, 0.1);
+}
+
+/* Ensure delete icon is visible on mobile */
+@media (max-width: 768px) {
+    .delete-icon {
+        display: block;
+        opacity: 0.6;
+    }
 }
 
 .unread-count {

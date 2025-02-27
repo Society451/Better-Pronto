@@ -308,6 +308,15 @@ class Api:
             print(f"Error marking bubble as read: {e}")
             return None
 
+    def delete_message(self, messageID):
+        try:
+            response = deleteMessage(accesstoken, messageID)
+            print(f"Deleted message {messageID}: {response}")
+            return {"ok": True, "response": response}
+        except Exception as e:
+            print(f"Error deleting message: {e}")
+            return {"ok": False, "error": str(e)}
+
 # Create an instance of the Api class with the accesstoken
 api = Api(accesstoken)
 # Create a webview window with the specified HTML file and API
