@@ -301,6 +301,20 @@ body {
     word-wrap: break-word; /* Ensure long words break to the next line */
     white-space: pre-wrap; /* Preserve whitespace and wrap text */
     overflow-wrap: break-word; /* Ensure long words break to the next line */
+    width: 200px;
+    transition: all 0.3s ease;
+}
+
+.search-input:focus {
+    width: 250px;
+    border-color: #4a90e2;
+    outline: none;
+}
+
+/* Improve search container visibility */
+.search-container.active {
+    opacity: 1;
+    pointer-events: all;
 }
 
 .clear-search {
@@ -423,4 +437,19 @@ body {
 
 .edit-info i {
     margin-right: 2px;
+}
+
+/* Add these new styles */
+.highlight {
+    background-color: #ffeb3b;
+    padding: 0 2px;
+    border-radius: 2px;
+}
+
+/* Style for chat titles */
+.chat-title {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }

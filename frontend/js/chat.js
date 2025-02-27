@@ -448,7 +448,7 @@ class Category {
             chatItem.setAttribute('data-has-unread-mentions', chat.hasUnreadMentions); // Set the data-has-unread-mentions attribute
             chatItem.setAttribute('data-is-dm', this.isDM || chat.isDM); // Set the data-is-dm attribute
             chatItem.innerHTML = `
-                ${chat.title}
+                <span class="chat-title">${chat.title}</span>
                 <span class="unread-count">${this.unreadCounts[chat.title] || 0}</span>
                 <button class="menu-button">⋮</button>
                 <ul class="dropdown-menu">
@@ -594,3 +594,45 @@ document.querySelectorAll('.dropdown-menu li').forEach(option => {
         }
     });
 });
+
+searchInput.addEventListener('input', (event) => {
+    const searchTerm = event.target.value.toLowerCase();
+    const chatItems = document.querySelectorAll('.chat-item');
+    const categories = document.querySelectorAll('.category');
+
+    categories.forEach(category => {
+        const header = category.querySelector('.category-header');
+        const content = category.querySelector('.category-content');
+        let hasVisibleChats = false;
+
+        // Search through chat items in this category
+        const chats = content.querySelectorAll('.chat-item');
+        chats.forEach(chat => {
+            const chatTitle = chat.textContent.toLowerCase();
+            if (chatTitle.includes(searchTerm)) {
+                chat.style.display = 'flex';
+                hasVisibleChats = true;
+            } else {
+                chat.style.display = 'none';
+            }
+        });
+
+        // Show/hide category based on whether it has matching chats
+        if (hasVisibleChats || searchTerm === '') {
+            category.style.display = 'block';
+            if (searchTerm !== '') {
+                content.classList.remove('collapsed');
+                header.classList.remove('collapsed');
+            }
+        } else {
+            category.style.display = 'none';
+        }
+    });
+});
+
+// Add highlight function to highlight matching text
+function highlightText(text, searchTerm) {
+    if (!searchTerm) return text;
+    const regex = new RegExp(`(${searchTerm})`, 'gi');
+    return text.replace(regex, '<span class="highlight">$1</span>');
+}
