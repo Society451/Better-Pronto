@@ -103,12 +103,14 @@ class Api:
                 print("Failed to get access token from login token")
                 return None
         else:
-            print("Login token not found")
             return None
 
     ## Dynamic Data Fetching
     ## dynamic and local data fetching should be called at the same, possibly through a threading system,
     ## although local data fetching is fast enough that this complexity may not be necessary
+    def get_user_id(self):
+        user_info = get_clientUserInfo(authTokenJSONPath)
+        return user_info["id"] if user_info else None
     def get_live_bubbles(self, *args):
         response = getUsersBubbles(accesstoken)
         save_response_to_file(response, bubbleOverviewJSONPath)
@@ -289,10 +291,11 @@ class Api:
     ##
 
     def send_message(self, bubbleID, message, userID, parentmessage_id=None):
+        userID = [userID]
         print(f"Sending message to bubble ID {bubbleID}: {message}")
         created_at = time.time()
-        uuid = str(uuid.uuid4())
-        response = send_message_to_bubble(accesstoken, bubbleID, created_at, message, userID, uuid, parentmessage_id=None)
+        unique_uuid = str(uuid.uuid4())
+        response = send_message_to_bubble(accesstoken, bubbleID, created_at, message, userID, unique_uuid, parentmessage_id=None)
         print(f"Response: {response}")
         return response
 
@@ -321,4 +324,4 @@ window = webview.create_window(
 )
 
 # Start the webview with debug mode enabled
-webview.start(debug=False)
+webview.start(debug=True)

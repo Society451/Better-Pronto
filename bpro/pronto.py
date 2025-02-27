@@ -485,16 +485,27 @@ def send_message_to_bubble(access_token, bubbleID, created_at, message, userID, 
         "Content-Type": "application/json",
         "Authorization": f"Bearer {access_token}",
     }
-    request_payload = {
+    if (parentmessage_id == None):
+        request_payload = {
         "bubble_id": bubbleID,
         "created_at": created_at,
-        "id": "null",
+        "id": "Null",
         "message": message,
         "messagemedia": [],
-        "parentmessage_id": parentmessage_id,
         "user_id": userID,
         "uuid": uuid  
     }
+    else:
+        request_payload = {
+            "bubble_id": bubbleID,
+            "created_at": created_at,
+            "id": "Null",
+            "message": message,
+            "messagemedia": [],
+            "parentmessage_id": parentmessage_id,
+            "user_id": userID,
+            "uuid": uuid  
+        }
     try:
         response = requests.post(url, headers=headers, json=request_payload)
         response.raise_for_status()
