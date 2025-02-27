@@ -489,26 +489,26 @@ window.addEventListener('DOMContentLoaded', async () => {
 });
 
 // Add event listener for the Enter key to send a message
-messageInput.addEventListener('keypress', (event) => {
-    if (event.key === 'Enter') {
+messageInput.addEventListener('keypress', async (event) => {
+    if (event.key === 'Enter' && !event.shiftKey) {  // Allow Shift+Enter for new lines
         event.preventDefault(); // Prevent default Enter key behavior
         const messageText = messageInput.value.trim();
-        if (messageText) {
-            const parentID = null; // Replace with dynamic parent ID if needed
-            //const sender = 'You'; // Replace with dynamic sender if needed
-            //const timestamp = new Date().toLocaleString();
-            //const message = new Message(messageText, sender, timestamp);
-            //messagesContainer.appendChild(message.createElement());
-            messageInput.value = ''; // Clear the input after sending
-            messagesContainer.scrollTop = messagesContainer.scrollHeight; // Scroll to the bottom
-            console.log("Sending message:, " + currentChatID + ", chatID, " + messageText + ", messageText, " + sender + ", sender"); // Debug statement
+        if (messageText && currentChatID) {
+            const timestamp = new Date().toLocaleString();
             try {
-            window.pywebview.api.send_message(currentChatID, messageText, window.pywebview.api.get_user_id(), parentID );
-            }
-            catch (error) {
+                // Send message to backend
+                const response = await window.pywebview.api.send_message(currentChatID, messageText, await window.pywebview.api.get_user_id(), null);
+                if (response) {
+                    // Create temporary message element
+                    const userInfo = { fullname: 'You', profilepicurl: null }; // You may want to get actual user info
+                    const message = new Message(messageText, 'You', timestamp, userInfo);
+                    messagesContainer.appendChild(message.createElement());
+                    messageInput.value = ''; // Clear the input after sending
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight; // Scroll to bottom
+                }
+            } catch (error) {
                 console.error("Error sending message:", error);
             }
-            
         }
     }
 });
