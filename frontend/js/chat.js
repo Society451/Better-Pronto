@@ -148,6 +148,20 @@ class Message {
                             if (response && response.ok) {
                                 messageElement.remove();
                             } else {
+                                // Create and show error message
+                                const errorDiv = document.createElement('div');
+                                errorDiv.classList.add('error-popup');
+                                errorDiv.textContent = response.error === 'MESSAGE_ACCESSDENIED' ? 
+                                    'You do not have permission to delete this message.' : 
+                                    'Failed to delete message.';
+                                
+                                messageElement.appendChild(errorDiv);
+                                
+                                // Remove error message after 3 seconds
+                                setTimeout(() => {
+                                    errorDiv.remove();
+                                }, 3000);
+                                
                                 console.error('Failed to delete message:', response);
                             }
                         } catch (error) {
@@ -456,12 +470,21 @@ class Category {
                 </ul>
             `;
             // Add event listener to call Python function and load messages when clicked
-            chatItem.addEventListener('click', () => {
+            chatItem.addEventListener('click', async () => {
                 const chatID = chatItem.getAttribute('data-chat-id');
                 if (chatID) {
+                    // Disconnect from previous bubble if any
+                    if (currentChatID) {
+                        await window.pywebview.api.disconnect_from_bubble(currentChatID);
+                    }
+                    
                     window.pywebview.api.print_chat_info(chat.title, chatID);
                     currentChatID = chatID; // Update the current chat ID
                     console.log(chatID);
+                    
+                    // Connect to new bubble's WebSocket
+                    await window.pywebview.api.connect_to_bubble(chatID);
+                    
                     loadMessages(chatID, chat.title); // Load messages for the clicked chat and update heading
                     
                 } else {
@@ -517,21 +540,33 @@ window.addEventListener('DOMContentLoaded', async () => {
     // console.log('Access token response:', accessTokenResponse);
 });
 
-// Add event listener for the Enter key to send a message
+// Update the message input event listener to handle the response
 messageInput.addEventListener('keypress', async (event) => {
     if (event.key === 'Enter' && !event.shiftKey) {  // Allow Shift+Enter for new lines
         event.preventDefault(); // Prevent default Enter key behavior
         const messageText = messageInput.value.trim();
         if (messageText && currentChatID) {
-            const timestamp = new Date().toLocaleString();
             try {
                 // Send message to backend
                 const response = await window.pywebview.api.send_message(currentChatID, messageText, await window.pywebview.api.get_user_id(), null);
-                if (response) {
-                    // Create temporary message element
-                    const userInfo = { fullname: 'You', profilepicurl: null }; // You may want to get actual user info
-                    const message = new Message(messageText, 'You', timestamp, userInfo);
-                    messagesContainer.appendChild(message.createElement());
+                if (response && response.ok && response.message) {
+                    // Create message from response data
+                    const messageData = response.message;
+                    const message = new Message(
+                        messageData.message,
+                        messageData.user.fullname,
+                        messageData.created_at,
+                        messageData.user,
+                        false,
+                        messageData.user_edited_version,
+                        messageData.user_edited_at,
+                        messageData.id
+                    );
+                    
+                    // Create and append the message element
+                    const messageElement = message.createElement();
+                    messageElement.classList.add('message-new'); // Add animation class
+                    messagesContainer.appendChild(messageElement);
                     messageInput.value = ''; // Clear the input after sending
                     messagesContainer.scrollTop = messagesContainer.scrollHeight; // Scroll to bottom
                 }
@@ -647,4 +682,223 @@ function highlightText(text, searchTerm) {
     if (!searchTerm) return text;
     const regex = new RegExp(`(${searchTerm})`, 'gi');
     return text.replace(regex, '<span class="highlight">$1</span>');
+}
+
+// Typing indicator management
+const typingUsers = new Map(); // Store user names with their IDs
+let typingTimer = null;
+const typingIndicator = document.createElement('div');
+typingIndicator.className = 'typing-indicator';
+typingIndicator.style.display = 'none';
+messagesContainer.appendChild(typingIndicator);
+
+// Update typing indicator functionality
+function updateTypingIndicator() {
+    if (typingUsers.size > 0) {
+        const names = Array.from(typingUsers.values());
+        let text = '';
+        
+        if (names.length === 1) {
+            text = `${names[0]} is typing...`;
+        } else if (names.length === 2) {
+            text = `${names[0]} and ${names[1]} are typing...`;
+        } else {
+            text = `${names.length} people are typing...`;
+        }
+        
+        typingIndicator.textContent = text;
+        typingIndicator.style.display = 'block';
+    } else {
+        typingIndicator.style.display = 'none';
+    }
+}
+
+function handleUserTyping(data) {
+    if (!data || data.bubble_id !== currentChatID) return;
+
+    const userName = data.user ? data.user.fullname : 'Someone';
+    typingUsers.set(data.user_id, userName);
+    updateTypingIndicator();
+
+    // Auto-clear after 3 seconds
+    setTimeout(() => {
+        handleUserStoppedTyping({ user_id: data.user_id });
+    }, 3000);
+}
+
+function handleUserStoppedTyping(data) {
+    if (!data) return;
+    typingUsers.delete(data.user_id);
+    updateTypingIndicator();
+}
+
+// Update message input handler to remove typing notifications
+messageInput.addEventListener('input', () => {
+    // Typing notifications disabled - read-only mode
+});
+
+// Update WebSocket message handler to properly handle all events
+window.handleWebSocketMessage = function(message) {
+    if (!message || !message.type) return;
+
+    console.log('[WebSocket] Received message:', message); // Debug logging
+
+    const eventType = message.type.replace('App\\Events\\', '');
+    const data = message.data;
+    
+    switch (eventType) {
+        case "MessageAdded":
+            if (data.message && data.message.bubble_id === currentChatID) {
+                console.log('[WebSocket] New message:', data.message);
+                handleNewMessage(data);
+                // Play notification sound or show visual indicator
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+            break;
+            
+        case "MessageRemoved":
+            if (data.message && data.message.bubble_id === currentChatID) {
+                console.log('[WebSocket] Message removed:', data.message.id);
+                const messageElement = document.querySelector(`[data-message-id="${data.message.id}"]`);
+                if (messageElement) {
+                    messageElement.classList.add('message-removing');
+                    setTimeout(() => messageElement.remove(), 500);
+                }
+            }
+            break;
+            
+        case "MessageUpdated":
+            if (data.message && data.message.bubble_id === currentChatID) {
+                console.log('[WebSocket] Message updated:', data.message);
+                handleMessageUpdated(data);
+            }
+            break;
+            
+        case "UserTyping":
+            if (data.bubble_id === currentChatID) {
+                console.log('[WebSocket] User typing:', data.user);
+                handleUserTyping(data);
+            }
+            break;
+            
+        case "UserStoppedTyping":
+            if (data.bubble_id === currentChatID) {
+                console.log('[WebSocket] User stopped typing:', data.user_id);
+                handleUserStoppedTyping(data);
+            }
+            break;
+            
+        case "MarkUpdated":
+            console.log('[WebSocket] Mark updated:', data);
+            handleMarkUpdated(data);
+            break;
+            
+        case "pusher_internal:subscription_succeeded":
+            console.log('[WebSocket] Subscription succeeded:', data);
+            if (data.presence) {
+                handleSubscriptionSucceeded(data);
+            }
+            break;
+            
+        default:
+            console.log(`[WebSocket] Unhandled event type: ${eventType}`, data);
+    }
+};
+
+// Add CSS class for message animations
+const style = document.createElement('style');
+style.textContent = `
+    .message-new {
+        animation: fadeIn 0.3s ease-in;
+    }
+    .message-removing {
+        animation: fadeOut 0.3s ease-out;
+    }
+    .message-updated {
+        animation: highlight 1s ease-in-out;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeOut {
+        from { opacity: 1; transform: translateY(0); }
+        to { opacity: 0; transform: translateY(10px); }
+    }
+    @keyframes highlight {
+        0% { background-color: rgba(255, 255, 0, 0.5); }
+        100% { background-color: transparent; }
+    }
+`;
+document.head.appendChild(style);
+
+// Update handleNewMessage to add animation
+function handleNewMessage(data) {
+    if (!data.message || data.message.bubble_id !== currentChatID) return;
+
+    const message = new Message(
+        data.message.message,
+        data.message.user.fullname,
+        data.message.created_at,
+        data.message.user,
+        false,
+        data.message.user_edited_version,
+        data.message.user_edited_at,
+        data.message.id
+    );
+    
+    const messageElement = message.createElement();
+    messageElement.classList.add('message-new');
+    messagesContainer.appendChild(messageElement);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+function handleMessageRemoved(data) {
+    const messageId = data.message.id;
+    const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
+    if (messageElement) {
+        messageElement.remove();
+    }
+}
+
+function handleMessageUpdated(data) {
+    const messageContent = data.message;
+    const messageElement = document.querySelector(`[data-message-id="${messageContent.id}"]`);
+    
+    if (messageElement) {
+        const message = new Message(
+            messageContent.message,
+            messageContent.user.fullname,
+            messageContent.created_at,
+            messageContent.user,
+            false,
+            messageContent.user_edited_version,
+            messageContent.user_edited_at,
+            messageContent.id
+        );
+        
+        const newMessageElement = message.createElement();
+        messageElement.replaceWith(newMessageElement);
+    }
+}
+
+function handleMarkUpdated(data) {
+    if (data.mark && data.mark.bubble_id === currentChatID) {
+        updateUnreadCounts();
+    }
+}
+
+function handleSubscriptionSucceeded(data) {
+    const presenceData = data.presence;
+    if (presenceData) {
+        updateOnlineUsers(presenceData.ids);
+    }
+}
+
+function updateOnlineUsers(userIds) {
+    // Update UI to show who's online
+    const onlineIndicator = document.createElement('div');
+    onlineIndicator.className = 'online-users';
+    onlineIndicator.textContent = `${userIds.length} user${userIds.length > 1 ? 's' : ''} online`;
+    chatHeading.appendChild(onlineIndicator);
 }

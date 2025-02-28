@@ -509,3 +509,67 @@ body {
     text-overflow: ellipsis;
     white-space: nowrap;
 }
+
+.typing-indicator {
+    padding: 10px;
+    color: #666;
+    font-style: italic;
+    font-size: 0.9em;
+    position: sticky;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.9);
+    border-top: 1px solid #eee;
+}
+
+/* Improved typing indicator styles */
+.typing-indicator {
+    position: sticky;
+    bottom: 0;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.95);
+    border-top: 1px solid #eee;
+    font-size: 0.9em;
+    color: #666;
+    font-style: italic;
+    animation: fadeIn 0.3s ease-in-out;
+    z-index: 100;
+    backdrop-filter: blur(5px);
+    border-radius: 0 0 5px 5px;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.online-users {
+    font-size: 0.8em;
+    color: #4CAF50;
+    margin-left: 10px;
+    display: inline-block;
+}
+
+.error-popup {
+    position: absolute;
+    top: -40px;
+    right: 10px;
+    background-color: #ff4444;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    animation: slideIn 0.3s ease-out;
+    z-index: 1000;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
