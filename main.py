@@ -15,7 +15,7 @@ def getLocalAccesstoken():
     global accesstoken
     accesstoken = getaccesstoken(authTokenJSONPath)
     if accesstoken:
-        print(f"Access token retrieved successfully: {accesstoken[:5]}...{accesstoken[-5:]}")
+        print(f"Access token retrieved successfully: {accesstoken[:5]}...{accesstoken[-5:]}") 
     else:
         print("Access token not found or invalid")
 getLocalAccesstoken()
@@ -341,6 +341,8 @@ class Api:
             print(f"Error deleting message: {e}")
             return {"ok": False, "error": str(e)}
 
+
+"""
 # Create an instance of the Api class with the accesstoken
 api = Api(accesstoken)
 # Create a webview window with the specified HTML file and API
@@ -357,3 +359,4 @@ window = webview.create_window(
 )
 
 webview.start(debug=False)
+"""
