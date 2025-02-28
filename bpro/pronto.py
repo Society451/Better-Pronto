@@ -768,3 +768,34 @@ def searchMessage(access_token, query, bubbleID=None, orderby=None, user_ids=Non
     except Exception as err:
         logger.error(f"An unexpected error occurred: {err}")
         raise BackendError(f"An unexpected error occurred: {err}")
+
+#{"orderby":["firstname","lastname"],"includeself":true,"bubble_id":"3640189","page":1}
+def bubbleMembershipSearch(access_token, bubble_id, orderby=["firstname", "lastname"], includeself=True, page=None):
+    url = f"{API_BASE_URL}/api/v1/bubble.membershipsearch"
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {access_token}",
+    }
+    request_payload = {
+        "orderby": orderby,
+        "includeself": includeself,
+        "bubble_id": bubble_id,
+    }
+    if page is not None:
+        request_payload["page"] = page
+    try:
+        response = requests.post(url, headers=headers, json=request_payload)
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.HTTPError as http_err:
+        logger.error(f"HTTP error occurred: {http_err} - Response: {response.text}")
+        if response.status_code == 401:
+            raise BackendError(f"HTTP error occurred: {http_err}")
+        else:
+            raise BackendError(f"HTTP error occurred: {http_err}")
+    except requests.exceptions.RequestException as req_err:
+        logger.error(f"Request exception occurred: {req_err}")
+        raise BackendError(f"Request exception occurred: {req_err}")
+    except Exception as err:
+        logger.error(f"An unexpected error occurred: {err}")
+        raise BackendError(f"An unexpected error occurred: {err}")
