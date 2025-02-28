@@ -1,14 +1,7 @@
-import wsmanager as manager
-import json, requests
-import asyncio
+import websocket_manager as manager
+import json, requests, asyncio
 
 accesstoken = ""
-api_base_url = 'https://stanfordohs.pronto.io/'
-headers = {
-    "Content-Type": "application/json",
-    "Authorization": f"Bearer {accesstoken}",
-}
-
 
 def bubble_info(bubble_id, info):
     url = f"{api_base_url}api/v1/bubble.info"
@@ -18,9 +11,7 @@ def bubble_info(bubble_id, info):
     }
 
     response = requests.post(url, headers=headers, json=data)
-    response.raise_for_status
-
-    print(response.json())
+    check_if_ok(response)
     infolist = response.json().get('bubble')
     piece = infolist.get(info)
     return piece
@@ -45,7 +36,8 @@ def chat_auth(bubble_id, channelcode, socketid):
 
 async def subscribe_to_bubble(bubbleid):
     websocket = manager.connect('wss://ws-mt1.pusher.com/app/f44139496d9b75f37d27?protocol=7&client=js&version=8.3.0&flash=false')
-    channelcode = bubble_info(bubbleid, 'channelcode')
+    await websocket.connect()  # Ensure connection is active
+    channelcode = bubble_info(bubble_id, 'channelcode')
     socket_id = manager.get_socket_id()
 
     sub_data = {
@@ -103,5 +95,5 @@ def event_parser(message):
 
     # plus, the front end doesn't even have read receipts and whatnot so we don't need it yet
 
-asyncio.run(subscribe_to_bubble(4003845))
+subscribe_to_bubble(4003845)
 manager.register_listener(event_parser)
