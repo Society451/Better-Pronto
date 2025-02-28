@@ -30,53 +30,6 @@ channel_name_id = get_org_id(authTokenJSONPath)
 ###
 ###
 ###
-
-#Function to authenticate the subscription
-def init_auth(socket_id, channel_name_id):
-    auth_url = f"{api_base_url}api/v1/pusher.auth"
-    privpush_uuid = uuid.uuid4()  
-
-    #payload for organization channel
-    payload = {
-        "socket_id": socket_id,
-        "channel_name": f"private-organization.{channel_name_id}"
-    }
-    headers = {
-        "Authorization": f"Bearer {accesstoken}",
-        "Content-Type": "application/json"
-    }
-
-    response = requests.post(auth_url, headers=headers, json=payload)
-    response.raise_for_status()  # Check for HTTP errors
-    print(f"Auth response: {response.json()}")
-    privorg_auth = response.json().get("auth")
-    print("Organization Connection Established.")
-    print(f"Organization Auth: {privorg_auth}")
-
-    #payload for private channel
-    data = {
-        "socket_id": socket_id,
-        "channel_name": f"private-push.{userID}.{privpush_uuid}"
-    }
-    response = requests.post(uri, headers=headers, json=data)
-    response.raise_for_status()  # Check for HTTP errors
-    print(f"Auth response: {response.json()}")
-    privpush_auth = response.json().get("auth")
-    print("Push Connection Established.")
-    print(f"Push Auth: {privpush_auth}")
-
-    #payload for user channel
-    data = {
-        "socket_id": socket_id,
-        "channel_name": f"private-user.{userID}"
-    }
-    response = requests.post(uri, headers=headers, json=data)
-    response.raise_for_status()  # Check for HTTP errors
-    print(f"Auth response: {response.json()}")
-    privuser_auth = response.json().get("auth")
-    print("User Connection Established.")
-    print(f"User Auth: {privuser_auth}")
-
 def chat_auth(bubble_id, channelcode, socketid):
     url = f"{api_base_url}api/v1/pusher.auth"
     data = {
@@ -134,6 +87,8 @@ async def connect_and_listen(bubbleid):
         async for message in websocket:
             if message == "ping":
                 await websocket.send("pong")
+            else:
+                return message
 
-
+def connect_to_bubble(bubbleid)
 asyncio.run(connect_and_listen(4066670))
