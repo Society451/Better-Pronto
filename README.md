@@ -11,5 +11,3 @@ Dependencies:
 
 #### Screenshots:
 ![Screenshot from 2025-01-16 19-08-30](https://github.com/user-attachments/assets/785d6bd6-0d9e-435d-bf7a-84c77823275d)
-
-![image](https://github.com/user-attachments/assets/f1b7d56e-8e5a-42a4-a12c-8e4850a75373)
