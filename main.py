@@ -1,12 +1,13 @@
-import webview, os, json, re, time, uuid
+import webview, os, json, re, time, uuid, mimetypes, requests, urllib.parse
 from bpro.pronto import *
 from bpro.systemcheck import *
 from bpro.readjson import *
 import asyncio
 import threading
-import requests
 import shutil
-import urllib.parse
+import webbrowser
+import tempfile
+import base64
 
 auth_path, chats_path, bubbles_path, loginTokenJSONPath, authTokenJSONPath, verificationCodeResponseJSONPath, settings_path, encryption_path, logs_path, settingsJSONPath, keysJSONPath, bubbleOverviewJSONPath, users_path = createappfolders()
 accesstoken = ""
@@ -62,9 +63,8 @@ def download_image(image_url, save_path, access_token):
         # Create directory if it doesn't exist
         os.makedirs(os.path.dirname(save_path), exist_ok=True)
         
-        # Set up headers with authorization - using the same format as in pronto.py
+        # Set up headers with authorization
         headers = {
-            "Content-Type": "application/json",
             "Authorization": f"Bearer {access_token}"
         }
         
@@ -73,16 +73,39 @@ def download_image(image_url, save_path, access_token):
         # Make the request with headers
         response = requests.get(image_url, headers=headers, stream=True)
         response.raise_for_status()  # Raise an exception for HTTP errors
+
+        # Get content type from headers to determine file extension
+        content_type = response.headers.get('content-type')
+        extension = None
+        if content_type:
+            extension = mimetypes.guess_extension(content_type)
+            # Fix common extension issues
+            if extension == '.jpe':
+                extension = '.jpg'
+            elif extension == '.jpeg':
+                extension = '.jpg'
+                
+            if extension and not save_path.lower().endswith(extension.lower()):
+                save_path = f"{save_path}{extension}"
+                print(f"Adding extension {extension} based on content type {content_type}")
         
         # Save the file
         with open(save_path, 'wb') as file:
-            shutil.copyfileobj(response.raw, file)
+            for chunk in response.iter_content(chunk_size=8192):
+                if chunk:
+                    file.write(chunk)
             
         print(f"Successfully downloaded image to {save_path}")
-        return True
+        
+        # Verify file exists and has content
+        if os.path.exists(save_path) and os.path.getsize(save_path) > 0:
+            return True, save_path, extension  # Return success, path and extension
+        else:
+            print(f"Warning: Downloaded file is empty or missing: {save_path}")
+            return False, save_path, extension
     except Exception as e:
         print(f"Error downloading image: {e}")
-        return False
+        return False, save_path, None
 
 class Api:
     def __init__(self, accesstoken):
@@ -219,6 +242,21 @@ class Api:
                                     # Create local storage structure
                                     local_folder = os.path.join(media_folder, folder_id)
                                     os.makedirs(local_folder, exist_ok=True)
+                                    
+                                    # Add file extension from mime type if available
+                                    mime_type = media_item.get('urlmimetype')
+                                    extension = ''
+                                    if mime_type:
+                                        extension = mimetypes.guess_extension(mime_type) or ''
+                                        # Fix common extension issues
+                                        if extension == '.jpe':
+                                            extension = '.jpg'
+                                        elif extension == '.jpeg':
+                                            extension = '.jpg'
+                                        
+                                        if extension and not file_name.lower().endswith(extension.lower()):
+                                            file_name = f"{file_name}{extension}"
+                                    
                                     local_image_path = os.path.join(local_folder, file_name)
                                     
                                     # Full URL to the media file
@@ -226,23 +264,31 @@ class Api:
                                     
                                     # Download the image only if it doesn't exist
                                     download_success = False
+                                    actual_path = local_image_path
                                     if not os.path.exists(local_image_path):
-                                        download_success = download_image(media_url, local_image_path, accesstoken)
+                                        download_success, actual_path, actual_ext = download_image(media_url, local_image_path, accesstoken)
+                                        if actual_ext and actual_ext != extension:
+                                            extension = actual_ext
+                                            file_name = os.path.basename(actual_path)
                                     else:
                                         download_success = True
                                         print(f"Image already exists at {local_image_path}")
                                     
-                                    # Save media information
+                                    # Get the relative path with actual filename including extension
                                     relative_path = os.path.join('media', folder_id, file_name).replace('\\', '/')
+                                    
+                                    # Store media info
                                     image_data = {
                                         'id': media_item.get('id'),
                                         'url': media_url,
-                                        'local_path': local_image_path if download_success else None,
+                                        'local_path': actual_path if download_success else None,
                                         'relative_path': relative_path if download_success else None,
                                         'title': media_item.get('title', ''),
                                         'width': media_item.get('width'),
                                         'height': media_item.get('height'),
-                                        'mediatype': media_item.get('mediatype')
+                                        'mediatype': media_item.get('mediatype'),
+                                        'mime_type': media_item.get('urlmimetype'),
+                                        'file_extension': extension
                                     }
                         else:
                             # Handle case where media exists but has neither external URL nor path
@@ -472,8 +518,63 @@ class Api:
             print(f"Error deleting message: {e}")
             return {"ok": False, "error": str(e)}
 
-
-
+    # Add a new function to handle authenticated image viewing
+    def open_authenticated_image(self, image_url):
+        """Open image URL directly with authentication token."""
+        try:
+            print(f"Opening authenticated image: {image_url}")
+            
+            # Create a direct URL with access token as query parameter
+            # Note: This is not standard practice for security reasons, but it's simpler for direct browser access
+            parsed_url = urllib.parse.urlparse(image_url)
+            
+            # Create a temporary file path with a random token
+            temp_token = base64.urlsafe_b64encode(os.urandom(30)).decode('utf-8')
+            # Choose an approach based on what works best in your environment
+            
+            # Approach 1: Create a simple HTML redirect
+            temp_dir = os.path.join(os.path.expanduser("~"), ".bpro", "temp")
+            os.makedirs(temp_dir, exist_ok=True)
+            temp_html = os.path.join(temp_dir, f"view_{temp_token}.html")
+            
+            with open(temp_html, 'w') as f:
+                f.write(f"""
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Redirecting...</title>
+                    <meta http-equiv="refresh" content="0;URL='{image_url}'" />
+                    <script>
+                        // Add auth header to the request
+                        fetch("{image_url}", {{
+                            headers: {{
+                                "Authorization": "Bearer {accesstoken}"
+                            }}
+                        }})
+                        .then(response => response.blob())
+                        .then(blob => {{
+                            const url = URL.createObjectURL(blob);
+                            window.location = url;
+                        }})
+                        .catch(error => {{
+                            console.error('Error:', error);
+                            document.body.innerHTML = 'Error loading image. Please try again.';
+                        }});
+                    </script>
+                </head>
+                <body>
+                    <p>Redirecting to image...</p>
+                </body>
+                </html>
+                """)
+            
+            # Open the redirect page in browser
+            webbrowser.open(f"file://{temp_html}")
+            return {"success": True}
+        except Exception as e:
+            print(f"Error opening authenticated image: {e}")
+            return {"success": False, "error": str(e)}
+            
 # Create an instance of the Api class with the accesstoken
 api = Api(accesstoken)
 # Create a webview window with the specified HTML file and API

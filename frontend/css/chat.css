@@ -665,3 +665,33 @@ body {
 .lightbox-close:hover {
     opacity: 1;
 }
+
+/* Image debug info */
+.image-debug-info {
+    background-color: #ffeeee;
+    border: 1px solid #ffcccc;
+    padding: 5px 10px;
+    margin: 5px 0;
+    font-size: 12px;
+    border-radius: 4px;
+    color: #cc0000;
+    font-family: monospace;
+    word-break: break-all;
+}
+
+/* Image download button */
+.image-download-btn {
+    background-color: #4a90e2;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 5px 10px;
+    font-size: 12px;
+    margin: 5px 0;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.image-download-btn:hover {
+    background-color: #3570b8;
+}

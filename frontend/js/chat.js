@@ -175,90 +175,137 @@ class Message {
             }
             // Local downloaded image with relative path
             else if (this.imageData.relative_path) {
-                // Image message with downloaded image
-                if (this.imageData.relative_path) {
-                    const imgElement = document.createElement('img');
-                    imgElement.classList.add('message-image');
-                    
-                    // Convert Windows path separators to URL format if needed
-                    let relativePath = this.imageData.relative_path;
-                    
-                    // Get the bubble ID from current URL or other source
-                    const bubbleID = currentChatID;
-                    const sanitizedBubbleID = bubbleID ? bubbleID.replace(/[<>:"\/\\|?*]/g, '_') : '';
-                    
-                    // Create a path to the local image file
-                    const appDataPath = '../../../appdata/chats/';
-                    let bubblePath = '';
-                    
-                    // Handle different bubble location patterns
-                    if (sanitizedBubbleID.includes('Clubs')) {
-                        bubblePath = `bubbles/Clubs/${sanitizedBubbleID}`;
-                    } else {
-                        bubblePath = sanitizedBubbleID;
-                    }
-                    
-                    imgElement.src = `${appDataPath}${bubblePath}/${relativePath}`;
-                    console.log("Image path:", imgElement.src);
-                    
-                    // Set dimensions if available, with max constraints
-                    if (this.imageData.width && this.imageData.height) {
-                        // Calculate aspect ratio to maintain proportions
-                        const aspectRatio = this.imageData.width / this.imageData.height;
-                        const maxWidth = 400; // Maximum width for images
-                        
-                        if (this.imageData.width > maxWidth) {
-                            imgElement.style.width = maxWidth + 'px';
-                            imgElement.style.height = (maxWidth / aspectRatio) + 'px';
-                        } else {
-                            imgElement.style.width = this.imageData.width + 'px';
-                            imgElement.style.height = this.imageData.height + 'px';
-                        }
-                    }
-                    
-                    imgElement.alt = this.imageData.title || 'Attached image';
-                    imgElement.title = this.imageData.title || '';
-                    
-                    // Handle image loading error
-                    imgElement.onerror = () => {
-                        console.error("Failed to load message image:", imgElement.src);
-                        // Try alternative path formats
-                        if (!imgElement.src.includes('/bubbles/')) {
-                            imgElement.src = `${appDataPath}bubbles/${sanitizedBubbleID}/${relativePath}`;
-                            console.log("Trying alternative path:", imgElement.src);
-                        } else {
-                            imgElement.src = "../images/image-error.png"; // Fallback image
-                            imgElement.alt = "Image failed to load";
-                        }
-                    };
-                    
-                    contentElement.appendChild(imgElement);
-                    
-                    // Add image caption if there's also text content
-                    if (this.content && this.content.trim() !== '') {
-                        const captionElement = document.createElement('div');
-                        captionElement.classList.add('image-caption');
-                        captionElement.textContent = this.content;
-                        contentElement.appendChild(captionElement);
-                    }
+                const imgElement = document.createElement('img');
+                imgElement.classList.add('message-image');
+                
+                // Get the bubble ID from current URL or other source
+                const bubbleID = currentChatID;
+                const sanitizedBubbleID = bubbleID ? bubbleID.replace(/[<>:"\/\\|?*]/g, '_') : '';
+                
+                // Create a path to the local image file - UPDATED PATH STRUCTURE
+                const appDataPath = '../../../.bpro/data/chats/';
+                let bubblePath = '';
+                
+                // Handle different bubble location patterns based on actual directory structure
+                if (sanitizedBubbleID === '3640189') {
+                    bubblePath = `bubbles/OHS - home of Pixels/${sanitizedBubbleID}`;
+                } else if (sanitizedBubbleID.includes('Clubs')) {
+                    bubblePath = `bubbles/Clubs/${sanitizedBubbleID}`;
                 } else {
-                    // Fallback if local image is not available
-                    const imageInfoElement = document.createElement('div');
-                    imageInfoElement.classList.add('image-info');
-                    imageInfoElement.innerHTML = `<i class="fas fa-image"></i> Image: ${this.imageData.title || 'Attached image'}`;
-                    contentElement.appendChild(imageInfoElement);
+                    bubblePath = sanitizedBubbleID;
+                }
+                
+                // Use the relative path directly since it now includes the file extension from the server
+                const imagePath = `${appDataPath}${bubblePath}/${this.imageData.relative_path}`;
+                imgElement.src = imagePath;
+                
+                console.log("Image details:", {
+                    bubbleID: bubbleID,
+                    sanitizedID: sanitizedBubbleID,
+                    relativePath: this.imageData.relative_path,
+                    fullPath: imagePath
+                });
+                
+                // Set dimensions if available, with max constraints
+                if (this.imageData.width && this.imageData.height) {
+                    // Calculate aspect ratio to maintain proportions
+                    const aspectRatio = this.imageData.width / this.imageData.height;
+                    const maxWidth = 400; // Maximum width for images
                     
-                    // Add text content if available
-                    if (this.content && this.content.trim() !== '') {
-                        contentElement.appendChild(document.createElement('br'));
-                        contentElement.appendChild(document.createTextNode(this.content));
+                    if (this.imageData.width > maxWidth) {
+                        imgElement.style.width = maxWidth + 'px';
+                        imgElement.style.height = (maxWidth / aspectRatio) + 'px';
+                    } else {
+                        imgElement.style.width = this.imageData.width + 'px';
+                        imgElement.style.height = this.imageData.height + 'px';
                     }
                 }
+                
+                imgElement.alt = this.imageData.title || 'Attached image';
+                imgElement.title = this.imageData.title || '';
+                
+                // Modified error handler to prevent debug message spam
+                let hasAddedDebugInfo = false;
+                let attemptCount = 0;
+                const maxAttempts = 3;
+                
+                // Handle image loading error with better diagnostics
+                imgElement.onerror = () => {
+                    console.error("Failed to load message image:", imgElement.src);
+                    attemptCount++;
+                    
+                    // Only try alternative paths for the first few attempts
+                    if (attemptCount <= maxAttempts) {
+                        // Try to find image in different possible locations
+                        let alternativePaths = [
+                            // Try with category structure (OHS - home of Pixels)
+                            `../../../.bpro/data/chats/bubbles/OHS - home of Pixels/${sanitizedBubbleID}/${this.imageData.relative_path}`,
+                            // Try with different category structure (Student Community)
+                            `../../../.bpro/data/chats/bubbles/2024-25 Student Community & Resources/${sanitizedBubbleID}/${this.imageData.relative_path}`,
+                            // Direct path
+                            `../../../.bpro/data/chats/${sanitizedBubbleID}/${this.imageData.relative_path}`,
+                            // Try with different folder structure
+                            `../../../.bpro/data/chats/${bubblePath}/media/${sanitizedBubbleID}/${this.imageData.relative_path.split('/').pop()}`
+                        ];
+                        
+                        if (alternativePaths.length > 0) {
+                            console.log(`Attempt ${attemptCount}: Trying alternative path:`, alternativePaths[0]);
+                            imgElement.src = alternativePaths.shift(); // Try the next path
+                        } else {
+                            showImageError();
+                        }
+                    } else {
+                        showImageError();
+                    }
+                };
+                
+                // Function to show error only once
+                const showImageError = () => {
+                    if (!hasAddedDebugInfo) {
+                        hasAddedDebugInfo = true;
+                        imgElement.src = "../images/image-error.png"; // Fallback image
+                        imgElement.alt = "Image failed to load";
+                        
+                        // Create a debug message with file path info - ONLY ONCE
+                        const debugInfo = document.createElement('div');
+                        debugInfo.classList.add('image-debug-info');
+                        debugInfo.textContent = `Unable to load image: ${this.imageData.relative_path}`;
+                        imgElement.parentNode.appendChild(debugInfo);
+                        
+                        // Add a button to open the original image with authentication
+                        if (this.imageData.url) {
+                            const downloadBtn = document.createElement('button');
+                            downloadBtn.textContent = "Open Original";
+                            downloadBtn.classList.add('image-download-btn');
+                            downloadBtn.onclick = async (e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                
+                                try {
+                                    await window.pywebview.api.open_authenticated_image(this.imageData.url);
+                                } catch (error) {
+                                    console.error("Error opening authenticated image:", error);
+                                }
+                            };
+                            imgElement.parentNode.appendChild(downloadBtn);
+                        }
+                    }
+                };
+                
+                contentElement.appendChild(imgElement);
+                
+                // Add image caption if there's also text content
+                if (this.content && this.content.trim() !== '') {
+                    const captionElement = document.createElement('div');
+                    captionElement.classList.add('image-caption');
+                    captionElement.textContent = this.content;
+                    contentElement.appendChild(captionElement);
+                }
             } else {
-                // Fallback for images without local path or external URL
+                // Fallback if local image is not available
                 const imageInfoElement = document.createElement('div');
                 imageInfoElement.classList.add('image-info');
-                imageInfoElement.innerHTML = `<i class="fas fa-image"></i> Image attachment`;
+                imageInfoElement.innerHTML = `<i class="fas fa-image"></i> Image: ${this.imageData.title || 'Attached image'}`;
                 contentElement.appendChild(imageInfoElement);
                 
                 // Add text content if available
