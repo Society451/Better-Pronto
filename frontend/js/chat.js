@@ -62,7 +62,7 @@ document.addEventListener('keyup', (event) => {
 
 // Message class to create message elements
 class Message {
-    constructor(content, sender, timestamp, user, isDefault = false, editCount = 0, lastEdited = null, messageId = null) {
+    constructor(content, sender, timestamp, user, isDefault = false, editCount = 0, lastEdited = null, messageId = null, hasImage = false, imageData = null) {
         this.content = content;
         this.sender = sender;
         this.timestamp = timestamp;
@@ -71,6 +71,8 @@ class Message {
         this.editCount = editCount;
         this.lastEdited = lastEdited;
         this.messageId = messageId;
+        this.hasImage = hasImage;
+        this.imageData = imageData;
     }
 
     // Create a message element
@@ -116,9 +118,173 @@ class Message {
 
         const contentElement = document.createElement('div');
         contentElement.classList.add('message-content');
-        contentElement.textContent = this.content;
-        textContainer.appendChild(contentElement);
 
+        // Handle image content
+        if (this.hasImage && this.imageData) {
+            // External GIF or image with direct URL (like Giphy)
+            if (this.imageData.is_external && this.imageData.url) {
+                const imgElement = document.createElement('img');
+                imgElement.classList.add('message-image');
+                
+                // Check if it's a GIF based on URL or mime type
+                const isGif = this.imageData.url.toLowerCase().endsWith('.gif') || 
+                              (this.imageData.mime_type && this.imageData.mime_type.toLowerCase() === 'image/gif');
+                
+                if (isGif) {
+                    imgElement.classList.add('message-gif');
+                }
+                
+                // Use the direct URL
+                imgElement.src = this.imageData.url;
+                console.log("External image/GIF URL:", imgElement.src);
+                
+                // Set dimensions if available, with max constraints
+                if (this.imageData.width && this.imageData.height) {
+                    // Calculate aspect ratio to maintain proportions
+                    const aspectRatio = this.imageData.width / this.imageData.height;
+                    const maxWidth = 400; // Maximum width for images
+                    
+                    if (this.imageData.width > maxWidth) {
+                        imgElement.style.width = maxWidth + 'px';
+                        imgElement.style.height = (maxWidth / aspectRatio) + 'px';
+                    } else {
+                        imgElement.style.width = this.imageData.width + 'px';
+                        imgElement.style.height = this.imageData.height + 'px';
+                    }
+                }
+                
+                imgElement.alt = this.imageData.title || 'Attached image';
+                imgElement.title = this.imageData.title || '';
+                
+                // Handle image loading error
+                imgElement.onerror = () => {
+                    console.error("Failed to load external image:", imgElement.src);
+                    imgElement.src = "../images/image-error.png"; // Fallback image
+                    imgElement.alt = "Image failed to load";
+                };
+                
+                contentElement.appendChild(imgElement);
+                
+                // Add image caption if there's also text content
+                if (this.content && this.content.trim() !== '') {
+                    const captionElement = document.createElement('div');
+                    captionElement.classList.add('image-caption');
+                    captionElement.textContent = this.content;
+                    contentElement.appendChild(captionElement);
+                }
+            }
+            // Local downloaded image with relative path
+            else if (this.imageData.relative_path) {
+                // Image message with downloaded image
+                if (this.imageData.relative_path) {
+                    const imgElement = document.createElement('img');
+                    imgElement.classList.add('message-image');
+                    
+                    // Convert Windows path separators to URL format if needed
+                    let relativePath = this.imageData.relative_path;
+                    
+                    // Get the bubble ID from current URL or other source
+                    const bubbleID = currentChatID;
+                    const sanitizedBubbleID = bubbleID ? bubbleID.replace(/[<>:"\/\\|?*]/g, '_') : '';
+                    
+                    // Create a path to the local image file
+                    const appDataPath = '../../../appdata/chats/';
+                    let bubblePath = '';
+                    
+                    // Handle different bubble location patterns
+                    if (sanitizedBubbleID.includes('Clubs')) {
+                        bubblePath = `bubbles/Clubs/${sanitizedBubbleID}`;
+                    } else {
+                        bubblePath = sanitizedBubbleID;
+                    }
+                    
+                    imgElement.src = `${appDataPath}${bubblePath}/${relativePath}`;
+                    console.log("Image path:", imgElement.src);
+                    
+                    // Set dimensions if available, with max constraints
+                    if (this.imageData.width && this.imageData.height) {
+                        // Calculate aspect ratio to maintain proportions
+                        const aspectRatio = this.imageData.width / this.imageData.height;
+                        const maxWidth = 400; // Maximum width for images
+                        
+                        if (this.imageData.width > maxWidth) {
+                            imgElement.style.width = maxWidth + 'px';
+                            imgElement.style.height = (maxWidth / aspectRatio) + 'px';
+                        } else {
+                            imgElement.style.width = this.imageData.width + 'px';
+                            imgElement.style.height = this.imageData.height + 'px';
+                        }
+                    }
+                    
+                    imgElement.alt = this.imageData.title || 'Attached image';
+                    imgElement.title = this.imageData.title || '';
+                    
+                    // Handle image loading error
+                    imgElement.onerror = () => {
+                        console.error("Failed to load message image:", imgElement.src);
+                        // Try alternative path formats
+                        if (!imgElement.src.includes('/bubbles/')) {
+                            imgElement.src = `${appDataPath}bubbles/${sanitizedBubbleID}/${relativePath}`;
+                            console.log("Trying alternative path:", imgElement.src);
+                        } else {
+                            imgElement.src = "../images/image-error.png"; // Fallback image
+                            imgElement.alt = "Image failed to load";
+                        }
+                    };
+                    
+                    contentElement.appendChild(imgElement);
+                    
+                    // Add image caption if there's also text content
+                    if (this.content && this.content.trim() !== '') {
+                        const captionElement = document.createElement('div');
+                        captionElement.classList.add('image-caption');
+                        captionElement.textContent = this.content;
+                        contentElement.appendChild(captionElement);
+                    }
+                } else {
+                    // Fallback if local image is not available
+                    const imageInfoElement = document.createElement('div');
+                    imageInfoElement.classList.add('image-info');
+                    imageInfoElement.innerHTML = `<i class="fas fa-image"></i> Image: ${this.imageData.title || 'Attached image'}`;
+                    contentElement.appendChild(imageInfoElement);
+                    
+                    // Add text content if available
+                    if (this.content && this.content.trim() !== '') {
+                        contentElement.appendChild(document.createElement('br'));
+                        contentElement.appendChild(document.createTextNode(this.content));
+                    }
+                }
+            } else {
+                // Fallback for images without local path or external URL
+                const imageInfoElement = document.createElement('div');
+                imageInfoElement.classList.add('image-info');
+                imageInfoElement.innerHTML = `<i class="fas fa-image"></i> Image attachment`;
+                contentElement.appendChild(imageInfoElement);
+                
+                // Add text content if available
+                if (this.content && this.content.trim() !== '') {
+                    contentElement.appendChild(document.createElement('br'));
+                    contentElement.appendChild(document.createTextNode(this.content));
+                }
+            }
+        } else if (this.hasImage) {
+            // Generic image placeholder if we know there's an image but don't have details
+            const imageInfoElement = document.createElement('div');
+            imageInfoElement.classList.add('image-info');
+            imageInfoElement.innerHTML = `<i class="fas fa-image"></i> Image attachment`;
+            contentElement.appendChild(imageInfoElement);
+            
+            // Add text content if available
+            if (this.content && this.content.trim() !== '') {
+                contentElement.appendChild(document.createElement('br'));
+                contentElement.appendChild(document.createTextNode(this.content));
+            }
+        } else {
+            // Regular text message
+            contentElement.textContent = this.content;
+        }
+
+        textContainer.appendChild(contentElement);
         wrapper.appendChild(textContainer);
         messageElement.appendChild(wrapper);
 
@@ -275,29 +441,55 @@ async function loadMessages(bubbleID, bubbleName) {
             dynamicMessages.forEach(msg => {
                 // Verify that each message has the required properties
                 console.log('Processing dynamic message:', msg);
-                const content = msg.message || msg.content;
-                const author = msg.author;
-                const timestamp = msg.time_of_sending;
-                const user = { fullname: msg.author, profilepicurl: msg.profilepicurl };
-                const messageId = msg.message_id;  // Add message ID
+                const content = msg.message || msg.content || '';
+                const author = msg.author || 'Unknown';
+                const timestamp = msg.time_of_sending || new Date().toISOString();
+                const user = { 
+                    fullname: msg.author || 'Unknown', 
+                    profilepicurl: msg.profilepicurl 
+                };
+                const messageId = msg.message_id;
+                const hasImage = msg.has_image || false;
+                const imageData = msg.image_data || null;
 
-                if (content && author && timestamp) {
-                    const message = new Message(
-                        content, 
-                        author, 
-                        timestamp, 
-                        user, 
-                        false, 
-                        msg.edit_count, 
-                        msg.last_edited,
-                        messageId  // Pass message ID to constructor
-                    );
-                    messagesContainer.appendChild(message.createElement()); // Display message in HTML
-                } else {
-                    console.warn('Incomplete dynamic message data:', msg);
-                }
+                const message = new Message(
+                    content, 
+                    author, 
+                    timestamp, 
+                    user, 
+                    false, 
+                    msg.edit_count, 
+                    msg.last_edited,
+                    messageId,
+                    hasImage,
+                    imageData
+                );
+                messagesContainer.appendChild(message.createElement()); // Display message in HTML
             });
         }
+
+        // Debug logging for image paths
+        dynamicMessages.forEach(msg => {
+            if (msg.has_image && msg.image_data) {
+                console.log("Message has image data:", msg.image_data);
+                if (msg.image_data.is_external) {
+                    console.log("External media URL:", msg.image_data.url);
+                }
+            }
+            if (msg.media && msg.media.length > 0) {
+                console.log("Message has media:", msg.media);
+                
+                // Look for GIFs in media
+                const gifMedia = msg.media.filter(m => 
+                    (m.url && m.url.toLowerCase().includes('.gif')) ||
+                    (m.urlmimetype && m.urlmimetype.toLowerCase() === 'image/gif')
+                );
+                
+                if (gifMedia.length > 0) {
+                    console.log("Found GIF media:", gifMedia);
+                }
+            }
+        });
 
         messagesContainer.scrollTop = messagesContainer.scrollHeight; // Scroll to the bottom
         setChatHeading(bubbleName); // Update chat heading with the bubble name

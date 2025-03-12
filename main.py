@@ -4,6 +4,9 @@ from bpro.systemcheck import *
 from bpro.readjson import *
 import asyncio
 import threading
+import requests
+import shutil
+import urllib.parse
 
 auth_path, chats_path, bubbles_path, loginTokenJSONPath, authTokenJSONPath, verificationCodeResponseJSONPath, settings_path, encryption_path, logs_path, settingsJSONPath, keysJSONPath, bubbleOverviewJSONPath, users_path = createappfolders()
 accesstoken = ""
@@ -52,6 +55,34 @@ def sanitize_folder_name(name):
     # Comment out or remove the debug statement after verification
     # print(f"Sanitized folder name: {sanitized_name}")  # Debug statement
     return sanitized_name
+
+def download_image(image_url, save_path, access_token):
+    """Download an image file and save it to the specified path."""
+    try:
+        # Create directory if it doesn't exist
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+        
+        # Set up headers with authorization - using the same format as in pronto.py
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {access_token}"
+        }
+        
+        print(f"Downloading image from {image_url}")
+        
+        # Make the request with headers
+        response = requests.get(image_url, headers=headers, stream=True)
+        response.raise_for_status()  # Raise an exception for HTTP errors
+        
+        # Save the file
+        with open(save_path, 'wb') as file:
+            shutil.copyfileobj(response.raw, file)
+            
+        print(f"Successfully downloaded image to {save_path}")
+        return True
+    except Exception as e:
+        print(f"Error downloading image: {e}")
+        return False
 
 class Api:
     def __init__(self, accesstoken):
@@ -115,45 +146,21 @@ class Api:
         if not bubbleID:
             print("Bubble ID is undefined")
             return {"messages": []}
-        print(f"Fetching detailed messages for bubble ID: {bubbleID}")  # Debug statement
+        print(f"Fetching detailed messages for bubble ID: {bubbleID}")
         try:
             response = get_bubble_messages(accesstoken, bubbleID)
-            #markbubbleAsRead = markBubble(accesstoken, bubbleID) requires messageID for some reason idk why
-            #print(f"Marked bubble as read: {markbubbleAsRead}")
             if response is None or 'messages' not in response:
                 print("401 Unauthorized: Access token may be invalid or expired.")
-                raise Exception("401 Unauthorized")  # Raise an error if a 401 status code is encountered
-            print(f"Retrieved response: {response}")  # Debug statement
-
+                raise Exception("401 Unauthorized")
+            
             messages = response['messages']
             detailed_messages = []
 
             if not messages:
                 print("No messages found.")
-                return detailed_messages
+                return {"messages": detailed_messages}
 
-            for message in messages:
-                if isinstance(message, dict):
-                    detailed_message = {
-                        "time_of_sending": message.get("created_at"),
-                        "author": message.get("user", {}).get("fullname"),
-                        "profilepicurl": message.get("user", {}).get("profilepicurl"),
-                        "message_id": message.get("id"),
-                        "edit_count": message.get("user_edited_version", 0),
-                        "last_edited": message.get("user_edited_at"),
-                        "parent_message": message.get("parentmessage_id"),
-                        "reactions": message.get("reactionsummary", []),
-                        "content": message.get("message")  # Ensure message content is included
-                    }
-                    # Verify that all required fields are present
-                    if all([detailed_message["time_of_sending"], detailed_message["author"], detailed_message["content"]]):
-                        detailed_messages.append(detailed_message)
-                    else:
-                        print(f"Incomplete message data skipped: {detailed_message}")
-                else:
-                    print(f"Unexpected message format: {message}")
-
-            # Search for the folder with the matching bubble ID in the entire chats_path
+            # Prepare bubble folder path
             sanitized_bubble_id = sanitize_folder_name(f"{bubbleID}")
             bubble_folder_path = None
             for root, dirs, files in os.walk(chats_path):
@@ -166,9 +173,134 @@ class Api:
 
             if not bubble_folder_path:
                 print(f"No folder found for bubble ID: {bubbleID}")
-                return {"messages": detailed_messages}
+                bubble_folder_path = os.path.join(chats_path, sanitized_bubble_id)
+                os.makedirs(bubble_folder_path, exist_ok=True)
+            
+            # Create media folder within bubble folder
+            media_folder = os.path.join(bubble_folder_path, "media")
+            os.makedirs(media_folder, exist_ok=True)
 
-            # Save detailed messages to a JSON file within the specific folder for the bubble
+            for message in messages:
+                if isinstance(message, dict):
+                    content = message.get("message", "")
+                    has_image = False
+                    image_data = None
+                    
+                    # Check if message has media
+                    if 'messagemedia' in message and message['messagemedia'] and len(message['messagemedia']) > 0:
+                        media_item = message['messagemedia'][0]  # Get first media item
+                        has_image = True
+                        
+                        # Check if it's an external GIF (from Giphy, etc.)
+                        if media_item.get('external', False) and media_item.get('url'):
+                            # Handle external GIF or image that doesn't need downloading
+                            image_data = {
+                                'id': media_item.get('id'),
+                                'url': media_item.get('url'),
+                                'is_external': True,
+                                'title': media_item.get('title', ''),
+                                'width': media_item.get('width'),
+                                'height': media_item.get('height'),
+                                'mediatype': media_item.get('mediatype'),
+                                'mime_type': media_item.get('urlmimetype')
+                            }
+                            print(f"External media found: {image_data['url']}")
+                        # Regular internal image that needs path processing
+                        elif media_item.get('path'):
+                            # Get path components
+                            path = media_item.get('path', '')
+                            if path:
+                                # Parse out the user_id and file_name from the path
+                                path_parts = path.strip('/').split('/')
+                                if len(path_parts) >= 3:
+                                    folder_id = path_parts[-2]
+                                    file_name = path_parts[-1]
+                                    
+                                    # Create local storage structure
+                                    local_folder = os.path.join(media_folder, folder_id)
+                                    os.makedirs(local_folder, exist_ok=True)
+                                    local_image_path = os.path.join(local_folder, file_name)
+                                    
+                                    # Full URL to the media file
+                                    media_url = f"https://files.chat.trypronto.com{path}"
+                                    
+                                    # Download the image only if it doesn't exist
+                                    download_success = False
+                                    if not os.path.exists(local_image_path):
+                                        download_success = download_image(media_url, local_image_path, accesstoken)
+                                    else:
+                                        download_success = True
+                                        print(f"Image already exists at {local_image_path}")
+                                    
+                                    # Save media information
+                                    relative_path = os.path.join('media', folder_id, file_name).replace('\\', '/')
+                                    image_data = {
+                                        'id': media_item.get('id'),
+                                        'url': media_url,
+                                        'local_path': local_image_path if download_success else None,
+                                        'relative_path': relative_path if download_success else None,
+                                        'title': media_item.get('title', ''),
+                                        'width': media_item.get('width'),
+                                        'height': media_item.get('height'),
+                                        'mediatype': media_item.get('mediatype')
+                                    }
+                        else:
+                            # Handle case where media exists but has neither external URL nor path
+                            print(f"Media without path or external URL: {media_item}")
+                            if media_item.get('url'):
+                                # Use URL directly if available
+                                image_data = {
+                                    'id': media_item.get('id'),
+                                    'url': media_item.get('url'),
+                                    'is_external': True,
+                                    'title': media_item.get('title', ''),
+                                    'width': media_item.get('width'),
+                                    'height': media_item.get('height'),
+                                    'mediatype': media_item.get('mediatype'),
+                                    'mime_type': media_item.get('urlmimetype')
+                                }
+                    
+                    # Check for URLs in the content
+                    elif content:
+                        # Check for common image patterns in message content
+                        image_pattern = re.compile(r'https?://[^\s]+\.(jpg|jpeg|png|gif|bmp|webp)', re.IGNORECASE)
+                        if image_pattern.search(content):
+                            has_image = True
+                        # Check for markdown image syntax
+                        if re.search(r'!\[.*?\]\(.*?\)', content):
+                            has_image = True
+                        # Check for HTML img tag
+                        if re.search(r'<img[^>]+src="[^"]+"[^>]*>', content):
+                            has_image = True
+
+                    detailed_message = {
+                        "time_of_sending": message.get("created_at"),
+                        "author": message.get("user", {}).get("fullname"),
+                        "profilepicurl": message.get("user", {}).get("profilepicurl"),
+                        "message_id": message.get("id"),
+                        "edit_count": message.get("user_edited_version", 0),
+                        "last_edited": message.get("user_edited_at"),
+                        "parent_message": message.get("parentmessage_id"),
+                        "reactions": message.get("reactionsummary", []),
+                        "content": content,
+                        "has_image": has_image,
+                        "image_data": image_data,
+                        "media": message.get("messagemedia")  # Include the full media data for reference
+                    }
+                    
+                    # Add message regardless of missing data
+                    detailed_messages.append(detailed_message)
+                    
+                    # Debug log for messages with media
+                    if has_image:
+                        if image_data and image_data.get('is_external'):
+                            print(f"Message has external media: {image_data}")
+                        elif not image_data:
+                            print(f"Message has image flag but no image data: {message.get('id')}")
+                        if 'messagemedia' in message:
+                            print(f"Message has messagemedia: {message['messagemedia']}")
+
+            # Save messages to files
             messages_file_path = os.path.join(bubble_folder_path, "messages.json")
             full_messages_file_path = os.path.join(bubble_folder_path, "fullmessages.json")
             with open(messages_file_path, "w") as file:
@@ -222,18 +354,17 @@ class Api:
                         "last_edited": message.get("last_edited"),
                         "parent_message": message.get("parent_message"),
                         "reactions": message.get("reactions", []),
-                        "content": message.get("content")
+                        "content": message.get("content"),
+                        "has_image": message.get("has_image", False),
+                        "image_data": message.get("image_data")
                     }
-                    # Verify that all required fields are present
-                    if all([detailed_message["time_of_sending"], detailed_message["author"], detailed_message["content"]]):
-                        detailed_messages.append(detailed_message)
-                    else:
-                        print(f"Incomplete message data skipped: {detailed_message}")
+                    
+                    # Add all messages regardless of missing data
+                    detailed_messages.append(detailed_message)
 
-                # Save the full response to fullmessages.json
+                # Make sure we don't overwrite existing data
                 with open(full_messages_file_path, "w") as file:
                     json.dump(data, file, indent=4)
-                print(f"Full response saved to {full_messages_file_path}")
 
                 return {"messages": detailed_messages}
         except Exception as e:
@@ -342,7 +473,7 @@ class Api:
             return {"ok": False, "error": str(e)}
 
 
-"""
+
 # Create an instance of the Api class with the accesstoken
 api = Api(accesstoken)
 # Create a webview window with the specified HTML file and API
@@ -359,4 +490,3 @@ window = webview.create_window(
 )
 
 webview.start(debug=False)
-"""

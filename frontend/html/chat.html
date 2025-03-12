@@ -33,6 +33,13 @@
             <div class="spoke"></div>
         </div>
     </div>
+    
+    <!-- Lightbox for image enlargement -->
+    <div id="image-lightbox" class="lightbox">
+        <button class="lightbox-close" id="lightbox-close">&times;</button>
+        <img class="lightbox-image" id="lightbox-image" src="" alt="Enlarged image">
+    </div>
+    
     <div class="sidebar" style="display:none;">
         <h4>Groups
             <button class="collapse-button" id="toggle-all">Collapse All</button>
@@ -64,6 +71,40 @@
     </div>
 </body>
 <script src="../js/chat.js"></script>
+<script>
+    // Initialize lightbox functionality
+    document.addEventListener('DOMContentLoaded', () => {
+        const lightbox = document.getElementById('image-lightbox');
+        const lightboxImage = document.getElementById('lightbox-image');
+        const lightboxClose = document.getElementById('lightbox-close');
+        
+        // Event delegation to handle clicks on message images
+        document.body.addEventListener('click', (event) => {
+            if (event.target.classList.contains('message-image')) {
+                lightboxImage.src = event.target.src;
+                lightbox.classList.add('active');
+            }
+        });
+        
+        // Close lightbox on button click or background click
+        lightboxClose.addEventListener('click', () => {
+            lightbox.classList.remove('active');
+        });
+        
+        lightbox.addEventListener('click', (event) => {
+            if (event.target === lightbox) {
+                lightbox.classList.remove('active');
+            }
+        });
+        
+        // Close lightbox on escape key
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && lightbox.classList.contains('active')) {
+                lightbox.classList.remove('active');
+            }
+        });
+    });
+</script>
 <style>
     /* Add this style to ensure messages are visible */
     .messages {
