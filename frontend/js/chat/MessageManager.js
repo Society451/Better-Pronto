@@ -24,6 +24,11 @@ export async function loadMessages(bubbleID, bubbleName) {
             noMessages.textContent = 'No messages to display.';
             messagesContainer.appendChild(noMessages);
         } else {
+            // Group messages by author for Discord-style display
+            let currentAuthor = null;
+            let currentGroup = null;
+            let lastTimestamp = null;
+            
             dynamicMessages.forEach(msg => {
                 // Verify that each message has the required properties
                 console.log('Processing dynamic message:', msg);
@@ -32,25 +37,92 @@ export async function loadMessages(bubbleID, bubbleName) {
                 const timestamp = msg.time_of_sending || new Date().toISOString();
                 const user = { 
                     fullname: msg.author || 'Unknown', 
-                    profilepicurl: msg.profilepicurl 
+                    profilepicurl: msg.profilepicurl,
+                    id: msg.author_id || author // Use author_id if available, otherwise use author name
                 };
                 const messageId = msg.message_id;
                 const hasImage = msg.has_image || false;
                 const imageData = msg.image_data || null;
-
-                const message = new Message(
-                    content, 
-                    author, 
-                    timestamp, 
-                    user, 
-                    false, 
-                    msg.edit_count, 
-                    msg.last_edited,
-                    messageId,
-                    hasImage,
-                    imageData
-                );
-                messagesContainer.appendChild(message.createElement()); // Display message in HTML
+                
+                // Check if this message should be part of the current group
+                // Create a new group if:
+                // 1. Author changed
+                // 2. More than 5 minutes passed since last message
+                const msgTime = new Date(timestamp).getTime();
+                const timeDiff = lastTimestamp ? (msgTime - lastTimestamp) / (1000 * 60) : 0; // Difference in minutes
+                
+                if (!currentAuthor || currentAuthor !== user.id || timeDiff > 5) {
+                    // Create a new message element
+                    const message = new Message(
+                        content, 
+                        author, 
+                        timestamp, 
+                        user, 
+                        false, 
+                        msg.edit_count, 
+                        msg.last_edited,
+                        messageId,
+                        hasImage,
+                        imageData
+                    );
+                    
+                    // Add complete message group to container
+                    const messageElement = message.createElement();
+                    messagesContainer.appendChild(messageElement);
+                    
+                    // Update tracking variables
+                    currentAuthor = user.id;
+                    currentGroup = messageElement;
+                } else {
+                    // This message belongs to the same author and is close in time
+                    // Let's add it to the current group by modifying the DOM
+                    
+                    // Create a simplified message element (without header and avatar)
+                    const messageElement = document.createElement('div');
+                    messageElement.classList.add('message');
+                    
+                    const messageWrapper = document.createElement('div');
+                    messageWrapper.classList.add('message-wrapper');
+                    
+                    const contentElement = document.createElement('div');
+                    contentElement.classList.add('message-content');
+                    
+                    // Add appropriate content
+                    if (hasImage && imageData) {
+                        if (imageData.is_external && imageData.url) {
+                            const imgElement = document.createElement('img');
+                            imgElement.classList.add('message-image');
+                            imgElement.src = imageData.url;
+                            contentElement.appendChild(imgElement);
+                        } else if (imageData.relative_path) {
+                            // Simplified version of image handling
+                            const imgElement = document.createElement('img');
+                            imgElement.classList.add('message-image');
+                            imgElement.src = `../../../.bpro/data/chats/${bubbleID}/${imageData.relative_path}`;
+                            contentElement.appendChild(imgElement);
+                        }
+                        
+                        // Add caption if text exists
+                        if (content && content.trim() !== '') {
+                            const captionElement = document.createElement('div');
+                            captionElement.classList.add('image-caption');
+                            captionElement.textContent = content;
+                            contentElement.appendChild(captionElement);
+                        }
+                    } else {
+                        contentElement.textContent = content;
+                    }
+                    
+                    messageWrapper.appendChild(contentElement);
+                    messageElement.appendChild(messageWrapper);
+                    
+                    // Find the message content group in the current group
+                    const messageContentGroup = currentGroup.querySelector('.message-content-group');
+                    messageContentGroup.appendChild(messageElement);
+                }
+                
+                // Update timestamp for next comparison
+                lastTimestamp = msgTime;
             });
         }
 
@@ -109,7 +181,30 @@ export async function sendMessage(chatID, messageText, userId) {
             // Create and append the message element
             const messageElement = message.createElement();
             messageElement.classList.add('message-new'); // Add animation class
-            messagesContainer.appendChild(messageElement);
+            
+            // Check if we need to create a new group or append to existing
+            const lastGroup = messagesContainer.lastElementChild;
+            if (lastGroup && lastGroup.getAttribute('data-author-id') === message.user.id) {
+                // Append to existing group
+                const messageContentGroup = lastGroup.querySelector('.message-content-group');
+                const newMessage = document.createElement('div');
+                newMessage.classList.add('message');
+                
+                const messageWrapper = document.createElement('div');
+                messageWrapper.classList.add('message-wrapper');
+                
+                const contentElement = document.createElement('div');
+                contentElement.classList.add('message-content');
+                contentElement.textContent = message.content;
+                
+                messageWrapper.appendChild(contentElement);
+                newMessage.appendChild(messageWrapper);
+                messageContentGroup.appendChild(newMessage);
+            } else {
+                // Create new group
+                messagesContainer.appendChild(messageElement);
+            }
+            
             messagesContainer.scrollTop = messagesContainer.scrollHeight; // Scroll to bottom
             return true;
         }

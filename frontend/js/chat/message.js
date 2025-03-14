@@ -15,78 +15,186 @@ export class Message {
         this.imageData = imageData;
     }
 
-    // Create a message element
-    createElement() {
-        const messageElement = document.createElement('div');
-        messageElement.classList.add('message');
-        if (this.isDefault) {
-            messageElement.style.fontStyle = 'italic';
-        }
-        if (this.messageId) {
-            messageElement.setAttribute('data-message-id', this.messageId);
+    // Format timestamp in Discord style (Today at 2:30 PM or MM/DD/YYYY)
+    formatTimestamp(timestamp) {
+        const date = new Date(timestamp);
+        if (isNaN(date.getTime())) {
+            return timestamp; // Return original if invalid date
         }
         
-        // Create a wrapper with flex layout for profile picture and text content
-        const wrapper = document.createElement('div');
-        wrapper.classList.add('message-wrapper');
+        const now = new Date();
+        const isToday = date.toDateString() === now.toDateString();
+        const isYesterday = new Date(now - 86400000).toDateString() === date.toDateString();
+        
+        const timeOptions = { hour: 'numeric', minute: 'numeric' };
+        const formattedTime = date.toLocaleTimeString([], timeOptions);
+        
+        if (isToday) {
+            return `Today at ${formattedTime}`;
+        } else if (isYesterday) {
+            return `Yesterday at ${formattedTime}`;
+        } else {
+            return `${date.toLocaleDateString()} ${formattedTime}`;
+        }
+    }
 
-        // Always render profile picture (or fallback default)
+    // Create a message element
+    createElement() {
+        // Create the main message group container
+        const messageGroup = document.createElement('div');
+        messageGroup.classList.add('message-group');
+        
+        // Add data attributes for grouping
+        messageGroup.setAttribute('data-author-id', this.user?.id || this.sender);
+        if (this.messageId) {
+            messageGroup.setAttribute('data-message-id', this.messageId);
+        }
+        if (this.isDefault) {
+            messageGroup.classList.add('system-message');
+        }
+        
+        // Create avatar container and profile picture
+        const avatarContainer = document.createElement('div');
+        avatarContainer.classList.add('avatar-container');
+        
         const profilePicElement = document.createElement('img');
         profilePicElement.classList.add('profile-pic');
-        profilePicElement.alt = `${this.user && this.user.fullname ? this.user.fullname : "User"}'s profile picture`;
-        if (this.user && this.user.profilepicurl) {
+        profilePicElement.alt = `${this.user?.fullname || this.sender}'s profile picture`;
+        
+        if (this.user?.profilepicurl) {
             profilePicElement.src = this.user.profilepicurl;
             profilePicElement.onerror = () => {
                 console.error("Failed to load image:", this.user.profilepicurl);
-                // Optionally assign a fallback local image if desired:
                 profilePicElement.src = "../images/default-avatar.png";
             };
         } else {
-            // Use a local default image instead of the ui-avatars.com fallback
             profilePicElement.src = "../images/default-avatar.png";
         }
-        wrapper.appendChild(profilePicElement);
-
-        // Create container for text content
-        const textContainer = document.createElement('div');
-        textContainer.classList.add('message-text');
-
-        const headerElement = document.createElement('div');
-        headerElement.classList.add('message-header');
-        headerElement.innerHTML = `<strong>${this.sender}</strong> <span class="message-timestamp">${this.timestamp}</span>`;
-        textContainer.appendChild(headerElement);
-
+        
+        avatarContainer.appendChild(profilePicElement);
+        messageGroup.appendChild(avatarContainer);
+        
+        // Create the message content group container
+        const messageContentGroup = document.createElement('div');
+        messageContentGroup.classList.add('message-content-group');
+        
+        // Create sender header with name and timestamp
+        const senderHeader = document.createElement('div');
+        senderHeader.classList.add('sender-header');
+        
+        const senderName = document.createElement('span');
+        senderName.classList.add('message-sender');
+        senderName.textContent = this.sender;
+        senderHeader.appendChild(senderName);
+        
+        const timestamp = document.createElement('span');
+        timestamp.classList.add('message-timestamp');
+        timestamp.textContent = this.formatTimestamp(this.timestamp);
+        timestamp.title = new Date(this.timestamp).toLocaleString();
+        senderHeader.appendChild(timestamp);
+        
+        // Add edit indicator to the header if message was edited
+        if (this.editCount > 0) {
+            const editInfo = document.createElement('span');
+            editInfo.classList.add('edit-info');
+            editInfo.innerHTML = `<i class="fa fa-pencil"></i>`;
+            editInfo.title = `Edited ${this.editCount} time${this.editCount > 1 ? 's' : ''}`;
+            if (this.lastEdited) {
+                editInfo.title += ` • Last edited: ${this.formatTimestamp(this.lastEdited)}`;
+            }
+            senderHeader.appendChild(editInfo);
+        }
+        
+        messageContentGroup.appendChild(senderHeader);
+        
+        // Create message element
+        const messageElement = document.createElement('div');
+        messageElement.classList.add('message');
+        
+        // Create wrapper for message content
+        const messageWrapper = document.createElement('div');
+        messageWrapper.classList.add('message-wrapper');
+        
+        // Create content element
         const contentElement = document.createElement('div');
         contentElement.classList.add('message-content');
-
-        // Handle image content
+        
+        // Add content based on type
         if (this.hasImage && this.imageData) {
             this._addImageContent(contentElement);
         } else if (this.hasImage) {
             this._addImagePlaceholder(contentElement);
-        } else {
-            // Regular text message
+        } else if (this.content && this.content.trim() !== '') {
             contentElement.textContent = this.content;
         }
-
-        textContainer.appendChild(contentElement);
-        wrapper.appendChild(textContainer);
-        messageElement.appendChild(wrapper);
-
-        // Add edit info if the message has been edited
-        if (this.editCount > 0) {
-            const editInfoElement = document.createElement('div');
-            editInfoElement.classList.add('edit-info');
-            editInfoElement.innerHTML = `<i class="fa fa-pencil"></i> x${this.editCount}`;
-            if (this.lastEdited) {
-                editInfoElement.title = `Last edited: ${this.lastEdited}`;
-            }
-            messageElement.appendChild(editInfoElement);
+        
+        messageWrapper.appendChild(contentElement);
+        messageElement.appendChild(messageWrapper);
+        messageContentGroup.appendChild(messageElement);
+        
+        // Add action buttons container
+        const actionsContainer = document.createElement('div');
+        actionsContainer.classList.add('message-actions');
+        
+        // Add delete button to actions
+        if (true) { // Using true instead of hasDeletePermission
+            const deleteBtn = document.createElement('div');
+            deleteBtn.classList.add('message-action-btn', 'delete');
+            deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+            deleteBtn.title = 'Delete Message';
+            
+            deleteBtn.addEventListener('click', async (event) => {
+                event.stopPropagation();
+                if (this.messageId) {
+                    if (confirm('Are you sure you want to delete this message?')) {
+                        try {
+                            const response = await window.pywebview.api.delete_message(this.messageId);
+                            if (response && response.ok) {
+                                messageGroup.remove();
+                            } else {
+                                const errorDiv = document.createElement('div');
+                                errorDiv.classList.add('error-popup');
+                                errorDiv.textContent = response.error === 'MESSAGE_ACCESSDENIED' ? 
+                                    'You do not have permission to delete this message.' : 
+                                    'Failed to delete message.';
+                                
+                                messageElement.appendChild(errorDiv);
+                                
+                                setTimeout(() => {
+                                    errorDiv.remove();
+                                }, 3000);
+                                
+                                console.error('Failed to delete message:', response);
+                            }
+                        } catch (error) {
+                            console.error('Error deleting message:', error);
+                        }
+                    }
+                } else {
+                    console.error('No message ID available for deletion');
+                }
+            });
+            
+            actionsContainer.appendChild(deleteBtn);
+            
+            // Change color on shift key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Shift') {
+                    deleteBtn.style.color = e.shiftKey ? 'red' : '';
+                }
+            });
+            
+            document.addEventListener('keyup', (e) => {
+                if (e.key === 'Shift') {
+                    deleteBtn.style.color = '';
+                }
+            });
         }
-
-        this._addDeleteButton(messageElement);
-
-        return messageElement;
+        
+        messageElement.appendChild(actionsContainer);
+        messageGroup.appendChild(messageContentGroup);
+        
+        return messageGroup;
     }
 
     _addImageContent(contentElement) {
@@ -287,61 +395,6 @@ export class Message {
         if (this.content && this.content.trim() !== '') {
             contentElement.appendChild(document.createElement('br'));
             contentElement.appendChild(document.createTextNode(this.content));
-        }
-    }
-
-    _addDeleteButton(messageElement) {
-        /* Add delete icon if permission is granted */
-        if (true) { // Using true instead of hasDeletePermission since it's a constant
-            const deleteIcon = document.createElement('i');
-            deleteIcon.classList.add('fas', 'fa-trash', 'delete-icon');
-            deleteIcon.title = 'Delete Message';
-            // Add event listener for deletion if needed
-            deleteIcon.addEventListener('click', async (event) => {
-                event.stopPropagation(); /* Prevent triggering message click */
-                if (this.messageId) {
-                    if (confirm('Are you sure you want to delete this message?')) {
-                        try {
-                            const response = await window.pywebview.api.delete_message(this.messageId);
-                            if (response && response.ok) {
-                                messageElement.remove();
-                            } else {
-                                // Create and show error message
-                                const errorDiv = document.createElement('div');
-                                errorDiv.classList.add('error-popup');
-                                errorDiv.textContent = response.error === 'MESSAGE_ACCESSDENIED' ? 
-                                    'You do not have permission to delete this message.' : 
-                                    'Failed to delete message.';
-                                
-                                messageElement.appendChild(errorDiv);
-                                
-                                // Remove error message after 3 seconds
-                                setTimeout(() => {
-                                    errorDiv.remove();
-                                }, 3000);
-                                
-                                console.error('Failed to delete message:', response);
-                            }
-                        } catch (error) {
-                            console.error('Error deleting message:', error);
-                        }
-                    }
-                } else {
-                    console.error('No message ID available for deletion');
-                }
-            });
-            messageElement.appendChild(deleteIcon); /* Ensure deleteIcon is inside messageElement */
-
-            // Change color on hover if Shift key is pressed
-            messageElement.addEventListener('mouseover', () => {
-                if (isShiftPressed) {
-                    deleteIcon.style.color = 'red';
-                }
-            });
-
-            messageElement.addEventListener('mouseout', () => {
-                deleteIcon.style.color = ''; // Reset color
-            });
         }
     }
 }
