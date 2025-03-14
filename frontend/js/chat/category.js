@@ -1,6 +1,6 @@
 import { setCurrentChatID } from './constants.js';
 import { setChatHeading } from './ui.js';
-import { loadMessages } from './messages.js';
+import { loadMessages } from './MessageManager.js';
 
 // Category class to create category elements
 export class Category {

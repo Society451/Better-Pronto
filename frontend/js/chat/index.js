@@ -9,7 +9,7 @@ import {
     currentChatID
 } from './constants.js';
 import { updateUnreadCounts, setupAnimationStyles, showLoading, hideLoading } from './ui.js';
-import { loadMessages, sendMessage } from './messages.js';
+import { loadMessages, sendMessage } from './MessageManager.js';
 import { initializeCategories } from './categories.js';
 
 // Track if Shift key is pressed
