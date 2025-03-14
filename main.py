@@ -342,7 +342,7 @@ class Api:
             return {"ok": False, "error": str(e)}
 
 
-"""
+
 # Create an instance of the Api class with the accesstoken
 api = Api(accesstoken)
 # Create a webview window with the specified HTML file and API
@@ -359,4 +359,3 @@ window = webview.create_window(
 )
 
 webview.start(debug=False)
-"""
