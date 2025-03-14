@@ -141,34 +141,18 @@ export class Message {
             const deleteBtn = document.createElement('div');
             deleteBtn.classList.add('message-action-btn', 'delete');
             deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
-            deleteBtn.title = 'Delete Message';
+            deleteBtn.title = 'Delete Message (Hold Shift for quick delete)';
             
+            // Update the delete button to check for Shift key
             deleteBtn.addEventListener('click', async (event) => {
                 event.stopPropagation();
                 if (this.messageId) {
-                    if (confirm('Are you sure you want to delete this message?')) {
-                        try {
-                            const response = await window.pywebview.api.delete_message(this.messageId);
-                            if (response && response.ok) {
-                                messageGroup.remove();
-                            } else {
-                                const errorDiv = document.createElement('div');
-                                errorDiv.classList.add('error-popup');
-                                errorDiv.textContent = response.error === 'MESSAGE_ACCESSDENIED' ? 
-                                    'You do not have permission to delete this message.' : 
-                                    'Failed to delete message.';
-                                
-                                messageElement.appendChild(errorDiv);
-                                
-                                setTimeout(() => {
-                                    errorDiv.remove();
-                                }, 3000);
-                                
-                                console.error('Failed to delete message:', response);
-                            }
-                        } catch (error) {
-                            console.error('Error deleting message:', error);
-                        }
+                    // Check if shift key is pressed for quick delete
+                    if (event.shiftKey) {
+                        this._deleteMessage(messageGroup);
+                    } else {
+                        // Show the custom confirmation modal
+                        this._showDeleteConfirmation(messageGroup);
                     }
                 } else {
                     console.error('No message ID available for deletion');
@@ -177,16 +161,18 @@ export class Message {
             
             actionsContainer.appendChild(deleteBtn);
             
-            // Change color on shift key
+            // Add event listeners to update delete button appearance when shift is pressed
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Shift') {
-                    deleteBtn.style.color = e.shiftKey ? 'red' : '';
+                    deleteBtn.classList.add('shift-active');
+                    deleteBtn.title = 'Quick delete message (without confirmation)';
                 }
             });
             
             document.addEventListener('keyup', (e) => {
                 if (e.key === 'Shift') {
-                    deleteBtn.style.color = '';
+                    deleteBtn.classList.remove('shift-active');
+                    deleteBtn.title = 'Delete Message (Hold Shift for quick delete)';
                 }
             });
         }
@@ -195,6 +181,120 @@ export class Message {
         messageGroup.appendChild(messageContentGroup);
         
         return messageGroup;
+    }
+
+    // Add a new method to show custom delete confirmation
+    _showDeleteConfirmation(messageGroup) {
+        // Create modal container if it doesn't exist yet
+        let modal = document.getElementById('delete-confirmation-modal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'delete-confirmation-modal';
+            modal.className = 'delete-confirmation-modal';
+            
+            // Create modal content
+            const modalContent = document.createElement('div');
+            modalContent.className = 'delete-confirmation-content';
+            
+            // Add modal header
+            const modalHeader = document.createElement('h3');
+            modalHeader.textContent = 'Delete Message';
+            modalContent.appendChild(modalHeader);
+            
+            // Add modal message
+            const modalMessage = document.createElement('p');
+            modalMessage.textContent = 'Are you sure you want to delete this message?';
+            modalContent.appendChild(modalMessage);
+            
+            // Add buttons
+            const buttonContainer = document.createElement('div');
+            buttonContainer.className = 'delete-confirmation-buttons';
+            
+            const cancelButton = document.createElement('button');
+            cancelButton.className = 'delete-confirmation-btn cancel';
+            cancelButton.textContent = 'Cancel';
+            cancelButton.onclick = () => {
+                modal.classList.remove('active');
+            };
+            
+            const deleteButton = document.createElement('button');
+            deleteButton.className = 'delete-confirmation-btn delete';
+            deleteButton.textContent = 'Delete';
+            
+            buttonContainer.appendChild(cancelButton);
+            buttonContainer.appendChild(deleteButton);
+            modalContent.appendChild(buttonContainer);
+            
+            // Add tip about shift key
+            const tipText = document.createElement('div');
+            tipText.className = 'delete-confirmation-tip';
+            tipText.textContent = 'Tip: Hold Shift while clicking delete for quick deletion';
+            modalContent.appendChild(tipText);
+            
+            modal.appendChild(modalContent);
+            document.body.appendChild(modal);
+            
+            // Close modal when clicking outside of it
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.remove('active');
+                }
+            });
+            
+            // Close modal with Escape key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && modal.classList.contains('active')) {
+                    modal.classList.remove('active');
+                }
+            });
+        }
+        
+        // Update delete button action for this specific message
+        const deleteButton = modal.querySelector('.delete-confirmation-btn.delete');
+        deleteButton.onclick = () => {
+            this._deleteMessage(messageGroup);
+            modal.classList.remove('active');
+        };
+        
+        // Show the modal
+        modal.classList.add('active');
+    }
+    
+    // Add a method to handle the actual message deletion
+    async _deleteMessage(messageGroup) {
+        try {
+            const response = await window.pywebview.api.delete_message(this.messageId);
+            if (response && response.ok) {
+                // Add a fade-out animation before removing
+                messageGroup.style.transition = 'opacity 0.3s ease';
+                messageGroup.style.opacity = '0';
+                
+                // Remove the element after animation completes
+                setTimeout(() => {
+                    messageGroup.remove();
+                }, 300);
+            } else {
+                // Create error message
+                const errorDiv = document.createElement('div');
+                errorDiv.classList.add('error-popup');
+                errorDiv.textContent = response.error === 'MESSAGE_ACCESSDENIED' ? 
+                    'You do not have permission to delete this message.' : 
+                    'Failed to delete message.';
+                
+                // Find the message element
+                const messageElement = messageGroup.querySelector('.message');
+                messageElement.appendChild(errorDiv);
+                
+                // Remove error message after 3 seconds
+                setTimeout(() => {
+                    errorDiv.remove();
+                }, 3000);
+                
+                console.error('Failed to delete message:', response);
+            }
+        } catch (error) {
+            console.error('Error deleting message:', error);
+        }
     }
 
     _addImageContent(contentElement) {
