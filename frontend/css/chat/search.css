@@ -1,0 +1,103 @@
+/* Search styles */
+.search-button {
+    position: absolute;
+    top: 1px;
+    right: 15px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: background-color 0.3s ease;
+}
+
+.search-button:hover {
+    background-color: #e0e0e0;
+}
+
+.search-container {
+    position: absolute;
+    top: 0;
+    right: 15px;
+    display: flex;
+    align-items: center;
+    z-index: 3;
+    background-color: #ffffff;
+    padding: 3px 8px; /* Reduced padding */
+    border-radius: 15px; /* Slightly reduced border radius */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    border: 1px solid #e0e0e0;
+    height: 28px; /* Fixed height */
+}
+
+.search-input {
+    margin: 0;
+    padding: 4px 8px; /* Reduced padding */
+    border: none;
+    border-radius: 15px;
+    font-size: 13px; /* Slightly smaller font */
+    width: 150px; /* Reduced initial width */
+    transition: all 0.3s ease;
+    background: transparent;
+}
+
+.search-input:focus {
+    width: 180px; /* Reduced expanded width */
+    outline: none;
+}
+
+.search-input::placeholder {
+    color: #888;
+    opacity: 0.8;
+}
+
+.clear-search {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 3px; /* Reduced padding */
+    margin-left: 2px; /* Reduced margin */
+    color: #666;
+    transition: all 0.3s ease;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.clear-search:hover {
+    background-color: #f0f0f0;
+    color: #ff4444;
+}
+
+.clear-search .fa-times {
+    font-size: 12px; /* Smaller icon */
+    transition: transform 0.2s ease;
+}
+
+.clear-search:hover .fa-times {
+    transform: scale(1.1);
+}
+
+/* Add hover effect for the search container */
+.search-container:hover {
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Add focus effect for the search container */
+.search-container:focus-within {
+    border-color: #4a90e2;
+    box-shadow: 0 3px 8px rgba(74, 144, 226, 0.2);
+}
+
+.search-icon {
+    font-size: 16px; /* Font size */
+    color: black; /* Black color */
+}
+
+/* Improve search container visibility */
+.search-container.active {
+    opacity: 1;
+    pointer-events: all;
+}

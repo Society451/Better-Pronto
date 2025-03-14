@@ -6,6 +6,13 @@ Aims to improve the application interface by completely rewriting the client fro
 
 Documentation can be found at [this page here](https://society451.github.io/Better-Pronto-Documentation/)
 
+### Contributors:
+
+- [@di4rm4d4](https://github.com/di4rm4d4)
+- [@wyldere](https://github.com/wyldere)
+- [@MrSpots1](https://github.com/MrSpots1)
+- [@sage0sw](https://github.com/sage0sw) (Special thanks for designing our logo!)
+
 Dependencies:
 - `pywebview` 
 

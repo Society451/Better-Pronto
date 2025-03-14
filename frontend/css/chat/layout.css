@@ -1,0 +1,65 @@
+/* Base layout styles */
+html, body {
+    user-select: text; /* Enable text selection for the entire page */
+    -webkit-user-select: text; /* Safari */
+    -moz-user-select: text; /* Firefox */
+    -ms-user-select: text; /* Internet Explorer/Edge */
+}
+
+body {
+    display: flex; /* Use flexbox for layout */
+    height: 100vh; /* Full viewport height */
+    margin: 0; /* Remove default margin */
+    background: none; /* Remove background image */
+    align-items: flex-start; /* Align items to the top */
+    font-family: 'Roboto', sans-serif; /* Use Roboto font */
+    user-select: text; /* Enable text selection */
+}
+
+.chat-container {
+    flex: 1; /* Take up remaining space */
+    display: flex; /* Use flexbox for layout */
+    flex-direction: column; /* Column layout */
+    padding: 20px; /* Padding inside the chat container */
+    border-radius: 10px; /* Rounded corners */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    margin: 0; /* Remove margins to allow full width */
+    width: 80%; /* Expand to full width */
+    height: 90%; /* Ensure the container takes full height */
+    position: relative; /* Position relative for absolute positioning of children */
+    user-select: text; /* Enable text selection */
+}
+
+.chat-heading {
+    position: absolute; /* Position relative to the chat container */
+    top: 10px; /* 10px from the top */
+    left: 32px; /* 32px from the left */
+    font-size: 24px; /* Font size */
+    font-weight: bold; /* Bold font */
+}
+
+.hidden {
+    display: none;
+}
+
+/* Ensure all child elements inherit text selection */
+.chat-container *,
+.chat-list *,
+.messages *,
+.input-group * {
+    user-select: text;
+}
+
+.error-popup {
+    position: absolute;
+    top: -40px;
+    right: 10px;
+    background-color: #ff4444;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    animation: slideIn 0.3s ease-out;
+    z-index: 1000;
+}
