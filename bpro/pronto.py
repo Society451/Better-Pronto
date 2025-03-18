@@ -185,7 +185,7 @@ def get_bubble_info(access_token, bubbleID):
         raise BackendError(f"An unexpected error occurred: {err}")
 
 #Function to mark a bubble as read
-def markBubble(access_token, bubbleID):
+def markBubble(access_token, bubbleID, message_id=None):
     url = f"{API_BASE_URL}api/v1/bubble.mark"
     headers = {
         "Content-Type": "application/json",
@@ -193,6 +193,7 @@ def markBubble(access_token, bubbleID):
     }
     request_payload = {
         "bubble_id": bubbleID,
+        "message_id": message_id
     }
     try:
         response = requests.post(url, headers=headers, json=request_payload)
@@ -212,6 +213,33 @@ def markBubble(access_token, bubbleID):
         logger.error(f"An unexpected error occurred: {err}")
         raise BackendError(f"An unexpected error occurred: {err}")
 
+def membershipUpdate(access_token, bubbleID, marked_unread=False):
+    url = f"{API_BASE_URL}api/v1/membership.update"
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {access_token}",
+    }
+    request_payload = {
+        "bubble_id": bubbleID,
+        "marked_unread": marked_unread,
+    }
+    try:
+        response = requests.post(url, headers=headers, json=request_payload)
+        response.raise_for_status()
+        response_json = response.json()
+        return response_json
+    except requests.exceptions.HTTPError as http_err:
+        logger.error(f"HTTP error occurred: {http_err} - Response: {response.text}")
+        if response.status_code == 401:
+            raise BackendError(f"HTTP error occurred: {http_err}")
+        else:
+            raise BackendError(f"HTTP error occurred: {http_err}")
+    except requests.exceptions.RequestException as req_err:
+        logger.error(f"Request exception occurred: {req_err}")
+        raise BackendError(f"Request exception occurred: {req_err}")
+    except Exception as err:
+        logger.error(f"An unexpected error occurred: {err}")
+        raise BackendError(f"An unexpected error occurred: {err}")
 #Function to create DM
 def createDM(access_token, id, orgID):
     url = f"{API_BASE_URL}api/v1/dm.create"
@@ -752,6 +780,37 @@ def searchMessage(access_token, query, bubbleID=None, orderby=None, user_ids=Non
     if user_ids is not None:
         request_payload["user_ids"] = user_ids
 
+    try:
+        response = requests.post(url, headers=headers, json=request_payload)
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.HTTPError as http_err:
+        logger.error(f"HTTP error occurred: {http_err} - Response: {response.text}")
+        if response.status_code == 401:
+            raise BackendError(f"HTTP error occurred: {http_err}")
+        else:
+            raise BackendError(f"HTTP error occurred: {http_err}")
+    except requests.exceptions.RequestException as req_err:
+        logger.error(f"Request exception occurred: {req_err}")
+        raise BackendError(f"Request exception occurred: {req_err}")
+    except Exception as err:
+        logger.error(f"An unexpected error occurred: {err}")
+        raise BackendError(f"An unexpected error occurred: {err}")
+
+#{"orderby":["firstname","lastname"],"includeself":true,"bubble_id":"3640189","page":1}
+def bubbleMembershipSearch(access_token, bubble_id, orderby=["firstname", "lastname"], includeself=True, page=None):
+    url = f"{API_BASE_URL}/api/v1/bubble.membershipsearch"
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {access_token}",
+    }
+    request_payload = {
+        "orderby": orderby,
+        "includeself": includeself,
+        "bubble_id": bubble_id,
+    }
+    if page is not None:
+        request_payload["page"] = page
     try:
         response = requests.post(url, headers=headers, json=request_payload)
         response.raise_for_status()

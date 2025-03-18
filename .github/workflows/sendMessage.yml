@@ -1,10 +1,13 @@
 name: Send Message on Commit
 
 on:
-  push:
-    branches:
-      - main
-      - Latest-Unstable
+  push:  # This will trigger on any push to any branch
+  pull_request:  # This will trigger on PRs
+    types: [opened, synchronize, reopened, closed]
+  issue_comment:  # This will trigger on comments
+    types: [created]
+  issues:  # This will trigger on issue activity
+    types: [opened, edited, closed, reopened]
 
 jobs:
   send-message:

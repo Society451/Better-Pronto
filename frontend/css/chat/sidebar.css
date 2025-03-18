@@ -1,0 +1,221 @@
+/* Sidebar-specific styles */
+.sidebar {
+    width: 20%; /* Sidebar width */
+    background: #f4f4f4; /* Light grey background */
+    padding: 20px; /* Padding inside the sidebar */
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); /* Subtle shadow on the right */
+    overflow-y: auto; /* Enable vertical scrolling */
+    scroll-behavior: smooth; /* Smooth scrolling */
+}
+
+/* Add styles for sidebar controls container */
+.sidebar-controls {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end; /* Keep buttons aligned to the right */
+    margin-bottom: 15px;
+    position: relative;
+    height: 36px; /* Fixed height to prevent layout shift */
+}
+
+/* Add styles for settings button */
+.settings-button {
+    background: #f0f0f0; /* Match other buttons */
+    border: 1px solid #ddd;
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #444;
+    margin-left: 8px; /* Add space after search button */
+    margin-right: 8px; /* Keep space before collapse button */
+    min-width: 28px; /* Ensure minimum width */
+}
+
+.settings-button i {
+    font-size: 14px; /* Ensure icon is visible */
+}
+
+.settings-button:hover {
+    background: #e0e0e0; /* Match other button hover */
+}
+
+.chat-list {
+    max-height: 80vh; /* Limit the height of the chat list */
+    overflow-y: auto; /* Add a scrollbar if the content exceeds the height */
+    padding: 5px; /* Padding inside the chat list */
+    background: #ffffff; /* White background */
+    border-radius: 1px; /* Slightly rounded corners */
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    scroll-behavior: smooth; /* Smooth scrolling */
+    user-select: text; /* Enable text selection */
+}
+
+.chat-item {
+    position: relative; /* Add position relative for dropdown positioning */
+    padding: 15px; /* Padding inside each chat item */
+    margin-bottom: 4px; /* Space between chat items */
+    background: #ffffff; /* White background */
+    border-radius: 5px; /* Rounded corners */
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    cursor: pointer; /* Pointer cursor on hover */
+    transition: background 0.3s, opacity 0.5s ease, max-height 0.5s ease, margin 0.5s ease, padding 0.5s ease; /* Add transitions for animations */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.chat-item:hover {
+    background: #e0e0e0; /* Light grey background on hover */
+}
+
+.chat-item .menu-button {
+    position: absolute; /* Position relative to the chat item */
+    top: 10px; /* 10px from the top */
+    right: 10px; /* 10px from the right */
+    background: none; /* No background */
+    border: none; /* No border */
+    cursor: pointer; /* Pointer cursor */
+    font-size: 16px; /* Font size */
+}
+
+.chat-item .dropdown-menu {
+    display: none; /* Hidden by default */
+    position: absolute; /* Position relative to the chat item */
+    top: 30px; /* 30px from the top */
+    right: 10px; /* 10px from the right */
+    background: #fff; /* White background */
+    border: 1px solid #ccc; /* Light grey border */
+    border-radius: 5px; /* Rounded corners */
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    z-index: 1000; /* Ensure it appears above other elements */
+    min-width: 100px; /* Minimum width */
+    padding: 0; /* Remove padding */
+}
+
+.chat-item .dropdown-menu.show {
+    display: block; /* Show the dropdown menu */
+}
+
+.chat-item .dropdown-menu li {
+    list-style: none; /* Remove list style */
+    padding: 10px; /* Padding inside each list item */
+    cursor: pointer; /* Pointer cursor */
+    text-align: left; /* Align text to the left */
+}
+
+.chat-item .dropdown-menu li:hover {
+    background: #f0f0f0; /* Light grey background on hover */
+}
+
+.category-header {
+    padding: 10px; /* Padding inside the category header */
+    background: #e0e0e0; /* Light grey background */
+    border-radius: 5px; /* Rounded corners */
+    cursor: pointer; /* Pointer cursor */
+    font-weight: bold; /* Bold font */
+    display: flex; /* Use flexbox for layout */
+    justify-content: space-between; /* Space between elements */
+    align-items: center; /* Center items vertically */
+}
+
+.category-header::after {
+    content: '▼'; /* Down arrow */
+    font-size: 12px; /* Font size */
+    transition: transform 0.3s; /* Smooth rotation transition */
+}
+
+.category-header.collapsed::after {
+    transform: rotate(-90deg); /* Rotate arrow when collapsed */
+}
+
+.category-content {
+    display: block; /* Ensure categories are expanded by default */
+    padding-left: 10px; /* Padding inside the category content */
+    transition: max-height 0.3s ease-out; /* Smooth height transition */
+}
+
+.category-content.collapsed {
+    display: none; /* Hide content when collapsed */
+}
+
+.collapse-button {
+    margin-right: 8px; /* Space between buttons */
+    padding: 6px 12px; /* Padding inside the button */
+    background: #f0f0f0; /* Light grey background */
+    border: 1px solid #ddd; /* Subtle border */
+    border-radius: 4px; /* Rounded corners */
+    cursor: pointer; /* Pointer cursor */
+    font-size: 13px; /* Font size */
+    transition: all 0.2s ease; /* Smooth transition for hover effects */
+    color: #444; /* Darker text */
+}
+
+.collapse-button:hover {
+    background: #e0e0e0; /* Slightly darker on hover */
+}
+
+.unread-count {
+    background-color: red;
+    color: white;
+    border-radius: 12px;
+    padding: 2px 6px;
+    font-size: 12px;
+    margin-left: 10px;
+}
+
+.chat-item .unread-count {
+    /* Position the unread count */
+    margin-left: auto;
+    margin-right: 10px;
+}
+
+/* Style for chat titles */
+.chat-title {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.online-users {
+    font-size: 0.8em;
+    color: #4CAF50;
+    margin-left: 10px;
+    display: inline-block;
+}
+
+.chat-item.active {
+    background-color: #e6f7ff; /* Light blue background */
+    border-left: 3px solid #8C1515; /* Stanford red left border */
+    padding-left: 12px; /* Adjust padding to account for border */
+    font-weight: 500; /* Slightly bolder text */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); /* More pronounced shadow */
+}
+
+.chat-item.active:hover {
+    background-color: #e6f7ff; /* Keep the same color on hover */
+}
+
+.chat-item.active .chat-title {
+    color: #8C1515; /* Stanford red text color for the title */
+}
+
+/* Animation classes for chat items */
+.chat-item.fade-out {
+    opacity: 0;
+    max-height: 0;
+    margin-bottom: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+/* Empty category styling */
+.category.empty .category-header {
+    opacity: 0.6;
+}

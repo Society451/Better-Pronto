@@ -1,0 +1,35 @@
+/* Input styles */
+.input-group {
+    display: flex; /* Use flexbox for layout */
+    margin-top: 0; /* Ensure it stays at the bottom */
+    flex-shrink: 0; /* Prevent the input group from shrinking */
+    user-select: text; /* Enable text selection */
+}
+
+.input-group input {
+    flex: 1; /* Take up remaining space */
+    padding: 10px; /* Padding inside the input */
+    border: 1px solid #ccc; /* Light grey border */
+    border-radius: 5px; /* Rounded corners */
+    width: 90%; /* Make input take all available space */
+    word-wrap: break-word; /* Ensure long words break to the next line */
+    white-space: pre-wrap; /* Preserve whitespace and wrap text */
+    overflow-wrap: break-word; /* Ensure long words break to the next line */
+}
+
+/* Add styles for textarea */
+.input-group textarea {
+    flex: 1; /* Take up remaining space */
+    padding: 10px; /* Padding inside the textarea */
+    border: 1px solid #ccc; /* Light grey border */
+    border-radius: 5px; /* Rounded corners */
+    width: 90%; /* Make textarea take all available space */
+    word-wrap: break-word; /* Ensure long words break to the next line */
+    white-space: pre-wrap; /* Preserve whitespace and wrap text */
+    overflow-wrap: break-word; /* Ensure long words break to the next line */
+    resize: vertical; /* Allow the textarea to expand vertically */
+    min-height: 40px; /* Minimum height for the textarea */
+    max-height: 100px; /* Maximum height for the textarea */
+    font-family: 'Roboto', sans-serif; /* Consistent font family */
+    font-size: 14px; /* Consistent font size */
+}
