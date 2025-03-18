@@ -489,7 +489,8 @@ class Api:
 
     def markBubbleAsRead(self, bubbleID):
         try:
-            response = markBubble(accesstoken, bubbleID)
+            response = membershipUpdate(accesstoken, bubbleID, marked_unread=False)
+            #response = markBubble(accesstoken, bubbleID)
             print(f"Marked bubble {bubbleID} as read: {response}")
             return response
         except Exception as e:
@@ -517,63 +518,6 @@ class Api:
         except Exception as e:
             print(f"Error deleting message: {e}")
             return {"ok": False, "error": str(e)}
-
-    # Add a new function to handle authenticated image viewing
-    def open_authenticated_image(self, image_url):
-        """Open image URL directly with authentication token."""
-        try:
-            print(f"Opening authenticated image: {image_url}")
-            
-            # Create a direct URL with access token as query parameter
-            # Note: This is not standard practice for security reasons, but it's simpler for direct browser access
-            parsed_url = urllib.parse.urlparse(image_url)
-            
-            # Create a temporary file path with a random token
-            temp_token = base64.urlsafe_b64encode(os.urandom(30)).decode('utf-8')
-            # Choose an approach based on what works best in your environment
-            
-            # Approach 1: Create a simple HTML redirect
-            temp_dir = os.path.join(os.path.expanduser("~"), ".bpro", "temp")
-            os.makedirs(temp_dir, exist_ok=True)
-            temp_html = os.path.join(temp_dir, f"view_{temp_token}.html")
-            
-            with open(temp_html, 'w') as f:
-                f.write(f"""
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <title>Redirecting...</title>
-                    <meta http-equiv="refresh" content="0;URL='{image_url}'" />
-                    <script>
-                        // Add auth header to the request
-                        fetch("{image_url}", {{
-                            headers: {{
-                                "Authorization": "Bearer {accesstoken}"
-                            }}
-                        }})
-                        .then(response => response.blob())
-                        .then(blob => {{
-                            const url = URL.createObjectURL(blob);
-                            window.location = url;
-                        }})
-                        .catch(error => {{
-                            console.error('Error:', error);
-                            document.body.innerHTML = 'Error loading image. Please try again.';
-                        }});
-                    </script>
-                </head>
-                <body>
-                    <p>Redirecting to image...</p>
-                </body>
-                </html>
-                """)
-            
-            # Open the redirect page in browser
-            webbrowser.open(f"file://{temp_html}")
-            return {"success": True}
-        except Exception as e:
-            print(f"Error opening authenticated image: {e}")
-            return {"success": False, "error": str(e)}
             
 # Create an instance of the Api class with the accesstoken
 api = Api(accesstoken)

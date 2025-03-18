@@ -31,7 +31,7 @@
     border-radius: 5px; /* Rounded corners */
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
     cursor: pointer; /* Pointer cursor on hover */
-    transition: background 0.3s; /* Smooth background transition */
+    transition: background 0.3s, opacity 0.5s ease, max-height 0.5s ease, margin 0.5s ease, padding 0.5s ease; /* Add transitions for animations */
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -167,4 +167,20 @@
 
 .chat-item.active .chat-title {
     color: #8C1515; /* Stanford red text color for the title */
+}
+
+/* Animation classes for chat items */
+.chat-item.fade-out {
+    opacity: 0;
+    max-height: 0;
+    margin-bottom: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+/* Empty category styling */
+.category.empty .category-header {
+    opacity: 0.6;
 }

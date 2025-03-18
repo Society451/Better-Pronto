@@ -128,11 +128,54 @@ document.addEventListener('click', (event) => {
         
         if (chatItem && optionText === 'Mark as Read') {
             const chatID = chatItem.getAttribute('data-chat-id');
+            const chatTitle = chatItem.querySelector('.chat-title').textContent;
+            
             if (chatID) {
+                // First find if this chat exists in the Unread category
+                const unreadCategory = Array.from(document.querySelectorAll('.category')).find(
+                    cat => cat.querySelector('.category-header').textContent === 'Unread'
+                );
+                
                 window.pywebview.api.markBubbleAsRead(chatID)
                     .then(() => {
-                        chatItem.querySelector('.unread-count').textContent = '0';
+                        // Update unread count to zero in all instances of this chat
+                        document.querySelectorAll(`.chat-item[data-chat-id="${chatID}"] .unread-count`).forEach(countElement => {
+                            countElement.textContent = '0';
+                        });
+                        
+                        // Update visibility of unread counts
                         updateUnreadCounts();
+                        
+                        // If the chat is in the Unread category, animate and remove it
+                        if (unreadCategory) {
+                            const unreadChatItem = Array.from(unreadCategory.querySelectorAll('.chat-item')).find(
+                                item => item.getAttribute('data-chat-id') === chatID
+                            );
+                            
+                            if (unreadChatItem) {
+                                // Add the fade-out class for animation
+                                unreadChatItem.classList.add('fade-out');
+                                
+                                // Remove the item after animation completes
+                                setTimeout(() => {
+                                    unreadChatItem.remove();
+                                    
+                                    // Check if the category is now empty
+                                    const remainingItems = unreadCategory.querySelectorAll('.category-content .chat-item');
+                                    if (remainingItems.length === 0) {
+                                        unreadCategory.classList.add('empty');
+                                        
+                                        // Animate the category removal with a delay
+                                        setTimeout(() => {
+                                            unreadCategory.classList.add('fade-out');
+                                            setTimeout(() => {
+                                                unreadCategory.remove();
+                                            }, 500);
+                                        }, 200);
+                                    }
+                                }, 500); // Match this duration with CSS transition time
+                            }
+                        }
                     })
                     .catch(error => {
                         console.error('Error marking bubble as read:', error);

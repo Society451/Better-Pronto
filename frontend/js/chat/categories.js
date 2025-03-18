@@ -126,7 +126,8 @@ export async function initializeCategories() {
 
         // Add unread bubbles as a separate category at the top
         if (processedUnreadBubbles.length > 0) {
-            categoryElements.push(new Category('Unread', processedUnreadBubbles, unreadMap));
+            const unreadCategory = new Category('Unread', processedUnreadBubbles, unreadMap);
+            categoryElements.push(unreadCategory);
         }
 
         // Add DM category
@@ -149,6 +150,10 @@ export async function initializeCategories() {
         categoryElements.forEach(category => {
             const categoryElement = category.createElement();
             if (categoryElement) {
+                // Add a data attribute for easier category identification
+                if (category.name === 'Unread') {
+                    categoryElement.setAttribute('data-category', 'unread');
+                }
                 chatList.appendChild(categoryElement);
             } else {
                 console.warn('Failed to create category element:', category.name);
