@@ -2,6 +2,19 @@ import { messagesContainer } from './constants.js';
 import { setChatHeading } from './ui.js';
 import { Message } from './message.js';
 
+// Function to parse URLs in text and convert them to clickable links
+function parseUrls(text) {
+    if (!text) return '';
+    
+    // Regex to match URLs
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    
+    // Replace URLs with anchor tags
+    return text.replace(urlRegex, url => {
+        return `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
+    });
+}
+
 // Function to retrieve and display detailed messages for a specific bubble ID
 export async function loadMessages(bubbleID, bubbleName) {
     try {
@@ -84,8 +97,8 @@ export async function loadMessages(bubbleID, bubbleName) {
                     const contentElement = document.createElement('div');
                     contentElement.classList.add('message-content');
                     
-                    // Add text content
-                    contentElement.textContent = content;
+                    // Add content with URL parsing
+                    contentElement.innerHTML = parseUrls(content);
                     
                     messageWrapper.appendChild(contentElement);
                     messageElement.appendChild(messageWrapper);
@@ -147,7 +160,7 @@ export async function sendMessage(chatID, messageText, userId) {
                 
                 const contentElement = document.createElement('div');
                 contentElement.classList.add('message-content');
-                contentElement.textContent = message.content;
+                contentElement.innerHTML = parseUrls(message.content);
                 
                 messageWrapper.appendChild(contentElement);
                 newMessage.appendChild(messageWrapper);

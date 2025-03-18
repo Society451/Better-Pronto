@@ -97,6 +97,19 @@ export class Message {
         return header;
     }
     
+    // Parse URLs in text and convert them to clickable links
+    _parseUrls(text) {
+        if (!text) return '';
+        
+        // Regex to match URLs
+        const urlRegex = /(https?:\/\/[^\s]+)/g;
+        
+        // Replace URLs with anchor tags
+        return text.replace(urlRegex, url => {
+            return `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
+        });
+    }
+    
     _createMessageBody() {
         const messageElement = document.createElement('div');
         messageElement.classList.add('message');
@@ -108,7 +121,8 @@ export class Message {
         contentElement.classList.add('message-content');
         
         if (this.content && this.content.trim() !== '') {
-            contentElement.textContent = this.content;
+            // Parse URLs in content
+            contentElement.innerHTML = this._parseUrls(this.content);
         }
         
         wrapper.appendChild(contentElement);
