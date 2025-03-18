@@ -489,7 +489,8 @@ class Api:
 
     def markBubbleAsRead(self, bubbleID):
         try:
-            response = markBubble(accesstoken, bubbleID)
+            response = membershipUpdate(accesstoken, bubbleID, marked_unread=False)
+            #response = markBubble(accesstoken, bubbleID)
             print(f"Marked bubble {bubbleID} as read: {response}")
             return response
         except Exception as e:
