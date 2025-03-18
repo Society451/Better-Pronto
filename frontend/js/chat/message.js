@@ -2,7 +2,7 @@ import { isShiftPressed } from './constants.js';
 
 // Message class to create message elements
 export class Message {
-    constructor(content, sender, timestamp, user, isDefault = false, editCount = 0, lastEdited = null, messageId = null, hasImage = false, imageData = null) {
+    constructor(content, sender, timestamp, user, isDefault = false, editCount = 0, lastEdited = null, messageId = null) {
         this.content = content;
         this.sender = sender;
         this.timestamp = timestamp;
@@ -11,8 +11,6 @@ export class Message {
         this.editCount = editCount;
         this.lastEdited = lastEdited;
         this.messageId = messageId;
-        this.hasImage = hasImage;
-        this.imageData = imageData;
     }
 
     // Format timestamp in Discord style (Today at 2:30 PM or MM/DD/YYYY)
@@ -109,11 +107,7 @@ export class Message {
         const contentElement = document.createElement('div');
         contentElement.classList.add('message-content');
         
-        if (this.hasImage && this.imageData) {
-            this._addImageContent(contentElement);
-        } else if (this.hasImage) {
-            this._addImagePlaceholder(contentElement);
-        } else if (this.content && this.content.trim() !== '') {
+        if (this.content && this.content.trim() !== '') {
             contentElement.textContent = this.content;
         }
         
