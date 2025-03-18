@@ -36,13 +36,20 @@
   height: 40px;
   margin-right: 16px;
   flex-shrink: 0;
+  overflow: hidden; /* Ensure content doesn't overflow the container */
+  border-radius: 50%; /* Make the container itself circular */
+  position: relative; /* Create positioning context for the image */
 }
 
 .profile-pic {
-  width: 40px;
-  height: 40px;
+  width: 100%;
+  height: 100%;
   border-radius: 50%;
-  object-fit: cover;
+  object-fit: cover; /* Maintain aspect ratio while filling container */
+  object-position: center; /* Center the image within the container */
+  position: absolute; /* Position absolutely within the container */
+  top: 0;
+  left: 0;
 }
 
 /* Message content styling */
