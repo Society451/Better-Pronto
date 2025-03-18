@@ -18,15 +18,31 @@ export class Message {
         const date = new Date(timestamp);
         if (isNaN(date.getTime())) return timestamp;
         
+        // Create a new date object to ensure we're working with local time
         const now = new Date();
-        const isToday = date.toDateString() === now.toDateString();
-        const isYesterday = new Date(now - 86400000).toDateString() === date.toDateString();
         
-        const time = date.toLocaleTimeString([], { hour: 'numeric', minute: 'numeric' });
+        // Check if the date is today by comparing year, month, and day
+        const isToday = date.getFullYear() === now.getFullYear() && 
+                        date.getMonth() === now.getMonth() && 
+                        date.getDate() === now.getDate();
+        
+        // Check if the date is yesterday
+        const yesterday = new Date(now);
+        yesterday.setDate(yesterday.getDate() - 1);
+        const isYesterday = date.getFullYear() === yesterday.getFullYear() && 
+                            date.getMonth() === yesterday.getMonth() && 
+                            date.getDate() === yesterday.getDate();
+        
+        // Format the time part using local timezone settings
+        const timeOptions = { hour: 'numeric', minute: 'numeric', hour12: true };
+        const time = date.toLocaleTimeString([], timeOptions);
         
         if (isToday) return `Today at ${time}`;
         if (isYesterday) return `Yesterday at ${time}`;
-        return `${date.toLocaleDateString()} ${time}`;
+        
+        // For older dates, include the date with the local timezone
+        const dateOptions = { month: 'numeric', day: 'numeric', year: 'numeric' };
+        return `${date.toLocaleDateString([], dateOptions)} ${time}`;
     }
 
     // Create a message element

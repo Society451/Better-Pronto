@@ -487,11 +487,26 @@ class Api:
                 'error': str(e)
             }
 
-    def markBubbleAsRead(self, bubbleID):
+    def markBubbleAsRead(self, bubbleID, message_id=None):
+        print(f"DEBUG: markBubbleAsRead called for bubble {bubbleID}, message_id: {message_id}")
         try:
-            response = membershipUpdate(accesstoken, bubbleID, marked_unread=False)
-            #response = markBubble(accesstoken, bubbleID)
-            print(f"Marked bubble {bubbleID} as read: {response}")
+            # If message_id is not provided, get the most recent message
+            if not message_id:
+                # Get messages for the bubble
+                bubble_messages = get_bubble_messages(accesstoken, bubbleID)
+                if bubble_messages and 'messages' in bubble_messages and bubble_messages['messages']:
+                    # Get the most recent message ID
+                    messages = bubble_messages['messages']
+                    message_id = messages[0]['id']
+                    print(f"DEBUG: Using most recent message ID: {message_id}")
+                else:
+                    print("DEBUG: No messages found for the bubble, cannot mark as read")
+                    return None
+            
+            # Call markBubble with the proper payload structure
+            print(f"DEBUG: Marking bubble as read with bubble_id: {bubbleID}, message_id: {message_id}")
+            response = markBubble(accesstoken, bubbleID, message_id=message_id)
+            print(f"Marked bubble {bubbleID} as read with message ID {message_id}: {response}")
             return response
         except Exception as e:
             print(f"Error marking bubble as read: {e}")
