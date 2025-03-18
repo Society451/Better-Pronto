@@ -19,7 +19,8 @@
 .search-container {
     position: absolute;
     top: 0;
-    right: 0;
+    left: 0; /* Change from right: 0 to left: 0 */
+    right: 0; /* Add right: 0 to make it stretch full width */
     display: flex;
     align-items: center;
     z-index: 3;
@@ -30,7 +31,7 @@
     transition: all 0.3s ease;
     border: 1px solid #e0e0e0;
     height: 32px; /* Match button height */
-    width: 100%; /* Take full width */
+    width: auto; /* Change from 100% to auto since we're using left/right positioning */
 }
 
 .search-input {
@@ -39,7 +40,7 @@
     border: none;
     border-radius: 4px;
     font-size: 13px; /* Slightly smaller font */
-    width: 100%; /* Take full width */
+    flex: 1; /* Allow input to grow and fill space */
     transition: all 0.3s ease;
     background: transparent;
 }
