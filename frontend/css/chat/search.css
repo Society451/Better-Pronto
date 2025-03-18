@@ -1,49 +1,50 @@
 /* Search styles */
 .search-button {
-    position: absolute;
-    top: 1px;
-    right: 15px;
-    background: none;
-    border: none;
+    background: #f0f0f0; /* Match collapse button style */
+    border: 1px solid #ddd;
     cursor: pointer;
-    padding: 8px;
-    border-radius: 50%;
-    transition: background-color 0.3s ease;
+    padding: 6px 10px;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #444; /* Darker text */
 }
 
 .search-button:hover {
-    background-color: #e0e0e0;
+    background-color: #e0e0e0; /* Match collapse button hover */
 }
 
 .search-container {
     position: absolute;
     top: 0;
-    right: 15px;
+    right: 0;
     display: flex;
     align-items: center;
     z-index: 3;
     background-color: #ffffff;
     padding: 3px 8px; /* Reduced padding */
-    border-radius: 15px; /* Slightly reduced border radius */
+    border-radius: 4px; /* Match other buttons */
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
     border: 1px solid #e0e0e0;
-    height: 28px; /* Fixed height */
+    height: 32px; /* Match button height */
+    width: 100%; /* Take full width */
 }
 
 .search-input {
     margin: 0;
     padding: 4px 8px; /* Reduced padding */
     border: none;
-    border-radius: 15px;
+    border-radius: 4px;
     font-size: 13px; /* Slightly smaller font */
-    width: 150px; /* Reduced initial width */
+    width: 100%; /* Take full width */
     transition: all 0.3s ease;
     background: transparent;
 }
 
 .search-input:focus {
-    width: 180px; /* Reduced expanded width */
     outline: none;
 }
 
