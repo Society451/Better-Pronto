@@ -152,3 +152,19 @@
     margin-left: 10px;
     display: inline-block;
 }
+
+.chat-item.active {
+    background-color: #e6f7ff; /* Light blue background */
+    border-left: 3px solid #8C1515; /* Stanford red left border */
+    padding-left: 12px; /* Adjust padding to account for border */
+    font-weight: 500; /* Slightly bolder text */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); /* More pronounced shadow */
+}
+
+.chat-item.active:hover {
+    background-color: #e6f7ff; /* Keep the same color on hover */
+}
+
+.chat-item.active .chat-title {
+    color: #8C1515; /* Stanford red text color for the title */
+}

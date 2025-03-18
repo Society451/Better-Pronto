@@ -7,21 +7,26 @@ export function updateUnreadCounts() {
         const unreadCount = parseInt(unreadCountElement.textContent, 10);
         const hasUnreadMentions = chatItem.getAttribute('data-has-unread-mentions') === 'true';
         const isDM = chatItem.getAttribute('data-is-dm') === 'true';
-
+        
         if (unreadCount === 0) {
             unreadCountElement.style.display = 'none'; // Hide unread count bubble with 0 unread messages
         } else {
             unreadCountElement.style.display = 'inline-block'; // Show unread count bubble with unread messages
+            
+            // Set color based on message type - red for DMs and messages with mentions
             if (isDM) {
-                unreadCountElement.style.backgroundColor = 'red'; // Red background for DMs
-                unreadCountElement.style.color = 'white'; // White text for DMs
+                unreadCountElement.style.backgroundColor = 'red'; // Red for DMs by default
+                unreadCountElement.style.color = 'white';
             } else if (hasUnreadMentions) {
-                unreadCountElement.style.backgroundColor = 'red'; // Red background for unread mentions
-                unreadCountElement.style.color = 'white'; // White text for unread mentions
+                unreadCountElement.style.backgroundColor = 'red'; // Red for unread mentions
+                unreadCountElement.style.color = 'white';
             } else {
-                unreadCountElement.style.backgroundColor = 'grey'; // Grey background for simple unread messages
-                unreadCountElement.style.color = 'white'; // White text for simple unread messages
+                unreadCountElement.style.backgroundColor = 'grey'; // Grey for regular unread messages
+                unreadCountElement.style.color = 'white';
             }
+            
+            // Format count text to show "99+" for 100 or more unread messages
+            unreadCountElement.textContent = unreadCount >= 100 ? '99+' : unreadCount;
         }
     });
 }
