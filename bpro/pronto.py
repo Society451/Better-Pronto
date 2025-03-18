@@ -185,7 +185,7 @@ def get_bubble_info(access_token, bubbleID):
         raise BackendError(f"An unexpected error occurred: {err}")
 
 #Function to mark a bubble as read
-def markBubble(access_token, bubbleID):
+def markBubble(access_token, bubbleID, message_id=None):
     url = f"{API_BASE_URL}api/v1/bubble.mark"
     headers = {
         "Content-Type": "application/json",
@@ -193,6 +193,7 @@ def markBubble(access_token, bubbleID):
     }
     request_payload = {
         "bubble_id": bubbleID,
+        "message_id": message_id
     }
     try:
         response = requests.post(url, headers=headers, json=request_payload)

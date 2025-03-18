@@ -2,7 +2,7 @@ import { isShiftPressed } from './constants.js';
 
 // Message class to create message elements
 export class Message {
-    constructor(content, sender, timestamp, user, isDefault = false, editCount = 0, lastEdited = null, messageId = null, hasImage = false, imageData = null) {
+    constructor(content, sender, timestamp, user, isDefault = false, editCount = 0, lastEdited = null, messageId = null) {
         this.content = content;
         this.sender = sender;
         this.timestamp = timestamp;
@@ -11,8 +11,6 @@ export class Message {
         this.editCount = editCount;
         this.lastEdited = lastEdited;
         this.messageId = messageId;
-        this.hasImage = hasImage;
-        this.imageData = imageData;
     }
 
     // Format timestamp in Discord style (Today at 2:30 PM or MM/DD/YYYY)
@@ -20,15 +18,31 @@ export class Message {
         const date = new Date(timestamp);
         if (isNaN(date.getTime())) return timestamp;
         
+        // Create a new date object to ensure we're working with local time
         const now = new Date();
-        const isToday = date.toDateString() === now.toDateString();
-        const isYesterday = new Date(now - 86400000).toDateString() === date.toDateString();
         
-        const time = date.toLocaleTimeString([], { hour: 'numeric', minute: 'numeric' });
+        // Check if the date is today by comparing year, month, and day
+        const isToday = date.getFullYear() === now.getFullYear() && 
+                        date.getMonth() === now.getMonth() && 
+                        date.getDate() === now.getDate();
+        
+        // Check if the date is yesterday
+        const yesterday = new Date(now);
+        yesterday.setDate(yesterday.getDate() - 1);
+        const isYesterday = date.getFullYear() === yesterday.getFullYear() && 
+                            date.getMonth() === yesterday.getMonth() && 
+                            date.getDate() === yesterday.getDate();
+        
+        // Format the time part using local timezone settings
+        const timeOptions = { hour: 'numeric', minute: 'numeric', hour12: true };
+        const time = date.toLocaleTimeString([], timeOptions);
         
         if (isToday) return `Today at ${time}`;
         if (isYesterday) return `Yesterday at ${time}`;
-        return `${date.toLocaleDateString()} ${time}`;
+        
+        // For older dates, include the date with the local timezone
+        const dateOptions = { month: 'numeric', day: 'numeric', year: 'numeric' };
+        return `${date.toLocaleDateString([], dateOptions)} ${time}`;
     }
 
     // Create a message element
@@ -99,6 +113,19 @@ export class Message {
         return header;
     }
     
+    // Parse URLs in text and convert them to clickable links
+    _parseUrls(text) {
+        if (!text) return '';
+        
+        // Regex to match URLs
+        const urlRegex = /(https?:\/\/[^\s]+)/g;
+        
+        // Replace URLs with anchor tags
+        return text.replace(urlRegex, url => {
+            return `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
+        });
+    }
+    
     _createMessageBody() {
         const messageElement = document.createElement('div');
         messageElement.classList.add('message');
@@ -109,12 +136,9 @@ export class Message {
         const contentElement = document.createElement('div');
         contentElement.classList.add('message-content');
         
-        if (this.hasImage && this.imageData) {
-            this._addImageContent(contentElement);
-        } else if (this.hasImage) {
-            this._addImagePlaceholder(contentElement);
-        } else if (this.content && this.content.trim() !== '') {
-            contentElement.textContent = this.content;
+        if (this.content && this.content.trim() !== '') {
+            // Parse URLs in content
+            contentElement.innerHTML = this._parseUrls(this.content);
         }
         
         wrapper.appendChild(contentElement);

@@ -8,8 +8,14 @@
     scroll-behavior: smooth; /* Smooth scrolling */
 }
 
-.sidebar h4 {
-    position: relative; /* Add relative positioning to parent for absolute positioning of children */
+/* Add styles for sidebar controls container */
+.sidebar-controls {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    margin-bottom: 15px;
+    position: relative;
+    height: 36px; /* Fixed height to prevent layout shift */
 }
 
 .chat-list {
@@ -112,15 +118,19 @@
 }
 
 .collapse-button {
-    margin-left: 10px; /* Space to the left */
-    padding: 5px 10px; /* Padding inside the button */
-    background: #ddd; /* Light grey background */
-    border: none; /* No border */
-    border-radius: 5px; /* Rounded corners */
+    margin-right: 8px; /* Space between buttons */
+    padding: 6px 12px; /* Padding inside the button */
+    background: #f0f0f0; /* Light grey background */
+    border: 1px solid #ddd; /* Subtle border */
+    border-radius: 4px; /* Rounded corners */
     cursor: pointer; /* Pointer cursor */
-    font-size: 14px; /* Font size */
-    position: relative; /* Ensure it stays above the search container */
-    z-index: 2; /* Higher than the search container */
+    font-size: 13px; /* Font size */
+    transition: all 0.2s ease; /* Smooth transition for hover effects */
+    color: #444; /* Darker text */
+}
+
+.collapse-button:hover {
+    background: #e0e0e0; /* Slightly darker on hover */
 }
 
 .unread-count {
