@@ -177,7 +177,8 @@ function getDefaultSettings() {
         notificationSound: true,
         sendKey: 'enter',
         readReceipts: true,
-        quickDelete: false
+        quickDelete: false,
+        showLoadingAnimation: true
     };
 }
 
@@ -242,7 +243,25 @@ async function initializeBubbles() {
 // Initialize app
 window.addEventListener('DOMContentLoaded', () => {
     setupAnimationStyles();
-    showLoading();
+    
+    // Check if loading animation should be shown
+    const tryGetSettings = () => {
+        try {
+            const savedSettings = safeLocalStorage().getItem('chatSettings');
+            if (savedSettings) {
+                const settings = JSON.parse(savedSettings);
+                return settings.showLoadingAnimation !== false; // Default to true if not specified
+            }
+        } catch (error) {
+            console.error('Error loading animation setting:', error);
+        }
+        return true; // Default to showing animation if setting can't be loaded
+    };
+    
+    // Only show loading if the setting is enabled or not set
+    if (tryGetSettings()) {
+        showLoading();
+    }
     
     // Wait for pywebview API
     (function waitForPywebview() {
