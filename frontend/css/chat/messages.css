@@ -23,12 +23,7 @@
 }
 
 .message-group:hover {
-  background-color: rgba(0, 0, 0, 0.02);
-}
-
-.message-group:hover .message-actions {
-  opacity: 1;
-  visibility: visible;
+  background-color: transparent; /* Remove background hover from group */
 }
 
 .avatar-container {
@@ -92,21 +87,53 @@
 
 .message {
   position: relative;
-  padding: 0;
-  margin-bottom: 2px;
-  background: transparent;
+  padding: 8px 10px;  /* Add padding inside each message */
+  margin-bottom: 4px; /* Space between messages */
+  background-color: #f2f3f5; /* Light gray background for each message */
+  border-radius: 8px; /* Rounded corners */
   font-size: 14px;
   word-wrap: break-word;
   white-space: pre-wrap;
   color: #2e3338;
   line-height: 1.375rem;
   width: 100%;
-  border-left: none;
+  box-sizing: border-box;
+  transition: background-color 0.2s ease;
+}
+
+/* Add specific style for messages being deleted */
+.message.deleting,
+.message-group.deleting {
+  pointer-events: none !important;
+  position: relative !important;
+  z-index: 1 !important;
+  opacity: 0 !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  overflow: hidden !important;
+  transition: all 0.2s ease !important;
+  min-height: 0 !important;
+  max-height: 0 !important;
+}
+
+/* Ensure all child elements also collapse */
+.deleting * {
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  min-height: 0 !important;
+  max-height: 0 !important;
+}
+
+.message:hover {
+  background-color: #e3e5e8; /* Slightly darker on hover */
 }
 
 .message-wrapper {
-  padding: 2px 0;
-  border-radius: 8px;
+  padding: 0;
   display: block;
   width: 100%;
 }
@@ -116,13 +143,15 @@
   margin: 0;
   word-break: break-word;
   overflow-wrap: anywhere;
+  padding-right: 30px; /* Space for action icons */
 }
 
 /* Message actions */
 .message-actions {
   position: absolute;
-  top: -18px;
-  right: 0;
+  top: 50%;
+  right: 8px; /* Position to the right of each message */
+  transform: translateY(-50%); /* Center vertically */
   display: flex;
   gap: 4px;
   background-color: #ffffff;
@@ -133,6 +162,12 @@
   visibility: hidden;
   transition: all 0.1s ease;
   z-index: 10;
+}
+
+/* Show actions only when hovering the specific message */
+.message:hover .message-actions {
+  opacity: 1;
+  visibility: visible;
 }
 
 .message-action-btn {

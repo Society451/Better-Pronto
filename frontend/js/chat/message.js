@@ -173,11 +173,14 @@ export class Message {
                 console.error('Error parsing settings:', e);
             }
             
+            // Get the specific message element (not the group)
+            const messageElement = event.target.closest('.message');
+            
             // Delete immediately if shift is pressed or quick delete is enabled in settings
             if (event.shiftKey || useQuickDelete) {
-                this._deleteMessage(event.target.closest('.message-group'));
+                this._deleteMessage(messageElement);
             } else {
-                this._showDeleteConfirmation(event.target.closest('.message-group'));
+                this._showDeleteConfirmation(messageElement);
             }
         });
         
@@ -199,8 +202,8 @@ export class Message {
         return actions;
     }
 
-    // Show custom delete confirmation
-    _showDeleteConfirmation(messageGroup) {
+    // Show custom delete confirmation - improved to avoid lag
+    _showDeleteConfirmation(messageElement) {
         let modal = document.getElementById('delete-confirmation-modal');
         if (!modal) {
             modal = document.createElement('div');
@@ -225,35 +228,64 @@ export class Message {
                 if (e.target === modal) modal.classList.remove('active');
             });
             
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape' && modal.classList.contains('active')) {
-                    modal.classList.remove('active');
-                }
-            });
-            
             modal.querySelector('.cancel').addEventListener('click', () => {
                 modal.classList.remove('active');
             });
         }
         
-        modal.querySelector('.delete').onclick = () => {
-            this._deleteMessage(messageGroup);
+        // Replace delete button to avoid event listener buildup
+        const deleteButton = modal.querySelector('.delete');
+        const newDeleteButton = deleteButton.cloneNode(true);
+        deleteButton.parentNode.replaceChild(newDeleteButton, deleteButton);
+        
+        newDeleteButton.addEventListener('click', () => {
             modal.classList.remove('active');
-        };
+            this._deleteMessage(messageElement);
+        });
         
         modal.classList.add('active');
     }
     
-    // Handle message deletion
-    async _deleteMessage(messageGroup) {
+    // Handle message deletion - improved to properly remove elements
+    async _deleteMessage(messageElement) {
         try {
             const response = await window.pywebview.api.delete_message(this.messageId);
             if (response?.ok) {
-                messageGroup.style.transition = 'opacity 0.3s ease';
-                messageGroup.style.opacity = '0';
+                console.log(`Deleting message with ID: ${this.messageId}`);
+                
+                // Find the proper element to delete
+                let elementToDelete = messageElement;
+                const messageGroup = messageElement.closest('.message-group');
+                
+                // If this is the only message in a group, remove the whole group
+                if (messageGroup) {
+                    const messagesInGroup = messageGroup.querySelectorAll('.message');
+                    if (messagesInGroup.length === 1) {
+                        elementToDelete = messageGroup;
+                    }
+                }
+                
+                // Apply deletion animation
+                elementToDelete.classList.add('deleting');
+                elementToDelete.style.transition = 'opacity 0.2s ease, height 0.2s ease, margin 0.2s ease, padding 0.2s ease';
+                elementToDelete.style.opacity = '0';
+                elementToDelete.style.height = '0';
+                elementToDelete.style.margin = '0';
+                elementToDelete.style.padding = '0';
+                elementToDelete.style.overflow = 'hidden';
+                
+                // Remove from DOM after animation completes
+                setTimeout(() => {
+                    try {
+                        if (elementToDelete && elementToDelete.parentNode) {
+                            elementToDelete.parentNode.removeChild(elementToDelete);
+                        }
+                    } catch (err) {
+                        console.error('Error removing element:', err);
+                    }
+                }, 250);
                 
                 Toast.show('Message deleted successfully', 'success');
-                setTimeout(() => messageGroup.remove(), 300);
             } else {
                 const errorMessage = response?.error === 'MESSAGE_ACCESSDENIED' 
                     ? 'You do not have permission to delete this message' 
@@ -269,8 +301,8 @@ export class Message {
     }
 }
 
-// Toast notification class
-class Toast {
+// Make the Toast class available for external use
+export class Toast {
     static show(message, type = 'success', duration = 5000) {
         let container = document.getElementById('toast-container');
         if (!container) {
