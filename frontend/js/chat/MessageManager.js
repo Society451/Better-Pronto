@@ -14,6 +14,26 @@ function parseUrls(text) {
         return `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
     });
 }
+function convertToLocalTime(timeStr) {
+    if (!timeStr) {
+        console.error("Error: timeStr is undefined or empty");
+        return null;
+    }
+
+    // Parse UTC time string safely
+    let utcDate = new Date(timeStr + " UTC");
+
+    // Check if the date is valid
+    if (isNaN(utcDate.getTime())) {
+        console.error("Error: Invalid date format");
+        return null;
+    }
+
+    // Convert to user's local time zone
+    return utcDate.toLocaleString("en-US", { 
+        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone 
+    });
+}
 
 // Function to retrieve and display detailed messages for a specific bubble ID
 export async function loadMessages(bubbleID, bubbleName) {
@@ -47,7 +67,9 @@ export async function loadMessages(bubbleID, bubbleName) {
                 console.log('Processing dynamic message:', msg);
                 const content = msg.message || msg.content || '';
                 const author = msg.author || 'Unknown';
-                const timestamp = msg.time_of_sending || new Date().toISOString();
+                let ust_time = msg.time_of_sending
+                const timestamp = convertToLocalTime(ust_time) || new Date().toISOString();
+
                 const user = { 
                     fullname: msg.author || 'Unknown', 
                     profilepicurl: msg.profilepicurl,
@@ -132,9 +154,13 @@ export async function sendMessage(chatID, messageText, userId) {
         if (response && response.ok && response.message) {
             // Create message from response data
             const messageData = response.message;
+            messageData.created_at = convertToLocalTime(messageData.created_at);
+            
+
             const message = new Message(
                 messageData.message,
                 messageData.user.fullname,
+                
                 messageData.created_at,
                 messageData.user,
                 false,

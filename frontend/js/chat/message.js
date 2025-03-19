@@ -12,7 +12,7 @@ export class Message {
         this.lastEdited = lastEdited;
         this.messageId = messageId;
     }
-
+    
     // Format timestamp in Discord style (Today at 2:30 PM or MM/DD/YYYY)
     formatTimestamp(timestamp) {
         const date = new Date(timestamp);
