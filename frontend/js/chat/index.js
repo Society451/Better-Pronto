@@ -54,6 +54,21 @@ clearSearch.addEventListener('click', () => {
     document.querySelectorAll('.category').forEach(category => category.style.display = 'block');
 });
 
+// Add event listener for Escape key on search input
+searchInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        // Mimic the behavior of clicking the X button
+        searchInput.value = '';
+        searchContainer.style.display = 'none';
+        searchButton.style.display = 'block';
+        toggleAllButton.style.display = 'block';
+        
+        // Reset visibility
+        document.querySelectorAll('.chat-item').forEach(chat => chat.style.display = 'flex');
+        document.querySelectorAll('.category').forEach(category => category.style.display = 'block');
+    }
+});
+
 searchInput.addEventListener('input', (e) => {
     const searchTerm = e.target.value.toLowerCase();
     
