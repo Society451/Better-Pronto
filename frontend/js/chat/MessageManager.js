@@ -71,7 +71,7 @@ function createMessageActions(messageId) {
     return actions;
 }
 
-// Show delete confirmation dialog - Improve modal management
+// Show delete confirmation dialog
 function showDeleteConfirmation(messageId, messageElement) {
     let modal = document.getElementById('delete-confirmation-modal');
     if (!modal) {
@@ -93,9 +93,14 @@ function showDeleteConfirmation(messageId, messageElement) {
         
         document.body.appendChild(modal);
         
-        // Add event listeners to the modal once
         modal.addEventListener('click', (e) => {
             if (e.target === modal) modal.classList.remove('active');
+        });
+        
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modal.classList.contains('active')) {
+                modal.classList.remove('active');
+            }
         });
         
         modal.querySelector('.cancel').addEventListener('click', () => {
@@ -103,13 +108,12 @@ function showDeleteConfirmation(messageId, messageElement) {
         });
     }
     
-    // Update the delete button handler for each new deletion request
+    // Replace delete button to avoid event listener buildup
     const deleteButton = modal.querySelector('.delete');
-    // Remove old event listeners to prevent duplicates
     const newDeleteButton = deleteButton.cloneNode(true);
     deleteButton.parentNode.replaceChild(newDeleteButton, deleteButton);
     
-    // Add new event listener with current message context
+    // Add new event listener
     newDeleteButton.addEventListener('click', async () => {
         modal.classList.remove('active');
         await deleteMessage(messageId, messageElement);
@@ -118,14 +122,14 @@ function showDeleteConfirmation(messageId, messageElement) {
     modal.classList.add('active');
 }
 
-// Delete a message - completely remove the message element
+// Delete a message
 async function deleteMessage(messageId, messageElement) {
     try {
         const response = await window.pywebview.api.delete_message(messageId);
         if (response?.ok) {
             console.log(`Deleting message with ID: ${messageId}`);
             
-            // Find the proper element to delete - might be the message or its parent group
+            // Find the proper element to delete
             let elementToDelete = messageElement;
             const messageGroup = messageElement.closest('.message-group');
             
@@ -175,9 +179,9 @@ async function deleteMessage(messageId, messageElement) {
 // Function to retrieve and display detailed messages for a specific bubble ID
 export async function loadMessages(bubbleID, bubbleName) {
     try {
-        console.log(`Loading dynamic messages for bubble ID: ${bubbleID}`); // Debug statement
+        console.log(`Loading dynamic messages for bubble ID: ${bubbleID}`);
         const dynamicResponse = await window.pywebview.api.get_dynamicdetailed_messages(bubbleID);
-        console.log('Dynamic response retrieved:', dynamicResponse); // Debug statement
+        console.log('Dynamic response retrieved:', dynamicResponse);
 
         if (!dynamicResponse || typeof dynamicResponse !== 'object' || !Array.isArray(dynamicResponse.messages)) {
             console.error("Invalid dynamic response format received:", dynamicResponse);
@@ -285,11 +289,23 @@ export async function loadMessages(bubbleID, bubbleName) {
     }
 }
 
-// Function to send a new message - Fix message grouping
+// Function to send a new message
 export async function sendMessage(chatID, messageText, userId) {
     try {
+        // Add visual feedback for message sending
+        const sendingIndicator = document.createElement('div');
+        sendingIndicator.className = 'sending-message-indicator';
+        sendingIndicator.innerHTML = '<div class="sending-dot"></div><div class="sending-dot"></div><div class="sending-dot"></div>';
+        messagesContainer.appendChild(sendingIndicator);
+        
         // Send message to backend
         const response = await window.pywebview.api.send_message(chatID, messageText, userId, null);
+        
+        // Remove sending indicator
+        if (sendingIndicator.parentNode) {
+            sendingIndicator.parentNode.removeChild(sendingIndicator);
+        }
+        
         if (response && response.ok && response.message) {
             // Create message from response data
             const messageData = response.message;
@@ -304,30 +320,15 @@ export async function sendMessage(chatID, messageText, userId) {
                 messageData.id
             );
             
-            // Log for debugging
-            console.log('Sending new message as user ID:', messageData.user.id);
-            
-            // Find if there's an existing message group for this user
-            let lastGroup = null;
-            const allGroups = messagesContainer.querySelectorAll('.message-group');
-            
-            if (allGroups.length > 0) {
-                lastGroup = allGroups[allGroups.length - 1]; // Get the last group
-                console.log('Last group author:', lastGroup.getAttribute('data-author-id'));
-                console.log('Current message author:', message.user.id);
-            }
-            
-            // Check if we should append to existing group (same author and recent)
+            // Check if we need to create a new group or append to existing
+            const lastGroup = messagesContainer.lastElementChild;
             if (lastGroup && 
-                lastGroup.getAttribute('data-author-id') === String(message.user.id) &&
-                isMessageRecent(lastGroup)) {
-                
-                console.log('Appending to existing message group');
-                
+                lastGroup.classList.contains('message-group') && 
+                lastGroup.getAttribute('data-author-id') === String(message.user.id)) {
                 // Append to existing group
                 const messageContentGroup = lastGroup.querySelector('.message-content-group');
                 const newMessage = document.createElement('div');
-                newMessage.classList.add('message');
+                newMessage.classList.add('message', 'message-new');
                 newMessage.setAttribute('data-message-id', messageData.id);
                 
                 const messageWrapper = document.createElement('div');
@@ -346,36 +347,22 @@ export async function sendMessage(chatID, messageText, userId) {
                 messageContentGroup.appendChild(newMessage);
             } else {
                 // Create new group
-                console.log('Creating new message group');
                 const messageElement = message.createElement();
                 messageElement.classList.add('message-new');
                 messagesContainer.appendChild(messageElement);
             }
             
-            messagesContainer.scrollTop = messagesContainer.scrollHeight; // Scroll to bottom
+            // Scroll to bottom after adding the message
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
             return true;
         }
         return false;
     } catch (error) {
         console.error("Error sending message:", error);
+        Toast.show('Failed to send message', 'error');
         return false;
     }
 }
 
-// Helper function to check if a message group has recent messages (within 5 minutes)
-function isMessageRecent(messageGroup) {
-    // Get the timestamp from the last message in the group
-    const timestampElement = messageGroup.querySelector('.message-timestamp');
-    if (!timestampElement) return false;
-    
-    // Get full timestamp from title attribute which has the complete date
-    const fullTimestamp = timestampElement.title;
-    if (!fullTimestamp) return false;
-    
-    const messageTime = new Date(fullTimestamp).getTime();
-    const now = new Date().getTime();
-    const fiveMinutes = 5 * 60 * 1000; // 5 minutes in milliseconds
-    
-    // Message is considered recent if it's within the last 5 minutes
-    return (now - messageTime) < fiveMinutes;
-}
+// Make these functions available to be imported by message.js
+export { createMessageActions, showDeleteConfirmation, deleteMessage };

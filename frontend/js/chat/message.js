@@ -202,7 +202,7 @@ export class Message {
         return actions;
     }
 
-    // Show custom delete confirmation - improved to avoid lag
+    // Show custom delete confirmation 
     _showDeleteConfirmation(messageElement) {
         let modal = document.getElementById('delete-confirmation-modal');
         if (!modal) {
@@ -228,6 +228,12 @@ export class Message {
                 if (e.target === modal) modal.classList.remove('active');
             });
             
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && modal.classList.contains('active')) {
+                    modal.classList.remove('active');
+                }
+            });
+            
             modal.querySelector('.cancel').addEventListener('click', () => {
                 modal.classList.remove('active');
             });
@@ -246,7 +252,7 @@ export class Message {
         modal.classList.add('active');
     }
     
-    // Handle message deletion - improved to properly remove elements
+    // Handle message deletion
     async _deleteMessage(messageElement) {
         try {
             const response = await window.pywebview.api.delete_message(this.messageId);
@@ -334,29 +340,37 @@ export class Toast {
         progressBar.style.width = '100%';
         progressBar.style.transitionDuration = `${duration}ms`;
         
+        // Use requestAnimationFrame for smoother animations
+        requestAnimationFrame(() => {
+            toast.classList.add('show');
+            setTimeout(() => progressBar.style.width = '0%', 10);
+        });
+        
         const dismissToast = () => {
             toast.classList.add('fade-out');
             toast.classList.remove('show');
             setTimeout(() => toast.remove(), 300);
         };
         
-        setTimeout(() => {
-            toast.classList.add('show');
-            setTimeout(() => progressBar.style.width = '0%', 10);
-        }, 10);
-        
         let dismissTimeout = setTimeout(dismissToast, duration);
-        toast.querySelector('.toast-close').addEventListener('click', dismissToast);
         
+        toast.querySelector('.toast-close').addEventListener('click', () => {
+            clearTimeout(dismissTimeout);
+            dismissToast();
+        });
+        
+        // Pause countdown on hover
         toast.addEventListener('mouseenter', () => {
             progressBar.style.transitionProperty = 'none';
             clearTimeout(dismissTimeout);
         });
         
+        // Resume countdown on leave
         toast.addEventListener('mouseleave', () => {
             const remainingPercentage = parseFloat(getComputedStyle(progressBar).width) / 
                                        parseFloat(getComputedStyle(toast).width);
             const remainingTime = duration * remainingPercentage;
+            
             progressBar.style.transitionProperty = 'width';
             progressBar.style.transitionDuration = `${remainingTime}ms`;
             dismissTimeout = setTimeout(dismissToast, remainingTime);
