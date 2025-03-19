@@ -1,0 +1,76 @@
+<div class="settings-container">
+    <div class="settings-header">
+        <h2>Settings</h2>
+        <button id="close-settings" class="close-settings-button" aria-label="Close settings">×</button>
+    </div>
+    
+    <form id="settings-form" onsubmit="return false;">
+        <div class="settings-section">
+            <h3>Appearance</h3>
+            <div class="setting-item">
+                <label for="theme-select">Theme</label>
+                <select id="theme-select" class="settings-select">
+                    <option value="light">Light</option>
+                    <option value="dark">Dark</option>
+                    <option value="system">System Default</option>
+                </select>
+            </div>
+            <div class="setting-item">
+                <label for="font-size">Font Size</label>
+                <select id="font-size" class="settings-select">
+                    <option value="small">Small</option>
+                    <option value="medium">Medium</option>
+                    <option value="large">Large</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="settings-section">
+            <h3>Notifications</h3>
+            <div class="setting-item">
+                <label for="enable-notifications">Enable Notifications</label>
+                <label class="switch">
+                    <input type="checkbox" id="enable-notifications">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="setting-item">
+                <label for="notification-sound">Notification Sound</label>
+                <label class="switch">
+                    <input type="checkbox" id="notification-sound">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+        
+        <div class="settings-section">
+            <h3>Chat</h3>
+            <div class="setting-item">
+                <label for="send-key">Send messages with</label>
+                <select id="send-key" class="settings-select">
+                    <option value="enter">Enter</option>
+                    <option value="ctrl-enter">Ctrl+Enter</option>
+                </select>
+            </div>
+            <div class="setting-item">
+                <label for="read-receipts">Show Read Receipts</label>
+                <label class="switch">
+                    <input type="checkbox" id="read-receipts" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="setting-item">
+                <label for="quick-delete">Quick Delete Messages</label>
+                <label class="switch">
+                    <input type="checkbox" id="quick-delete">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+        
+        <div class="settings-footer">
+            <button type="button" id="reset-settings" class="settings-button">Reset to Default</button>
+            <button type="button" id="save-settings" class="settings-button primary">Save Settings</button>
+        </div>
+    </form>
+</div>

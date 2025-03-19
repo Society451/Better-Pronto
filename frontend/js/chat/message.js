@@ -164,8 +164,21 @@ export class Message {
                 return;
             }
             
-            event.shiftKey ? this._deleteMessage(event.target.closest('.message-group')) 
-                           : this._showDeleteConfirmation(event.target.closest('.message-group'));
+            // Get quick delete setting from localStorage
+            let useQuickDelete = false;
+            try {
+                const settings = JSON.parse(localStorage.getItem('chatSettings'));
+                useQuickDelete = settings && settings.quickDelete === true;
+            } catch (e) {
+                console.error('Error parsing settings:', e);
+            }
+            
+            // Delete immediately if shift is pressed or quick delete is enabled in settings
+            if (event.shiftKey || useQuickDelete) {
+                this._deleteMessage(event.target.closest('.message-group'));
+            } else {
+                this._showDeleteConfirmation(event.target.closest('.message-group'));
+            }
         });
         
         document.addEventListener('keydown', (e) => {
@@ -202,7 +215,7 @@ export class Message {
                         <button class="delete-confirmation-btn cancel">Cancel</button>
                         <button class="delete-confirmation-btn delete">Delete</button>
                     </div>
-                    <div class="delete-confirmation-tip">Tip: Hold Shift while clicking delete for quick deletion</div>
+                    <div class="delete-confirmation-tip">Tip: Hold Shift while clicking delete for quick deletion or enable Quick Delete in Settings</div>
                 </div>
             `;
             

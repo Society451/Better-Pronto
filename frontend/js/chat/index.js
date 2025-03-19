@@ -230,6 +230,11 @@ async function initializeBubbles() {
     try {
         console.log("Fetching live bubbles");
         await window.pywebview.api.get_live_bubbles();
+        
+        // Load settings first
+        loadSettings();
+        
+        // Then continue with normal initialization
         initializeCategories();
     } catch (error) {
         console.error("Error fetching live bubbles:", error);
@@ -237,6 +242,126 @@ async function initializeBubbles() {
             window.location.href = 'login.html';
         }
     }
+}
+
+// Function to safely access localStorage
+function safeLocalStorage() {
+    // Check if localStorage is available
+    try {
+        const testKey = '__test__';
+        localStorage.setItem(testKey, testKey);
+        localStorage.removeItem(testKey);
+        return localStorage;
+    } catch (e) {
+        console.warn('localStorage is not available. Using memory storage fallback.');
+        // Create an in-memory fallback
+        const memoryStorage = {};
+        return {
+            getItem: (key) => memoryStorage[key] || null,
+            setItem: (key, value) => { memoryStorage[key] = value; },
+            removeItem: (key) => { delete memoryStorage[key]; }
+        };
+    }
+}
+
+// Function to load settings from API
+function loadSettings() {
+    console.log("Loading settings from API");
+    
+    return window.pywebview.api.load_settings()
+        .then(settings => {
+            if (settings) {
+                console.log('Settings loaded from server:', settings);
+                // Save to localStorage as backup with error handling
+                try {
+                    const storage = safeLocalStorage();
+                    storage.setItem('chatSettings', JSON.stringify(settings));
+                } catch (error) {
+                    console.error('Error saving settings to localStorage:', error);
+                }
+                
+                // Apply settings
+                applySettings(settings);
+                return settings;
+            } else {
+                // Fall back to localStorage
+                console.log('No server settings found, checking localStorage');
+                return loadLocalSettings();
+            }
+        })
+        .catch(error => {
+            console.error('Error loading settings from API:', error);
+            return loadLocalSettings();
+        });
+}
+
+// Load settings from localStorage as fallback
+function loadLocalSettings() {
+    try {
+        const storage = safeLocalStorage();
+        const savedSettings = storage.getItem('chatSettings');
+        if (savedSettings) {
+            try {
+                const settings = JSON.parse(savedSettings);
+                console.log('Settings loaded from localStorage:', settings);
+                applySettings(settings);
+                return settings;
+            } catch (e) {
+                console.error('Error parsing localStorage settings:', e);
+                return getDefaultSettings();
+            }
+        } else {
+            // Use default settings if nothing found
+            console.log('No settings found, using defaults');
+            const defaultSettings = getDefaultSettings();
+            applySettings(defaultSettings);
+            return defaultSettings;
+        }
+    } catch (error) {
+        console.error('Error accessing localStorage:', error);
+        const defaultSettings = getDefaultSettings();
+        applySettings(defaultSettings);
+        return defaultSettings;
+    }
+}
+
+// Get default settings
+function getDefaultSettings() {
+    return {
+        theme: 'light',
+        fontSize: 'medium',
+        enableNotifications: true,
+        notificationSound: true,
+        sendKey: 'enter',
+        readReceipts: true,
+        quickDelete: false
+    };
+}
+
+// Apply settings
+function applySettings(settings) {
+    // Apply font size
+    let fontSizeValue;
+    switch (settings.fontSize) {
+        case 'small':
+            fontSizeValue = '14px';
+            break;
+        case 'large':
+            fontSizeValue = '18px';
+            break;
+        default:
+            fontSizeValue = '16px';
+    }
+    document.documentElement.style.fontSize = fontSizeValue;
+    
+    // Apply theme
+    if (settings.theme === 'dark') {
+        document.body.classList.add('dark-theme');
+    } else {
+        document.body.classList.remove('dark-theme');
+    }
+    
+    console.log('Applied settings:', settings);
 }
 
 // Initialize app when DOM is loaded
@@ -249,3 +374,15 @@ window.addEventListener('DOMContentLoaded', () => {
 
 // Expose currentChatID to window for access from other modules
 window.currentChatID = currentChatID;
+
+// Add event listener for settings button
+document.addEventListener('DOMContentLoaded', () => {
+    const settingsButton = document.getElementById('settings-button');
+    if (settingsButton) {
+        settingsButton.addEventListener('click', () => {
+            import('./ui.js').then(module => {
+                module.showSettings();
+            });
+        });
+    }
+});

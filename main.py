@@ -10,10 +10,14 @@ import tempfile
 import base64
 
 auth_path, chats_path, bubbles_path, loginTokenJSONPath, authTokenJSONPath, verificationCodeResponseJSONPath, settings_path, encryption_path, logs_path, settingsJSONPath, keysJSONPath, bubbleOverviewJSONPath, users_path = createappfolders()
+print(f"Settings JSON Path: {settingsJSONPath}")
+# Verify the directory exists
+if not os.path.exists(os.path.dirname(settingsJSONPath)):
+    print(f"Creating settings directory: {os.path.dirname(settingsJSONPath)}")
+    os.makedirs(os.path.dirname(settingsJSONPath), exist_ok=True)
 accesstoken = ""
 user_info = get_clientUserInfo(authTokenJSONPath)
 userID = user_info["id"] if user_info else None
-print(f"User ID: {userID}")
 
 def getLocalAccesstoken():
     global accesstoken
@@ -533,7 +537,112 @@ class Api:
         except Exception as e:
             print(f"Error deleting message: {e}")
             return {"ok": False, "error": str(e)}
+
+    # Update the save_settings method to ensure proper JSON formatting and error handling
+    def save_settings(self, settings):
+        print(f"SETTINGS API: save_settings called with: {settings}")
+        try:
+            # Validate settings is a dictionary
+            if not isinstance(settings, dict):
+                print(f"SETTINGS ERROR: Invalid settings format: {type(settings)}")
+                return {"ok": False, "error": "Invalid settings format"}
             
+            # Make sure the settings path exists
+            os.makedirs(os.path.dirname(settingsJSONPath), exist_ok=True)
+            
+            # Print each setting value for debugging
+            print("SETTINGS DEBUG: Processing individual settings values:")
+            for key, value in settings.items():
+                print(f"  - {key}: {value} (type: {type(value)})")
+            
+            # Check if the JSON path is valid
+            print(f"SETTINGS DEBUG: Writing to file: {settingsJSONPath}")
+            
+            # Try to write to the file
+            with open(settingsJSONPath, "w") as file:
+                json.dump(settings, file, indent=4)
+            
+            # Verify the file was written correctly
+            if os.path.exists(settingsJSONPath):
+                file_size = os.path.getsize(settingsJSONPath)
+                print(f"SETTINGS SUCCESS: File saved successfully. Size: {file_size} bytes")
+                
+                # Read back the file to verify contents
+                try:
+                    with open(settingsJSONPath, "r") as file:
+                        saved_data = json.load(file)
+                    print(f"SETTINGS VERIFY: File contains valid JSON: {saved_data}")
+                except Exception as e:
+                    print(f"SETTINGS WARNING: Could not verify file contents: {e}")
+            else:
+                print("SETTINGS WARNING: File does not exist after save operation")
+            
+            return {"ok": True, "message": "Settings saved successfully"}
+        except Exception as e:
+            import traceback
+            print(f"SETTINGS ERROR: Error saving settings: {e}")
+            print(traceback.format_exc())  # Print full traceback
+            return {"ok": False, "error": str(e)}
+
+    # Update the load_settings method to be an instance method
+    def load_settings(self):
+        try:
+            if os.path.exists(settingsJSONPath):
+                # Check if file is empty
+                if os.path.getsize(settingsJSONPath) > 0:
+                    with open(settingsJSONPath, "r") as file:
+                        data = json.load(file)
+                    print(f"Settings loaded successfully: {data}")
+                    return data
+                else:
+                    print(f"Settings file exists but is empty: {settingsJSONPath}")
+                    # Return default settings
+                    default_settings = {
+                        "theme": "light",
+                        "fontSize": "medium",
+                        "enableNotifications": True,
+                        "notificationSound": True,
+                        "sendKey": "enter",
+                        "readReceipts": True,
+                        "quickDelete": False
+                    }
+                    # Save default settings
+                    self.save_settings(default_settings)
+                    return default_settings
+            else:
+                print(f"Settings file not found: {settingsJSONPath}")
+                # Return default settings
+                default_settings = {
+                    "theme": "light",
+                    "fontSize": "medium",
+                    "enableNotifications": True,
+                    "notificationSound": True,
+                    "sendKey": "enter",
+                    "readReceipts": True,
+                    "quickDelete": False
+                }
+                # Save default settings
+                self.save_settings(default_settings)
+                return default_settings
+        except json.JSONDecodeError as e:
+            print(f"Error parsing settings JSON: {e}")
+            # Return default settings
+            default_settings = {
+                "theme": "light",
+                "fontSize": "medium",
+                "enableNotifications": True,
+                "notificationSound": True,
+                "sendKey": "enter",
+                "readReceipts": True,
+                "quickDelete": False
+            }
+            # Save default settings
+            self.save_settings(default_settings)
+            return default_settings
+        except Exception as e:
+            print(f"Error loading settings: {e}")
+            return {"ok": False, "error": str(e)}
+
 # Create an instance of the Api class with the accesstoken
 api = Api(accesstoken)
 # Create a webview window with the specified HTML file and API
@@ -543,10 +652,9 @@ window = webview.create_window(
     js_api=api,
     text_select=True,  # Ensure text selection is enabled
     width=1200,  # Set the width of the window
-    height=800,   # Set the height of the window
+    height=800,  # Set the height of the window
     easy_drag=True,
     maximized=True,
     zoomable=True,
 )
-
-webview.start(debug=False)
+webview.start(debug=True)
