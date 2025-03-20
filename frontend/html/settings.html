@@ -4,67 +4,142 @@
         <button id="close-settings" class="close-settings-button" aria-label="Close settings">×</button>
     </div>
     
-    <form id="settings-form" onsubmit="return false;">
-        <div class="settings-section">
-            <h3>Appearance</h3>
-            <div class="setting-item">
-                <label for="theme-select">Theme</label>
-                <select id="theme-select" class="settings-select">
-                    <option value="light">Light</option>
-                    <option value="dark">Dark</option>
-                    <option value="system">System Default</option>
-                </select>
-            </div>
-            <div class="setting-item">
-                <label for="font-size">Font Size</label>
-                <select id="font-size" class="settings-select">
-                    <option value="small">Small</option>
-                    <option value="medium">Medium</option>
-                    <option value="large">Large</option>
-                </select>
+    <!-- Fixed tab navigation bar -->
+    <div class="settings-tabs">
+        <button class="settings-tab-button" data-tab="interface">Interface</button>
+        <button class="settings-tab-button" data-tab="encryption">Encryption</button>
+        <button class="settings-tab-button" data-tab="macros">Macros</button>
+        <button class="settings-tab-button" data-tab="logs">Logs</button>
+        <button class="settings-tab-button" data-tab="general">General</button>
+    </div>
+    
+    <form id="settings-form">
+        <!-- Interface Tab -->
+        <div id="interface-tab" class="settings-tab-content">
+            <div class="settings-section">
+                <h3>Appearance</h3>
+                <div class="setting-item">
+                    <label for="theme-select">Theme</label>
+                    <select id="theme-select" class="settings-select">
+                        <option value="light">Light</option>
+                        <option value="dark">Dark</option>
+                        <option value="system">System Default</option>
+                    </select>
+                </div>
+                <div class="setting-item">
+                    <label for="font-size">Font Size</label>
+                    <select id="font-size" class="settings-select">
+                        <option value="small">Small</option>
+                        <option value="medium">Medium</option>
+                        <option value="large">Large</option>
+                    </select>
+                </div>
+                <div class="setting-item">
+                    <label for="show-loading-animation">Show Loading Animation</label>
+                    <label class="switch">
+                        <input type="checkbox" id="show-loading-animation" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
             </div>
         </div>
-        
-        <div class="settings-section">
-            <h3>Notifications</h3>
-            <div class="setting-item">
-                <label for="enable-notifications">Enable Notifications</label>
-                <label class="switch">
-                    <input type="checkbox" id="enable-notifications">
-                    <span class="slider"></span>
-                </label>
-            </div>
-            <div class="setting-item">
-                <label for="notification-sound">Notification Sound</label>
-                <label class="switch">
-                    <input type="checkbox" id="notification-sound">
-                    <span class="slider"></span>
-                </label>
+
+        <!-- Encryption Tab -->
+        <div id="encryption-tab" class="settings-tab-content">
+            <div class="settings-section">
+                <h3>Message Encryption</h3>
+                <div class="setting-item">
+                    <label for="encryption-enabled">Enable End-to-End Encryption</label>
+                    <label class="switch">
+                        <input type="checkbox" id="encryption-enabled" disabled>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="settings-notice">
+                    <p>Encryption features will be available in a future update.</p>
+                </div>
             </div>
         </div>
-        
-        <div class="settings-section">
-            <h3>Chat</h3>
-            <div class="setting-item">
-                <label for="send-key">Send messages with</label>
-                <select id="send-key" class="settings-select">
-                    <option value="enter">Enter</option>
-                    <option value="ctrl-enter">Ctrl+Enter</option>
-                </select>
+
+        <!-- Macros Tab -->
+        <div id="macros-tab" class="settings-tab-content">
+            <div class="settings-section">
+                <h3>Message Macros</h3>
+                <div class="setting-item">
+                    <label for="macros-enabled">Enable Message Macros</label>
+                    <label class="switch">
+                        <input type="checkbox" id="macros-enabled" disabled>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="settings-notice">
+                    <p>Macro features will be available in a future update.</p>
+                </div>
             </div>
-            <div class="setting-item">
-                <label for="read-receipts">Show Read Receipts</label>
-                <label class="switch">
-                    <input type="checkbox" id="read-receipts" checked>
-                    <span class="slider"></span>
-                </label>
+        </div>
+
+        <!-- Logs Tab -->
+        <div id="logs-tab" class="settings-tab-content">
+            <div class="settings-section">
+                <h3>Application Logs</h3>
+                <div class="setting-item">
+                    <label for="log-level">Log Level</label>
+                    <select id="log-level" class="settings-select" disabled>
+                        <option value="error">Error</option>
+                        <option value="warn">Warning</option>
+                        <option value="info">Info</option>
+                        <option value="debug">Debug</option>
+                    </select>
+                </div>
+                <div class="settings-notice">
+                    <p>Advanced logging options will be available in a future update.</p>
+                </div>
             </div>
-            <div class="setting-item">
-                <label for="quick-delete">Quick Delete Messages</label>
-                <label class="switch">
-                    <input type="checkbox" id="quick-delete">
-                    <span class="slider"></span>
-                </label>
+        </div>
+
+        <!-- General Tab -->
+        <div id="general-tab" class="settings-tab-content">
+            <div class="settings-section">
+                <h3>Notifications</h3>
+                <div class="setting-item">
+                    <label for="enable-notifications">Enable Notifications</label>
+                    <label class="switch">
+                        <input type="checkbox" id="enable-notifications">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="setting-item">
+                    <label for="notification-sound">Notification Sound</label>
+                    <label class="switch">
+                        <input type="checkbox" id="notification-sound">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="settings-section">
+                <h3>Chat</h3>
+                <div class="setting-item">
+                    <label for="send-key">Send messages with</label>
+                    <select id="send-key" class="settings-select">
+                        <option value="enter">Enter</option>
+                        <option value="ctrl-enter">Ctrl+Enter</option>
+                    </select>
+                </div>
+                <div class="setting-item">
+                    <label for="read-receipts">Show Read Receipts</label>
+                    <label class="switch">
+                        <input type="checkbox" id="read-receipts" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="setting-item">
+                    <label for="quick-delete">Quick Delete Messages</label>
+                    <label class="switch">
+                        <input type="checkbox" id="quick-delete">
+                        <span class="slider"></span>
+                    </label>
+                </div>
             </div>
         </div>
         

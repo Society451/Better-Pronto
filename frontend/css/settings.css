@@ -232,6 +232,101 @@ input:focus + .slider {
     background-color: #5A0C0C;
 }
 
+/* Tabs styling - completely revised for better visibility */
+.settings-tabs {
+    display: flex;
+    width: 100%;
+    background-color: #f5f5f5;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.settings-tab-button {
+    flex: 1;
+    padding: 1rem 0.5rem;
+    background: none;
+    border: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.settings-tab-button:hover {
+    color: #8C1515;
+    background-color: rgba(140, 21, 21, 0.05);
+}
+
+.settings-tab-button.active {
+    color: #8C1515;
+    background-color: #fff;
+}
+
+.settings-tab-button.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background-color: #8C1515;
+}
+
+.settings-tab-content {
+    display: none;
+    width: 100%;
+}
+
+.settings-tab-content.active {
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Notice for future features */
+.settings-notice {
+    background-color: rgba(140, 21, 21, 0.08);
+    border-left: 3px solid #8C1515;
+    padding: 1rem;
+    margin-top: 1rem;
+    border-radius: 0 8px 8px 0;
+}
+
+.settings-notice p {
+    margin: 0;
+    color: #333;
+    font-size: 0.9rem;
+}
+
+/* Disabled elements styling */
+.settings-select:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.switch input:disabled + .slider {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.settings-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
 /* Dark theme compatibility */
 body.dark-theme .settings-container {
     background-color: #222;
@@ -291,4 +386,35 @@ body.dark-theme .settings-button {
 
 body.dark-theme .settings-button:hover {
     background-color: #444;
+}
+
+body.dark-theme .settings-tabs {
+    background-color: #333;
+}
+
+body.dark-theme .settings-tab-button {
+    color: #aaa;
+}
+
+body.dark-theme .settings-tab-button:hover {
+    color: #fff;
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+body.dark-theme .settings-tab-button.active {
+    color: #fff;
+    background-color: #222;
+}
+
+body.dark-theme .settings-tab-button.active::after {
+    background-color: #fff;
+}
+
+body.dark-theme .settings-notice {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-left-color: #aaa;
+}
+
+body.dark-theme .settings-notice p {
+    color: #ddd;
 }

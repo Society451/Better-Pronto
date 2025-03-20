@@ -542,76 +542,34 @@ class Api:
     def save_settings(self, settings):
         print(f"SETTINGS API: save_settings called with: {settings}")
         try:
-            # Validate settings is a dictionary
             if not isinstance(settings, dict):
                 print(f"SETTINGS ERROR: Invalid settings format: {type(settings)}")
                 return {"ok": False, "error": "Invalid settings format"}
             
-            # Make sure the settings path exists
             os.makedirs(os.path.dirname(settingsJSONPath), exist_ok=True)
             
-            # Print each setting value for debugging
-            print("SETTINGS DEBUG: Processing individual settings values:")
-            for key, value in settings.items():
-                print(f"  - {key}: {value} (type: {type(value)})")
-            
-            # Check if the JSON path is valid
-            print(f"SETTINGS DEBUG: Writing to file: {settingsJSONPath}")
-            
-            # Try to write to the file
             with open(settingsJSONPath, "w") as file:
                 json.dump(settings, file, indent=4)
             
-            # Verify the file was written correctly
             if os.path.exists(settingsJSONPath):
-                file_size = os.path.getsize(settingsJSONPath)
-                print(f"SETTINGS SUCCESS: File saved successfully. Size: {file_size} bytes")
-                
-                # Read back the file to verify contents
-                try:
-                    with open(settingsJSONPath, "r") as file:
-                        saved_data = json.load(file)
-                    print(f"SETTINGS VERIFY: File contains valid JSON: {saved_data}")
-                except Exception as e:
-                    print(f"SETTINGS WARNING: Could not verify file contents: {e}")
+                print(f"SETTINGS SUCCESS: File saved successfully.")
+                return {"ok": True, "message": "Settings saved successfully"}
             else:
                 print("SETTINGS WARNING: File does not exist after save operation")
-            
-            return {"ok": True, "message": "Settings saved successfully"}
+                return {"ok": False, "error": "File save failed"}
         except Exception as e:
-            import traceback
             print(f"SETTINGS ERROR: Error saving settings: {e}")
-            print(traceback.format_exc())  # Print full traceback
             return {"ok": False, "error": str(e)}
 
-    # Update the load_settings method to be an instance method
     def load_settings(self):
         try:
-            if os.path.exists(settingsJSONPath):
-                # Check if file is empty
-                if os.path.getsize(settingsJSONPath) > 0:
-                    with open(settingsJSONPath, "r") as file:
-                        data = json.load(file)
-                    print(f"Settings loaded successfully: {data}")
-                    return data
-                else:
-                    print(f"Settings file exists but is empty: {settingsJSONPath}")
-                    # Return default settings
-                    default_settings = {
-                        "theme": "light",
-                        "fontSize": "medium",
-                        "enableNotifications": True,
-                        "notificationSound": True,
-                        "sendKey": "enter",
-                        "readReceipts": True,
-                        "quickDelete": False
-                    }
-                    # Save default settings
-                    self.save_settings(default_settings)
-                    return default_settings
+            if os.path.exists(settingsJSONPath) and os.path.getsize(settingsJSONPath) > 0:
+                with open(settingsJSONPath, "r") as file:
+                    data = json.load(file)
+                print(f"Settings loaded successfully: {data}")
+                return data
             else:
-                print(f"Settings file not found: {settingsJSONPath}")
-                # Return default settings
+                print(f"Settings file not found or empty: {settingsJSONPath}")
                 default_settings = {
                     "theme": "light",
                     "fontSize": "medium",
@@ -621,24 +579,11 @@ class Api:
                     "readReceipts": True,
                     "quickDelete": False
                 }
-                # Save default settings
                 self.save_settings(default_settings)
                 return default_settings
         except json.JSONDecodeError as e:
             print(f"Error parsing settings JSON: {e}")
-            # Return default settings
-            default_settings = {
-                "theme": "light",
-                "fontSize": "medium",
-                "enableNotifications": True,
-                "notificationSound": True,
-                "sendKey": "enter",
-                "readReceipts": True,
-                "quickDelete": False
-            }
-            # Save default settings
-            self.save_settings(default_settings)
-            return default_settings
+            return {"ok": False, "error": str(e)}
         except Exception as e:
             print(f"Error loading settings: {e}")
             return {"ok": False, "error": str(e)}

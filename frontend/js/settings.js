@@ -1,16 +1,77 @@
 // This file handles settings functionality that's independent of the chat UI
 
-// Load settings when document is ready (if this file is used independently)
+// Settings constants - these will be updated when settings are loaded
+const SETTINGS = {
+    // Interface settings
+    theme: 'light',
+    fontSize: 'medium',
+    
+    // Notification settings
+    enableNotifications: true,
+    notificationSound: true,
+    
+    // Chat settings
+    sendKey: 'enter',
+    readReceipts: true,
+    quickDelete: false,
+    showLoadingAnimation: true
+};
+
+// Track which tab is active
+let activeTab = 'interface';
+
+// Initialize on DOM content loaded
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM content loaded in settings.js');
+    
     // Check if we're on the standalone settings page
     if (document.body.classList.contains('settings-page')) {
-        initializeSettings();
+        waitForPywebview();
+    } else {
+        // For embedded settings within the chat interface, initialize right away
+        // but set a short delay to ensure DOM is fully rendered
+        setTimeout(initializeSettings, 200);
     }
 });
 
+// Wait for pywebview API to be available before initializing
+function waitForPywebview() {
+    console.log('Waiting for pywebview API...');
+    // Check if the API is available
+    if (window.pywebview && window.pywebview.api) {
+        console.log('Pywebview API ready, initializing settings');
+        initializeSettings();
+    } else {
+        // If API is not available after 5 seconds, initialize anyway to prevent UI lockup
+        if (window._waitPywebviewAttempts === undefined) {
+            window._waitPywebviewAttempts = 0;
+        }
+        
+        window._waitPywebviewAttempts++;
+        
+        if (window._waitPywebviewAttempts > 50) { // 5 seconds timeout (50 * 100ms)
+            console.warn('Pywebview API not available after 5 seconds, initializing without API');
+            initializeSettings();
+            return;
+        }
+        
+        setTimeout(waitForPywebview, 100);
+    }
+}
+
 function initializeSettings() {
     console.log('Initializing settings from settings.js');
+    
+    // Always set up the UI first
+    setupUI();
+    
+    // Then try to load settings which might take time
     loadSavedSettings();
+}
+
+function setupUI() {
+    // Set up tab navigation first so UI is responsive
+    setupTabNavigation();
     
     // Add event listeners to settings form elements
     const settingsForm = document.getElementById('settings-form');
@@ -40,56 +101,180 @@ function initializeSettings() {
             resetSettings();
         });
     }
+    
+    // Add listeners to form elements to update SETTINGS object when changed
+    addFormChangeListeners();
+}
+
+function addFormChangeListeners() {
+    const formElements = {
+        'theme-select': { type: 'select', key: 'theme' },
+        'font-size': { type: 'select', key: 'fontSize' },
+        'enable-notifications': { type: 'checkbox', key: 'enableNotifications' },
+        'notification-sound': { type: 'checkbox', key: 'notificationSound' },
+        'send-key': { type: 'select', key: 'sendKey' },
+        'read-receipts': { type: 'checkbox', key: 'readReceipts' },
+        'quick-delete': { type: 'checkbox', key: 'quickDelete' },
+        'show-loading-animation': { type: 'checkbox', key: 'showLoadingAnimation' }
+    };
+    
+    Object.entries(formElements).forEach(([id, config]) => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.addEventListener(config.type === 'checkbox' ? 'change' : 'input', () => {
+                SETTINGS[config.key] = config.type === 'checkbox' ? element.checked : element.value;
+                console.log(`Setting ${config.key} updated to ${SETTINGS[config.key]}`);
+            });
+        } else {
+            console.warn(`Element ${id} not found for listening to changes`);
+        }
+    });
+}
+
+function setupTabNavigation() {
+    console.log('Setting up tab navigation');
+    
+    // Get all tab buttons and content elements
+    const tabButtons = document.querySelectorAll('.settings-tab-button');
+    const tabContents = document.querySelectorAll('.settings-tab-content');
+    
+    if (tabButtons.length === 0) {
+        console.warn('No tab buttons found');
+        return;
+    }
+    
+    console.log(`Found ${tabButtons.length} tab buttons`);
+    
+    // First, hide all tab contents
+    tabContents.forEach(content => {
+        content.style.display = 'none';
+        content.classList.remove('active');
+    });
+    
+    // Remove active class from all buttons
+    tabButtons.forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Add click event listeners to all tab buttons
+    tabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const tabId = this.getAttribute('data-tab');
+            console.log(`Tab clicked: ${tabId}`);
+            
+            // Update active tab
+            activeTab = tabId;
+            
+            // Remove active class from all buttons and contents
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            tabContents.forEach(content => {
+                content.style.display = 'none';
+                content.classList.remove('active');
+            });
+            
+            // Add active class to current button
+            this.classList.add('active');
+            
+            // Show current tab content
+            const tabContent = document.getElementById(`${tabId}-tab`);
+            if (tabContent) {
+                tabContent.style.display = 'block';
+                tabContent.classList.add('active');
+                
+                // Log for debugging
+                console.log(`Activated tab: ${tabId}, content:`, tabContent);
+            } else {
+                console.error(`Tab content not found for tab: ${tabId}`);
+            }
+        });
+    });
+    
+    // Activate interface tab by default (guaranteed to exist)
+    const defaultTab = document.querySelector('.settings-tab-button[data-tab="interface"]');
+    if (defaultTab) {
+        console.log('Activating default interface tab');
+        defaultTab.click();
+    } else {
+        console.warn('Default interface tab not found, trying first tab');
+        tabButtons[0]?.click();
+    }
 }
 
 function saveSettings() {
     console.log('Saving settings from settings.js');
-    const theme = document.getElementById('theme-select')?.value || 'light';
-    const fontSize = document.getElementById('font-size')?.value || 'medium';
-    const enableNotifications = document.getElementById('enable-notifications')?.checked || false;
-    const notificationSound = document.getElementById('notification-sound')?.checked || false;
-    const sendKey = document.getElementById('send-key')?.value || 'enter';
-    const readReceipts = document.getElementById('read-receipts')?.checked || true;
-    const quickDelete = document.getElementById('quick-delete')?.checked || false;
     
-    // Create settings object
-    const settings = {
-        theme,
-        fontSize,
-        enableNotifications,
-        notificationSound,
-        sendKey,
-        readReceipts,
-        quickDelete
-    };
+    // Update SETTINGS from form values
+    SETTINGS.theme = document.getElementById('theme-select')?.value || 'light';
+    SETTINGS.fontSize = document.getElementById('font-size')?.value || 'medium';
+    SETTINGS.enableNotifications = document.getElementById('enable-notifications')?.checked || false;
+    SETTINGS.notificationSound = document.getElementById('notification-sound')?.checked || false;
+    SETTINGS.sendKey = document.getElementById('send-key')?.value || 'enter';
+    SETTINGS.readReceipts = document.getElementById('read-receipts')?.checked || false;
+    SETTINGS.quickDelete = document.getElementById('quick-delete')?.checked || false;
+    SETTINGS.showLoadingAnimation = document.getElementById('show-loading-animation')?.checked || true;
     
-    // Save to localStorage as backup
-    localStorage.setItem('chatSettings', JSON.stringify(settings));
+    // Save to backend API
+    const saveButton = document.getElementById('save-settings');
+    if (saveButton) {
+        saveButton.disabled = true;
+        saveButton.textContent = 'Saving...';
+    }
     
-    // Save to backend API if available
     if (window.pywebview && window.pywebview.api) {
-        window.pywebview.api.save_settings(settings)
+        window.pywebview.api.save_settings(SETTINGS)
             .then(response => {
                 if (response && response.ok) {
-                    showMessage('Settings saved successfully');
+                    // Use Toast notification if available
+                    tryUseToast('Settings saved successfully', 'success');
                 } else {
-                    showMessage('Settings saved locally, but failed to save to server');
+                    showMessage('Failed to save settings to server');
+                }
+                
+                if (saveButton) {
+                    saveButton.disabled = false;
+                    saveButton.textContent = 'Save Settings';
                 }
             })
             .catch(error => {
                 console.error('Error saving settings to server:', error);
-                showMessage('Settings saved locally, but failed to save to server');
+                showMessage('Error saving settings: ' + (error.message || 'Unknown error'));
+                
+                if (saveButton) {
+                    saveButton.disabled = false;
+                    saveButton.textContent = 'Save Settings';
+                }
             });
     } else {
-        // If API is not available, just show success message
-        showMessage('Settings saved successfully');
+        showMessage('Cannot save settings: API not available');
+        if (saveButton) {
+            saveButton.disabled = false;
+            saveButton.textContent = 'Save Settings';
+        }
     }
-    
-    // Apply settings
-    applySettings(settings);
+}
+
+// Helper function to try using Toast for notifications
+function tryUseToast(message, type = 'info', duration = 3000) {
+    try {
+        import('./chat/message.js')
+            .then(module => {
+                if (module && module.Toast && typeof module.Toast.show === 'function') {
+                    module.Toast.show(message, type, duration);
+                } else {
+                    showMessage(message);
+                }
+            })
+            .catch(err => {
+                console.warn('Could not import Toast module:', err);
+                showMessage(message);
+            });
+    } catch (e) {
+        showMessage(message);
+    }
 }
 
 function showMessage(message) {
+    // Fallback to alert
     if (typeof alert !== 'undefined') {
         alert(message);
     } else {
@@ -105,81 +290,92 @@ function resetSettings() {
         notificationSound: true,
         sendKey: 'enter',
         readReceipts: true,
-        quickDelete: false
+        quickDelete: false,
+        showLoadingAnimation: true
     };
     
-    // Update form values
-    if (document.getElementById('theme-select')) document.getElementById('theme-select').value = defaultSettings.theme;
-    if (document.getElementById('font-size')) document.getElementById('font-size').value = defaultSettings.fontSize;
-    if (document.getElementById('enable-notifications')) document.getElementById('enable-notifications').checked = defaultSettings.enableNotifications;
-    if (document.getElementById('notification-sound')) document.getElementById('notification-sound').checked = defaultSettings.notificationSound;
-    if (document.getElementById('send-key')) document.getElementById('send-key').value = defaultSettings.sendKey;
-    if (document.getElementById('read-receipts')) document.getElementById('read-receipts').checked = defaultSettings.readReceipts;
-    if (document.getElementById('quick-delete')) document.getElementById('quick-delete').checked = defaultSettings.quickDelete;
+    // Update our SETTINGS object with defaults
+    Object.assign(SETTINGS, defaultSettings);
     
-    // Save to localStorage
-    localStorage.setItem('chatSettings', JSON.stringify(defaultSettings));
+    // Update form values
+    applySettingsToForm(defaultSettings);
     
     // Show success message
-    alert('Settings reset to default');
+    tryUseToast('Settings reset to default', 'info');
     
-    // Apply settings
-    applySettings(defaultSettings);
-}
-
-function loadSavedSettings() {
-    // Try to load from API first if available
+    // Save default settings to server
     if (window.pywebview && window.pywebview.api) {
-        window.pywebview.api.load_settings()
-            .then(settings => {
-                if (settings) {
-                    console.log('Settings loaded from server:', settings);
-                    applySettingsToForm(settings);
-                    applySettings(settings);
-                    // Also save to localStorage as backup
-                    localStorage.setItem('chatSettings', JSON.stringify(settings));
-                } else {
-                    // Fall back to localStorage
-                    fallbackToLocalStorage();
-                }
-            })
+        window.pywebview.api.save_settings(defaultSettings)
             .catch(error => {
-                console.error('Error loading settings from server:', error);
-                fallbackToLocalStorage();
+                console.error('Error saving default settings to server:', error);
             });
-    } else {
-        // If API is not available, use localStorage
-        fallbackToLocalStorage();
     }
 }
 
-// Helper function to fall back to localStorage settings
-function fallbackToLocalStorage() {
-    const savedSettings = localStorage.getItem('chatSettings');
-    if (savedSettings) {
+function loadSavedSettings() {
+    console.log('Loading saved settings');
+    
+    // Apply default settings first so UI is not empty
+    applySettingsToForm(SETTINGS);
+    applyVisualSettings(SETTINGS);
+    
+    // Only load from API if available
+    if (window.pywebview && window.pywebview.api) {
+        console.log('PyWebView API available, loading settings from server');
+        
         try {
-            const settings = JSON.parse(savedSettings);
-            console.log('Settings loaded from localStorage:', settings);
-            applySettingsToForm(settings);
-            applySettings(settings);
+            window.pywebview.api.load_settings()
+                .then(settings => {
+                    if (settings) {
+                        console.log('Settings loaded from server:', settings);
+                        
+                        // Update our SETTINGS object
+                        Object.assign(SETTINGS, settings);
+                        
+                        // Apply to form
+                        applySettingsToForm(settings);
+                        
+                        // Apply visual changes
+                        applyVisualSettings(settings);
+                    } else {
+                        console.log('No settings found on server, using defaults');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading settings from server:', error);
+                });
         } catch (e) {
-            console.error('Error parsing localStorage settings:', e);
+            console.error('Exception when loading settings:', e);
         }
+    } else {
+        console.warn('PyWebView API not available, cannot load settings from server');
     }
 }
 
 // Helper function to apply settings to form elements
 function applySettingsToForm(settings) {
-    if (document.getElementById('theme-select')) document.getElementById('theme-select').value = settings.theme || 'light';
-    if (document.getElementById('font-size')) document.getElementById('font-size').value = settings.fontSize || 'medium';
-    if (document.getElementById('enable-notifications')) document.getElementById('enable-notifications').checked = settings.enableNotifications !== false;
-    if (document.getElementById('notification-sound')) document.getElementById('notification-sound').checked = settings.notificationSound !== false;
-    if (document.getElementById('send-key')) document.getElementById('send-key').value = settings.sendKey || 'enter';
-    if (document.getElementById('read-receipts')) document.getElementById('read-receipts').checked = settings.readReceipts !== false;
-    if (document.getElementById('quick-delete')) document.getElementById('quick-delete').checked = settings.quickDelete === true;
+    const elements = {
+        'theme-select': { prop: 'value', default: 'light', key: 'theme' },
+        'font-size': { prop: 'value', default: 'medium', key: 'fontSize' },
+        'enable-notifications': { prop: 'checked', default: true, key: 'enableNotifications' },
+        'notification-sound': { prop: 'checked', default: true, key: 'notificationSound' },
+        'send-key': { prop: 'value', default: 'enter', key: 'sendKey' },
+        'read-receipts': { prop: 'checked', default: true, key: 'readReceipts' },
+        'quick-delete': { prop: 'checked', default: false, key: 'quickDelete' },
+        'show-loading-animation': { prop: 'checked', default: true, key: 'showLoadingAnimation' }
+    };
+
+    Object.entries(elements).forEach(([id, config]) => {
+        const element = document.getElementById(id);
+        if (element) {
+            const value = settings[config.key] !== undefined ? settings[config.key] : config.default;
+            element[config.prop] = value;
+        }
+    });
 }
 
-function applySettings(settings) {
+// Apply settings visually (no saving)
+function applyVisualSettings(settings) {
     // Apply font size
     let fontSizeValue;
     switch (settings.fontSize) {
@@ -197,10 +393,21 @@ function applySettings(settings) {
     // Apply theme
     if (settings.theme === 'dark') {
         document.body.classList.add('dark-theme');
+        document.body.classList.remove('light-theme');
+    } else if (settings.theme === 'system') {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        document.body.classList.toggle('dark-theme', prefersDark);
+        document.body.classList.toggle('light-theme', !prefersDark);
     } else {
         document.body.classList.remove('dark-theme');
+        document.body.classList.add('light-theme');
     }
 }
 
+// Get current settings
+function getSettings() {
+    return { ...SETTINGS };
+}
+
 // Export functions for usage in other modules
-export { initializeSettings, saveSettings, resetSettings, loadSavedSettings, applySettings };
+export { initializeSettings, saveSettings, resetSettings, loadSavedSettings, applyVisualSettings, getSettings, SETTINGS };
