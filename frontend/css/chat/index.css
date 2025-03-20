@@ -6,4 +6,4 @@
 @import 'search.css';
 @import 'lightbox.css';
 @import 'animations.css';
-/* No need to import settings.css, now handled inline */
+@import '../settings.css';

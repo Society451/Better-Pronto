@@ -117,25 +117,166 @@ export function showSettings() {
   }
   settingsContainer.style.display = 'block';
 
-  // Load settings HTML
-  fetch('../html/settings.html')
-    .then(response =>
-      response.ok ? response.text() : Promise.reject(`HTTP error! Status: ${response.status}`)
-    )
+  // Load settings HTML - use relative path from current location
+  fetch('../../html/settings.html')
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      return response.text();
+    })
     .then(html => {
       settingsContainer.innerHTML = html;
       const closeButton = document.getElementById('close-settings');
-      if (closeButton) closeButton.addEventListener('click', hideSettings);
-
-      setTimeout(initializeSettings, 100);
+      if (closeButton) {
+        closeButton.addEventListener('click', hideSettings);
+      }
+      
+      // Import and initialize settings.js - use relative path
+      import('../settings.js')
+        .then(module => {
+          if (typeof module.initializeSettings === 'function') {
+            module.initializeSettings();
+          }
+        })
+        .catch(error => {
+          console.error('Error loading settings module:', error);
+        });
     })
     .catch(error => {
-      console.error('Error loading settings:', error);
-      settingsContainer.innerHTML = getSettingsHTML();
-      const closeButton = document.getElementById('close-settings');
-      if (closeButton) closeButton.addEventListener('click', hideSettings);
-      setTimeout(initializeSettings, 100);
+      console.error('Error loading settings HTML:', error);
+      
+      // Try with another path format
+      fetch('../html/settings.html')
+        .then(response => response.ok ? response.text() : Promise.reject(`HTTP error in fallback! Status: ${response.status}`))
+        .then(html => {
+          settingsContainer.innerHTML = html;
+          const closeButton = document.getElementById('close-settings');
+          if (closeButton) {
+            closeButton.addEventListener('click', hideSettings);
+          }
+          
+          // Import and initialize settings.js
+          import('../settings.js')
+            .then(module => {
+              if (typeof module.initializeSettings === 'function') {
+                module.initializeSettings();
+              }
+            })
+            .catch(error => {
+              console.error('Error loading settings module:', error);
+            });
+        })
+        .catch(err => {
+          console.error('All attempts to load settings HTML failed:', err);
+          // Fallback to inline HTML generation
+          settingsContainer.innerHTML = getInlineSettingsHTML();
+          const closeButton = document.getElementById('close-settings');
+          if (closeButton) {
+            closeButton.addEventListener('click', hideSettings);
+          }
+          
+          // Import and initialize settings.js
+          import('../settings.js')
+            .then(module => {
+              if (typeof module.initializeSettings === 'function') {
+                module.initializeSettings();
+              }
+            })
+            .catch(error => {
+              console.error('Error loading settings module:', error);
+            });
+        });
     });
+}
+
+// Fallback function to generate inline HTML when fetching fails
+function getInlineSettingsHTML() {
+  return `
+  <div class="settings-container">
+    <div class="settings-header">
+      <h2>Settings</h2>
+      <button id="close-settings" class="close-settings-button" aria-label="Close settings">×</button>
+    </div>
+    
+    <form id="settings-form">
+      <div class="settings-section">
+        <h3>Appearance</h3>
+        <div class="setting-item">
+          <label for="theme-select">Theme</label>
+          <select id="theme-select" class="settings-select">
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+            <option value="system">System Default</option>
+          </select>
+        </div>
+        <div class="setting-item">
+          <label for="font-size">Font Size</label>
+          <select id="font-size" class="settings-select">
+            <option value="small">Small</option>
+            <option value="medium">Medium</option>
+            <option value="large">Large</option>
+          </select>
+        </div>
+        <div class="setting-item">
+          <label for="show-loading-animation">Show Loading Animation</label>
+          <label class="switch">
+            <input type="checkbox" id="show-loading-animation" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+      
+      <div class="settings-section">
+        <h3>Notifications</h3>
+        <div class="setting-item">
+          <label for="enable-notifications">Enable Notifications</label>
+          <label class="switch">
+            <input type="checkbox" id="enable-notifications">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="setting-item">
+          <label for="notification-sound">Notification Sound</label>
+          <label class="switch">
+            <input type="checkbox" id="notification-sound">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+      
+      <div class="settings-section">
+        <h3>Chat</h3>
+        <div class="setting-item">
+          <label for="send-key">Send messages with</label>
+          <select id="send-key" class="settings-select">
+            <option value="enter">Enter</option>
+            <option value="ctrl-enter">Ctrl+Enter</option>
+          </select>
+        </div>
+        <div class="setting-item">
+          <label for="read-receipts">Show Read Receipts</label>
+          <label class="switch">
+            <input type="checkbox" id="read-receipts" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="setting-item">
+          <label for="quick-delete">Quick Delete Messages</label>
+          <label class="switch">
+            <input type="checkbox" id="quick-delete">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+      
+      <div class="settings-footer">
+        <button type="button" id="reset-settings" class="settings-button">Reset to Default</button>
+        <button type="button" id="save-settings" class="settings-button primary">Save Settings</button>
+      </div>
+    </form>
+  </div>
+  `;
 }
 
 export function hideSettings() {
@@ -174,376 +315,4 @@ function safeLocalStorage() {
       }
     };
   }
-}
-
-// -- SETTINGS MANAGEMENT --
-
-function initializeSettings() {
-  const settingsForm = document.getElementById('settings-form');
-  const saveButton = document.getElementById('save-settings');
-  const resetButton = document.getElementById('reset-settings');
-
-  // Set up form handler
-  if (settingsForm) {
-    settingsForm.addEventListener('submit', e => {
-      e.preventDefault();
-      saveSettings();
-    });
-  }
-
-  // Set up button handlers
-  if (saveButton) {
-    saveButton.removeEventListener('click', saveSettingsHandler);
-    saveButton.addEventListener('click', saveSettingsHandler);
-  }
-
-  if (resetButton) {
-    resetButton.removeEventListener('click', resetSettingsHandler);
-    resetButton.addEventListener('click', resetSettingsHandler);
-  }
-
-  // Load saved settings
-  loadSavedSettings();
-
-  // Add utility buttons
-  const footer = document.querySelector('.settings-footer');
-  if (footer) {
-    // Test button
-    const testButton = document.createElement('button');
-    testButton.textContent = 'Test Backend Connection';
-    testButton.className = 'settings-button';
-    testButton.style.cssText = 'background-color: #ff9800; color: white; margin-top: 10px;';
-    testButton.addEventListener('click', testBackendConnection);
-    footer.appendChild(testButton);
-
-    // Debug button
-    const debugButton = document.createElement('button');
-    debugButton.textContent = 'Debug Settings (Print to Console)';
-    debugButton.className = 'settings-button';
-    debugButton.style.cssText = 'background-color: #007bff; color: white; margin-top: 10px;';
-    debugButton.addEventListener('click', () => {
-      try {
-        const settings = safeLocalStorage().getItem('chatSettings');
-        console.log('Current settings:', settings);
-        alert('Settings logged to console:\n' + (settings || 'No settings found'));
-      } catch (error) {
-        console.error('Error accessing settings:', error);
-        alert('Error accessing settings: ' + error.message);
-      }
-    });
-    footer.appendChild(debugButton);
-  }
-}
-
-function saveSettingsHandler(e) {
-  e.preventDefault();
-  saveSettings();
-}
-
-function resetSettingsHandler(e) {
-  e.preventDefault();
-  resetSettings();
-}
-
-function saveSettings() {
-  const saveButton = document.getElementById('save-settings');
-  if (saveButton) saveButton.style.opacity = '0.7';
-
-  const settings = {
-    theme: document.getElementById('theme-select')?.value || 'light',
-    fontSize: document.getElementById('font-size')?.value || 'medium',
-    enableNotifications: document.getElementById('enable-notifications')?.checked || false,
-    notificationSound: document.getElementById('notification-sound')?.checked || false,
-    sendKey: document.getElementById('send-key')?.value || 'enter',
-    readReceipts: document.getElementById('read-receipts')?.checked || false,
-    quickDelete: document.getElementById('quick-delete')?.checked || false,
-    showLoadingAnimation:
-      document.getElementById('show-loading-animation')?.checked ?? true
-  };
-
-  // Save settings to localStorage
-  try {
-    safeLocalStorage().setItem('chatSettings', JSON.stringify(settings));
-  } catch (error) {
-    if (saveButton) saveButton.style.opacity = '1';
-    console.error('Error saving to localStorage:', error);
-  }
-
-  // Save to server if possible
-  if (window.pywebview && window.pywebview.api) {
-    if (saveButton) {
-      saveButton.disabled = true;
-      saveButton.textContent = 'Saving...';
-    }
-    window.pywebview.api
-      .save_settings(settings)
-      .then(response => {
-        if (response && response.ok) {
-          // Show success notification
-          const successNotice = document.createElement('div');
-          successNotice.textContent = 'Settings saved successfully!';
-          successNotice.style.cssText =
-            'background-color: #4CAF50; color: white; padding: 10px; margin-top: 10px; border-radius: 5px; text-align: center;';
-          const footer = document.querySelector('.settings-footer');
-          if (footer) {
-            footer.appendChild(successNotice);
-            setTimeout(() => successNotice.remove(), 3000);
-          }
-        } else {
-          alert('Error: Failed to save settings to server');
-        }
-        if (saveButton) {
-          saveButton.disabled = false;
-          saveButton.textContent = 'Save Settings';
-          saveButton.style.opacity = '1';
-        }
-      })
-      .catch(error => {
-        console.error('Error saving settings:', error);
-        alert('Error saving settings: ' + (error.message || 'Unknown error'));
-        if (saveButton) {
-          saveButton.disabled = false;
-          saveButton.textContent = 'Save Settings';
-          saveButton.style.opacity = '1';
-        }
-      });
-  } else {
-    console.warn('PyWebView API not available - settings only saved locally');
-  }
-
-  // Apply settings immediately
-  applySettings(settings);
-  return false;
-}
-
-function resetSettings() {
-  const defaultSettings = {
-    theme: 'light',
-    fontSize: 'medium',
-    enableNotifications: true,
-    notificationSound: true,
-    sendKey: 'enter',
-    readReceipts: true,
-    quickDelete: false,
-    showLoadingAnimation: true
-  };
-
-  applySettings(defaultSettings);
-  applySettingsToForm(defaultSettings);
-
-  // Save default settings to localStorage
-  try {
-    safeLocalStorage().setItem('chatSettings', JSON.stringify(defaultSettings));
-  } catch (error) {
-    console.error('Error saving to localStorage:', error);
-  }
-
-  // Save defaults to server if possible
-  if (window.pywebview && window.pywebview.api) {
-    window.pywebview.api.save_settings(defaultSettings).catch(error => {
-      console.error('Error saving default settings to server:', error);
-    });
-  }
-
-  // Show notification using Toast module if available
-  import('./message.js')
-    .then(module => {
-      module.Toast.show('Settings reset to default', 'info', 3000);
-    })
-    .catch(error => {
-      console.error('Error showing reset notification:', error);
-    });
-}
-
-function testBackendConnection() {
-  if (window.pywebview && window.pywebview.api) {
-    const testData = { test: true, timestamp: new Date().toISOString() };
-    window.pywebview.api
-      .save_settings(testData)
-      .then(response => {
-        console.log('Backend test response:', response);
-        alert('Backend test response: ' + JSON.stringify(response));
-      })
-      .catch(error => {
-        console.error('Backend test error:', error);
-        alert('Backend test error: ' + error.message);
-      });
-  } else {
-    console.error('PyWebview API not available for testing');
-    alert('PyWebview API not available for testing');
-  }
-}
-
-function loadSavedSettings() {
-  if (window.pywebview && window.pywebview.api) {
-    window.pywebview.api
-      .load_settings()
-      .then(settings => {
-        if (settings && typeof settings === 'object') {
-          console.log('Settings loaded from server');
-          applySettingsToForm(settings);
-          applySettings(settings);
-          try {
-            safeLocalStorage().setItem('chatSettings', JSON.stringify(settings));
-          } catch (error) {
-            console.error('Error saving to localStorage:', error);
-          }
-        } else {
-          fallbackToLocalStorage();
-        }
-      })
-      .catch(() => {
-        fallbackToLocalStorage();
-      });
-  } else {
-    try {
-      fallbackToLocalStorage();
-    } catch (e) {
-      console.error('Error accessing localStorage settings:', e);
-    }
-  }
-}
-
-function fallbackToLocalStorage() {
-  try {
-    const savedSettings = safeLocalStorage().getItem('chatSettings');
-    if (savedSettings) {
-      const settings = JSON.parse(savedSettings);
-      if (typeof settings === 'object' && settings !== null) {
-        applySettingsToForm(settings);
-        applySettings(settings);
-        return;
-      }
-    }
-  } catch (e) {
-    console.error('Error accessing localStorage settings:', e);
-  }
-
-  const defaultSettings = {
-    theme: 'light',
-    fontSize: 'medium',
-    enableNotifications: true,
-    notificationSound: true,
-    sendKey: 'enter',
-    readReceipts: true,
-    quickDelete: false,
-    showLoadingAnimation: true
-  };
-
-  applySettingsToForm(defaultSettings);
-  applySettings(defaultSettings);
-
-  if (window.pywebview && window.pywebview.api) {
-    window.pywebview.api.save_settings(defaultSettings).catch(err =>
-      console.error('Error saving defaults to server:', err)
-    );
-  }
-}
-
-function applySettingsToForm(settings) {
-  const elements = {
-    'theme-select': { prop: 'value', default: 'light', key: 'theme' },
-    'font-size': { prop: 'value', default: 'medium', key: 'fontSize' },
-    'enable-notifications': { prop: 'checked', default: true, key: 'enableNotifications' },
-    'notification-sound': { prop: 'checked', default: true, key: 'notificationSound' },
-    'send-key': { prop: 'value', default: 'enter', key: 'sendKey' },
-    'read-receipts': { prop: 'checked', default: true, key: 'readReceipts' },
-    'quick-delete': { prop: 'checked', default: false, key: 'quickDelete' },
-    'show-loading-animation': { prop: 'checked', default: true, key: 'showLoadingAnimation' }
-  };
-
-  Object.entries(elements).forEach(([id, config]) => {
-    const element = document.getElementById(id);
-    if (element) {
-      const value = settings[config.key] !== undefined ? settings[config.key] : config.default;
-      element[config.prop] = value;
-    }
-  });
-}
-
-function applySettings(settings) {
-  // Apply font size
-  const fontSizes = { small: '14px', medium: '16px', large: '18px' };
-  document.documentElement.style.fontSize = fontSizes[settings.fontSize] || '16px';
-
-  // Toggle theme
-  document.body.classList.toggle('dark-theme', settings.theme === 'dark');
-}
-
-function getSettingsHTML() {
-  return `
-  <div class="settings-container">
-    <div class="settings-header">
-      <h2>Settings</h2>
-      <button id="close-settings" class="close-settings-button">&times;</button>
-    </div>
-    <div class="settings-section">
-      <h3>Appearance</h3>
-      <div class="setting-item">
-        <label for="theme-select">Theme:</label>
-        <select id="theme-select" class="settings-select">
-          <option value="light">Light</option>
-          <option value="dark">Dark</option>
-        </select>
-      </div>
-      <div class="setting-item">
-        <label for="font-size">Font Size:</label>
-        <select id="font-size" class="settings-select">
-          <option value="small">Small</option>
-          <option value="medium">Medium</option>
-          <option value="large">Large</option>
-        </select>
-      </div>
-      <div class="setting-item">
-        <label for="show-loading-animation">Show Loading Animation:</label>
-        <input type="checkbox" id="show-loading-animation" checked>
-      </div>
-    </div>
-    <div class="settings-section">
-      <h3>Notifications</h3>
-      <div class="setting-item">
-        <label for="enable-notifications">Enable Notifications:</label>
-        <label class="switch">
-          <input type="checkbox" id="enable-notifications">
-          <span class="slider round"></span>
-        </label>
-      </div>
-      <div class="setting-item">
-        <label for="notification-sound">Notification Sound:</label>
-        <label class="switch">
-          <input type="checkbox" id="notification-sound">
-          <span class="slider round"></span>
-        </label>
-      </div>
-    </div>
-    <div class="settings-section">
-      <h3>Chat</h3>
-      <div class="setting-item">
-        <label for="send-key">Send messages with:</label>
-        <select id="send-key" class="settings-select">
-          <option value="enter">Enter</option>
-          <option value="ctrl-enter">Ctrl+Enter</option>
-        </select>
-      </div>
-      <div class="setting-item">
-        <label for="read-receipts">Show Read Receipts:</label>
-        <label class="switch">
-          <input type="checkbox" id="read-receipts">
-          <span class="slider round"></span>
-        </label>
-      </div>
-      <div class="setting-item">
-        <label for="quick-delete">Quick Delete Messages:</label>
-        <label class="switch">
-          <input type="checkbox" id="quick-delete">
-          <span class="slider round"></span>
-        </label>
-      </div>
-    </div>
-    <div class="settings-footer">
-      <button id="save-settings" class="settings-button primary">Save Settings</button>
-      <button id="reset-settings" class="settings-button">Reset to Default</button>
-    </div>
-  </div>
-  `;
 }

@@ -149,3 +149,28 @@
         </div>
     </form>
 </div>
+
+<script type="module">
+    // Load the settings module directly in this file to ensure it's available
+    import('../js/settings.js')
+        .then(module => {
+            console.log('Settings module loaded in settings.html');
+            if (typeof module.initializeSettings === 'function') {
+                window.addEventListener('DOMContentLoaded', () => {
+                    setTimeout(module.initializeSettings, 100);
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error loading settings module in settings.html:', error);
+            // Try alternative path
+            import('./js/settings.js')
+                .then(module => {
+                    console.log('Settings module loaded via alternative path');
+                    if (typeof module.initializeSettings === 'function') {
+                        setTimeout(module.initializeSettings, 100);
+                    }
+                })
+                .catch(err => console.error('All attempts to load settings module failed:', err));
+        });
+</script>
