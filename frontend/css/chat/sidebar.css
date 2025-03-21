@@ -1,46 +1,105 @@
 /* Sidebar-specific styles */
 .sidebar {
     width: 20%; /* Sidebar width */
+    height: 100vh; /* Full viewport height */
+    position: fixed; /* Fix sidebar in place */
+    left: 0;
+    top: 0;
     background: #f4f4f4; /* Light grey background */
     padding: 20px; /* Padding inside the sidebar */
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); /* Subtle shadow on the right */
     overflow-y: auto; /* Enable vertical scrolling */
     scroll-behavior: smooth; /* Smooth scrolling */
+    z-index: 100; /* Ensure sidebar is above other content */
 }
 
-/* Add styles for sidebar controls container */
+/* Update sidebar controls to ensure proper width alignment */
 .sidebar-controls {
     display: flex;
-    align-items: center;
-    justify-content: flex-end; /* Keep buttons aligned to the right */
+    flex-direction: column;
     margin-bottom: 15px;
     position: relative;
-    height: 36px; /* Fixed height to prevent layout shift */
+    width: 100%; /* Ensure it takes full width of sidebar */
 }
 
-/* Add styles for settings button */
-.settings-button {
-    background: #f0f0f0; /* Match other buttons */
+/* Make buttons container take full width - same as chat categories */
+.sidebar-controls .buttons-container {
+    display: flex;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+/* Update search button styling for consistency */
+.search-button {
+    background: #f0f0f0;
     border: 1px solid #ddd;
     cursor: pointer;
-    padding: 6px 10px;
+    padding: 0;
     border-radius: 4px;
     transition: background-color 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
     color: #444;
-    margin-left: 8px; /* Add space after search button */
-    margin-right: 8px; /* Keep space before collapse button */
-    min-width: 28px; /* Ensure minimum width */
+    height: 32px; /* Fixed height */
+    width: 32px; /* Fixed width */
+    min-width: 32px; /* Minimum width */
+    flex: 0 0 32px; /* Fixed width, don't grow or shrink */
+}
+
+.search-button i {
+    font-size: 14px; /* Consistent icon size */
+}
+
+/* Update settings button to perfectly match search button */
+.settings-button {
+    background: #f0f0f0;
+    border: 1px solid #ddd;
+    cursor: pointer;
+    padding: 0;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #444;
+    height: 32px; /* Fixed height - same as search */
+    width: 32px; /* Fixed width - same as search */
+    min-width: 32px; /* Minimum width */
+    flex: 0 0 32px; /* Fixed width, don't grow or shrink */
+    margin: 0 8px; /* Even spacing between buttons */
 }
 
 .settings-button i {
-    font-size: 14px; /* Ensure icon is visible */
+    font-size: 14px; /* Consistent icon size */
 }
 
-.settings-button:hover {
-    background: #e0e0e0; /* Match other button hover */
+/* Style collapse button to fit with other buttons */
+.collapse-button {
+    background: #f0f0f0;
+    border: 1px solid #ddd;
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+    color: #444;
+    font-size: 13px;
+    flex: 1; /* Take remaining space */
+    height: 32px; /* Match height for all buttons */
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Update search container to match width of the buttons */
+.search-container {
+    width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 32px;
+    z-index: 10;
 }
 
 .chat-list {
@@ -140,22 +199,6 @@
 
 .category-content.collapsed {
     display: none; /* Hide content when collapsed */
-}
-
-.collapse-button {
-    margin-right: 8px; /* Space between buttons */
-    padding: 6px 12px; /* Padding inside the button */
-    background: #f0f0f0; /* Light grey background */
-    border: 1px solid #ddd; /* Subtle border */
-    border-radius: 4px; /* Rounded corners */
-    cursor: pointer; /* Pointer cursor */
-    font-size: 13px; /* Font size */
-    transition: all 0.2s ease; /* Smooth transition for hover effects */
-    color: #444; /* Darker text */
-}
-
-.collapse-button:hover {
-    background: #e0e0e0; /* Slightly darker on hover */
 }
 
 .unread-count {

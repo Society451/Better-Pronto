@@ -23,11 +23,47 @@ body {
     padding: 20px; /* Padding inside the chat container */
     border-radius: 10px; /* Rounded corners */
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Subtle shadow */
-    margin: 0; /* Remove margins to allow full width */
-    width: 80%; /* Expand to full width */
-    height: 90%; /* Ensure the container takes full height */
+    margin-left: 20%; /* Offset to account for fixed sidebar */
+    width: 80%; /* Adjust width to account for sidebar */
+    height: 100vh; /* Ensure the container takes full viewport height */
     position: relative; /* Position relative for absolute positioning of children */
     user-select: text; /* Enable text selection */
+    overflow-y: auto; /* Add scroll for the content */
+    will-change: transform; /* Performance optimization */
+    contain: size layout; /* Optimization */
+}
+
+/* Improve scrolling performance */
+.chat-container, .settings-wrapper, .messages {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+}
+
+/* Optimize settings display positioning */
+.chat-container.settings-active {
+    overflow: hidden; /* Prevent background scrolling when settings are shown */
+}
+
+/* Add responsive behavior for smaller screens */
+@media (max-width: 768px) {
+    .chat-container {
+        margin-left: 0;
+        width: 100%;
+        padding: 15px;
+    }
+    
+    .sidebar {
+        width: 100%;
+        position: absolute;
+        height: auto;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        z-index: 200;
+    }
+    
+    .sidebar.active {
+        transform: translateX(0);
+    }
 }
 
 .chat-heading {

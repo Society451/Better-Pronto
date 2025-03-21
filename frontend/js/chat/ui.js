@@ -101,6 +101,11 @@ export function showSettings() {
   const messagesContainer = document.getElementById('messages');
   const inputGroup = document.querySelector('.input-group');
   const chatHeadingElement = document.getElementById('chat-heading');
+  const chatContainer = document.querySelector('.chat-container');
+  
+  // Get window dimensions for responsive sizing
+  const windowWidth = window.innerWidth;
+  const windowHeight = window.innerHeight;
 
   // Hide chat UI
   [messagesContainer, inputGroup, chatHeadingElement].forEach(el => {
@@ -113,9 +118,41 @@ export function showSettings() {
     settingsContainer = document.createElement('div');
     settingsContainer.id = 'settings-container';
     settingsContainer.className = 'settings-wrapper';
-    messagesContainer.parentNode.insertBefore(settingsContainer, messagesContainer.nextSibling);
+    
+    // Add the settings container to the chat container for proper positioning
+    if (chatContainer) {
+      chatContainer.appendChild(settingsContainer);
+    } else {
+      messagesContainer.parentNode.insertBefore(settingsContainer, messagesContainer.nextSibling);
+    }
   }
+  
+  // Set dimensions based on window size
+  if (windowWidth < 768) {
+    // Mobile layout
+    settingsContainer.style.width = '100%';
+    settingsContainer.style.height = '100%';
+    settingsContainer.style.maxWidth = 'none';
+  } else if (windowWidth < 1200) {
+    // Tablet layout
+    settingsContainer.style.width = '90%';
+    settingsContainer.style.height = '90%';
+    settingsContainer.style.maxWidth = '800px';
+  } else {
+    // Desktop layout
+    settingsContainer.style.width = '85%';
+    settingsContainer.style.height = '85%';
+    settingsContainer.style.maxWidth = '1000px';
+  }
+  
   settingsContainer.style.display = 'block';
+  settingsContainer.style.overflowY = 'auto';
+  
+  // Allow a short delay for layout rendering
+  setTimeout(() => {
+    // Scroll to top when showing settings
+    settingsContainer.scrollTop = 0;
+  }, 50);
 
   // Load settings HTML - use relative path from current location
   fetch('../../html/settings.html')
@@ -202,14 +239,6 @@ function getInlineSettingsHTML() {
     <form id="settings-form">
       <div class="settings-section">
         <h3>Appearance</h3>
-        <div class="setting-item">
-          <label for="theme-select">Theme</label>
-          <select id="theme-select" class="settings-select">
-            <option value="light">Light</option>
-            <option value="dark">Dark</option>
-            <option value="system">System Default</option>
-          </select>
-        </div>
         <div class="setting-item">
           <label for="font-size">Font Size</label>
           <select id="font-size" class="settings-select">

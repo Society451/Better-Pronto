@@ -3,14 +3,15 @@
     display: flex;
     flex-direction: column;
     width: 100%;
-    max-width: 900px;
+    max-width: 95%; /* Reduced from 900px fixed width to percentage */
     margin: 0 auto;
-    height: 100%;
-    padding: 2rem;
+    height: auto;
+    min-height: 100%;
+    padding: 1.5rem; /* Reduced padding */
     background-color: #fff;
     overflow-y: auto;
-    border-radius: 10px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    border-radius: 8px; /* Reduced border radius */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); /* Lighter shadow */
 }
 
 .settings-header {
@@ -236,11 +237,12 @@ input:focus + .slider {
 .settings-tabs {
     display: flex;
     width: 100%;
+    flex-wrap: wrap; /* Allow wrapping on small screens */
     background-color: #f5f5f5;
-    border-radius: 8px;
-    margin-bottom: 2rem;
+    border-radius: 6px;
+    margin-bottom: 1.5rem;
     overflow: hidden;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     position: sticky;
     top: 0;
     z-index: 10;
@@ -248,11 +250,12 @@ input:focus + .slider {
 
 .settings-tab-button {
     flex: 1;
-    padding: 1rem 0.5rem;
+    min-width: 100px; /* Ensure buttons don't get too small */
+    padding: 0.8rem 0.4rem;
     background: none;
     border: none;
     font-weight: 600;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     color: #666;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -284,6 +287,7 @@ input:focus + .slider {
 .settings-tab-content {
     display: none;
     width: 100%;
+    contain: content; /* Improve rendering performance */
 }
 
 .settings-tab-content.active {
@@ -327,94 +331,87 @@ input:focus + .slider {
     cursor: not-allowed;
 }
 
-/* Dark theme compatibility */
-body.dark-theme .settings-container {
-    background-color: #222;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+/* Improved responsive adjustments for settings */
+@media (max-width: 1200px) {
+    .settings-container {
+        max-width: 98%;
+        padding: 1.2rem;
+    }
+    
+    .settings-section {
+        padding: 1.2rem;
+        margin-bottom: 1.5rem;
+    }
 }
 
-body.dark-theme .settings-header {
-    border-bottom-color: #333;
+@media (max-width: 992px) {
+    .settings-tabs {
+        position: relative; /* Don't use sticky on smaller screens */
+        margin-bottom: 1rem;
+    }
+    
+    .setting-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .setting-item label:first-child {
+        margin-bottom: 0.5rem;
+        width: 100%;
+    }
+    
+    .settings-select, .switch {
+        margin-top: 0.5rem;
+        width: 100%;
+    }
 }
 
-body.dark-theme .settings-header h2,
-body.dark-theme .setting-item label:first-child {
-    color: #eee;
+@media (max-width: 768px) {
+    .settings-container {
+        padding: 0.8rem;
+    }
+    
+    .settings-header {
+        margin-bottom: 1rem;
+    }
+    
+    .settings-tab-button {
+        padding: 0.6rem 0.3rem;
+        font-size: 0.8rem;
+        min-width: 80px;
+    }
+    
+    .settings-section {
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .settings-section h3 {
+        margin-bottom: 0.8rem;
+        padding-bottom: 0.5rem;
+    }
 }
 
-body.dark-theme .close-settings-button {
-    color: #aaa;
-}
-
-body.dark-theme .close-settings-button:hover {
-    background-color: rgba(255, 255, 255, 0.05);
-    color: #ff4444;
-}
-
-body.dark-theme .settings-section {
-    background-color: #2a2a2a;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-}
-
-body.dark-theme .settings-section h3 {
-    border-bottom-color: #444;
-}
-
-body.dark-theme .setting-item {
-    border-bottom-color: #333;
-}
-
-body.dark-theme .settings-select {
-    background-color: #333;
-    border-color: #444;
-    color: #eee;
-}
-
-body.dark-theme .settings-select:hover {
-    border-color: #8C1515;
-}
-
-body.dark-theme .settings-footer {
-    border-top-color: #333;
-}
-
-body.dark-theme .settings-button {
-    background-color: #333;
-    border-color: #444;
-    color: #eee;
-}
-
-body.dark-theme .settings-button:hover {
-    background-color: #444;
-}
-
-body.dark-theme .settings-tabs {
-    background-color: #333;
-}
-
-body.dark-theme .settings-tab-button {
-    color: #aaa;
-}
-
-body.dark-theme .settings-tab-button:hover {
-    color: #fff;
-    background-color: rgba(255, 255, 255, 0.05);
-}
-
-body.dark-theme .settings-tab-button.active {
-    color: #fff;
-    background-color: #222;
-}
-
-body.dark-theme .settings-tab-button.active::after {
+/* Add styles for settings wrapper to ensure proper positioning */
+.settings-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow-y: auto;
     background-color: #fff;
+    z-index: 50;
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    overscroll-behavior: contain; /* Prevent scroll chaining */
+    will-change: transform; /* Performance optimization */
+    padding: 0.5rem; /* Add some padding */
 }
 
-body.dark-theme .settings-notice {
-    background-color: rgba(255, 255, 255, 0.05);
-    border-left-color: #aaa;
-}
-
-body.dark-theme .settings-notice p {
-    color: #ddd;
+/* Performance optimization */
+.settings-tab-content:not(.active) {
+    display: none;
+    visibility: hidden;
+    height: 0;
+    overflow: hidden;
 }

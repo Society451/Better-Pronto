@@ -3,7 +3,7 @@
 // Settings constants - these will be updated when settings are loaded
 const SETTINGS = {
     // Interface settings
-    theme: 'light',
+    theme: 'light', // Keep for user preference, but won't be applied
     fontSize: 'medium',
     
     // Notification settings
@@ -203,7 +203,7 @@ function setupTabNavigation() {
 function saveSettings() {
     console.log('Saving settings from settings.js');
     
-    // Update SETTINGS from form values
+    // Update SETTINGS from all form elements to ensure everything is saved
     SETTINGS.theme = document.getElementById('theme-select')?.value || 'light';
     SETTINGS.fontSize = document.getElementById('font-size')?.value || 'medium';
     SETTINGS.enableNotifications = document.getElementById('enable-notifications')?.checked || false;
@@ -212,6 +212,15 @@ function saveSettings() {
     SETTINGS.readReceipts = document.getElementById('read-receipts')?.checked || false;
     SETTINGS.quickDelete = document.getElementById('quick-delete')?.checked || false;
     SETTINGS.showLoadingAnimation = document.getElementById('show-loading-animation')?.checked || true;
+    
+    // Also check encryption and macros settings even though they're disabled
+    SETTINGS.encryptionEnabled = document.getElementById('encryption-enabled')?.checked || false;
+    SETTINGS.macrosEnabled = document.getElementById('macros-enabled')?.checked || false;
+    
+    // Get log level if it exists
+    if (document.getElementById('log-level')) {
+        SETTINGS.logLevel = document.getElementById('log-level')?.value || 'error';
+    }
     
     // Save to backend API
     const saveButton = document.getElementById('save-settings');
@@ -390,18 +399,8 @@ function applyVisualSettings(settings) {
     }
     document.documentElement.style.fontSize = fontSizeValue;
     
-    // Apply theme
-    if (settings.theme === 'dark') {
-        document.body.classList.add('dark-theme');
-        document.body.classList.remove('light-theme');
-    } else if (settings.theme === 'system') {
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        document.body.classList.toggle('dark-theme', prefersDark);
-        document.body.classList.toggle('light-theme', !prefersDark);
-    } else {
-        document.body.classList.remove('dark-theme');
-        document.body.classList.add('light-theme');
-    }
+    // We don't apply theme changes at all anymore
+    // Removed all theme-related application code
 }
 
 // Get current settings
