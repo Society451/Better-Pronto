@@ -1,6 +1,9 @@
-from pronto import *
-from readjson import *
+from pronto import Pronto
+from readjson import ReadJSON
 from systemcheck import *
+from datetime import datetime
+
+pronto = Pronto()
 
 def get_all_bubble_members(accesstoken, bubble_id, json_path):
     """
@@ -15,7 +18,7 @@ def get_all_bubble_members(accesstoken, bubble_id, json_path):
     try:
         while has_more_pages:
             print(f"Fetching page {current_page}...")
-            response = bubbleMembershipSearch(accesstoken, bubble_id, page=current_page)
+            response = pronto.bubbleMembershipSearch(accesstoken, bubble_id, page=current_page)
             
             if not response or 'ok' not in response or not response['ok']:
                 print(f"Error in response for page {current_page}: {response}")
@@ -51,7 +54,7 @@ def get_all_bubble_members(accesstoken, bubble_id, json_path):
                 "bubble_id": bubble_id,
                 "retrieved_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             }
-            save_response_to_file(result, json_path)
+            ReadJSON.save_response_to_file(result, json_path)
             print(f"Saved {len(all_members)} members to {json_path}")
             return result
         else:
