@@ -552,6 +552,7 @@ class Api:
 
 # Create an instance of the Api class with the accesstoken
 api = Api(accesstoken)
+print("Available API methods:", dir(api))
 # Create a webview window with the specified HTML file and API
 window = webview.create_window(
     'Better Pronto Alpha',

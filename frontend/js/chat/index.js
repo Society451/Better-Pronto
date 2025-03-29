@@ -265,7 +265,7 @@ window.addEventListener('DOMContentLoaded', () => {
     
     // Wait for pywebview API
     (function waitForPywebview() {
-        if (window.pywebview?.api) {
+        if (window.pywebview?.api?.get_live_bubbles) {
             initializeBubbles();
         } else {
             setTimeout(waitForPywebview, 100);
