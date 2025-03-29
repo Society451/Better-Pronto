@@ -42,19 +42,7 @@ function waitForPywebview() {
         console.log('Pywebview API ready, initializing settings');
         initializeSettings();
     } else {
-        // If API is not available after 5 seconds, initialize anyway to prevent UI lockup
-        if (window._waitPywebviewAttempts === undefined) {
-            window._waitPywebviewAttempts = 0;
-        }
-        
-        window._waitPywebviewAttempts++;
-        
-        if (window._waitPywebviewAttempts > 50) { // 5 seconds timeout (50 * 100ms)
-            console.warn('Pywebview API not available after 5 seconds, initializing without API');
-            initializeSettings();
-            return;
-        }
-        
+        // Retry until the API becomes available
         setTimeout(waitForPywebview, 100);
     }
 }
