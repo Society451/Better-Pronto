@@ -164,8 +164,24 @@ export class Message {
                 return;
             }
             
-            event.shiftKey ? this._deleteMessage(event.target.closest('.message-group')) 
-                           : this._showDeleteConfirmation(event.target.closest('.message-group'));
+            // Get quick delete setting from localStorage
+            let useQuickDelete = false;
+            try {
+                const settings = JSON.parse(localStorage.getItem('chatSettings'));
+                useQuickDelete = settings && settings.quickDelete === true;
+            } catch (e) {
+                console.error('Error parsing settings:', e);
+            }
+            
+            // Get the specific message element (not the group)
+            const messageElement = event.target.closest('.message');
+            
+            // Delete immediately if shift is pressed or quick delete is enabled in settings
+            if (event.shiftKey || useQuickDelete) {
+                this._deleteMessage(messageElement);
+            } else {
+                this._showDeleteConfirmation(messageElement);
+            }
         });
         
         document.addEventListener('keydown', (e) => {
@@ -186,8 +202,8 @@ export class Message {
         return actions;
     }
 
-    // Show custom delete confirmation
-    _showDeleteConfirmation(messageGroup) {
+    // Show custom delete confirmation 
+    _showDeleteConfirmation(messageElement) {
         let modal = document.getElementById('delete-confirmation-modal');
         if (!modal) {
             modal = document.createElement('div');
@@ -202,7 +218,7 @@ export class Message {
                         <button class="delete-confirmation-btn cancel">Cancel</button>
                         <button class="delete-confirmation-btn delete">Delete</button>
                     </div>
-                    <div class="delete-confirmation-tip">Tip: Hold Shift while clicking delete for quick deletion</div>
+                    <div class="delete-confirmation-tip">Tip: Hold Shift while clicking delete for quick deletion or enable Quick Delete in Settings</div>
                 </div>
             `;
             
@@ -223,24 +239,59 @@ export class Message {
             });
         }
         
-        modal.querySelector('.delete').onclick = () => {
-            this._deleteMessage(messageGroup);
+        // Replace delete button to avoid event listener buildup
+        const deleteButton = modal.querySelector('.delete');
+        const newDeleteButton = deleteButton.cloneNode(true);
+        deleteButton.parentNode.replaceChild(newDeleteButton, deleteButton);
+        
+        newDeleteButton.addEventListener('click', () => {
             modal.classList.remove('active');
-        };
+            this._deleteMessage(messageElement);
+        });
         
         modal.classList.add('active');
     }
     
     // Handle message deletion
-    async _deleteMessage(messageGroup) {
+    async _deleteMessage(messageElement) {
         try {
             const response = await window.pywebview.api.delete_message(this.messageId);
             if (response?.ok) {
-                messageGroup.style.transition = 'opacity 0.3s ease';
-                messageGroup.style.opacity = '0';
+                console.log(`Deleting message with ID: ${this.messageId}`);
+                
+                // Find the proper element to delete
+                let elementToDelete = messageElement;
+                const messageGroup = messageElement.closest('.message-group');
+                
+                // If this is the only message in a group, remove the whole group
+                if (messageGroup) {
+                    const messagesInGroup = messageGroup.querySelectorAll('.message');
+                    if (messagesInGroup.length === 1) {
+                        elementToDelete = messageGroup;
+                    }
+                }
+                
+                // Apply deletion animation
+                elementToDelete.classList.add('deleting');
+                elementToDelete.style.transition = 'opacity 0.2s ease, height 0.2s ease, margin 0.2s ease, padding 0.2s ease';
+                elementToDelete.style.opacity = '0';
+                elementToDelete.style.height = '0';
+                elementToDelete.style.margin = '0';
+                elementToDelete.style.padding = '0';
+                elementToDelete.style.overflow = 'hidden';
+                
+                // Remove from DOM after animation completes
+                setTimeout(() => {
+                    try {
+                        if (elementToDelete && elementToDelete.parentNode) {
+                            elementToDelete.parentNode.removeChild(elementToDelete);
+                        }
+                    } catch (err) {
+                        console.error('Error removing element:', err);
+                    }
+                }, 250);
                 
                 Toast.show('Message deleted successfully', 'success');
-                setTimeout(() => messageGroup.remove(), 300);
             } else {
                 const errorMessage = response?.error === 'MESSAGE_ACCESSDENIED' 
                     ? 'You do not have permission to delete this message' 
@@ -256,8 +307,8 @@ export class Message {
     }
 }
 
-// Toast notification class
-class Toast {
+// Make the Toast class available for external use
+export class Toast {
     static show(message, type = 'success', duration = 5000) {
         let container = document.getElementById('toast-container');
         if (!container) {
@@ -289,29 +340,37 @@ class Toast {
         progressBar.style.width = '100%';
         progressBar.style.transitionDuration = `${duration}ms`;
         
+        // Use requestAnimationFrame for smoother animations
+        requestAnimationFrame(() => {
+            toast.classList.add('show');
+            setTimeout(() => progressBar.style.width = '0%', 10);
+        });
+        
         const dismissToast = () => {
             toast.classList.add('fade-out');
             toast.classList.remove('show');
             setTimeout(() => toast.remove(), 300);
         };
         
-        setTimeout(() => {
-            toast.classList.add('show');
-            setTimeout(() => progressBar.style.width = '0%', 10);
-        }, 10);
-        
         let dismissTimeout = setTimeout(dismissToast, duration);
-        toast.querySelector('.toast-close').addEventListener('click', dismissToast);
         
+        toast.querySelector('.toast-close').addEventListener('click', () => {
+            clearTimeout(dismissTimeout);
+            dismissToast();
+        });
+        
+        // Pause countdown on hover
         toast.addEventListener('mouseenter', () => {
             progressBar.style.transitionProperty = 'none';
             clearTimeout(dismissTimeout);
         });
         
+        // Resume countdown on leave
         toast.addEventListener('mouseleave', () => {
             const remainingPercentage = parseFloat(getComputedStyle(progressBar).width) / 
                                        parseFloat(getComputedStyle(toast).width);
             const remainingTime = duration * remainingPercentage;
+            
             progressBar.style.transitionProperty = 'width';
             progressBar.style.transitionDuration = `${remainingTime}ms`;
             dismissTimeout = setTimeout(dismissToast, remainingTime);

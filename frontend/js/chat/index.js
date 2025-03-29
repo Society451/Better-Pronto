@@ -1,51 +1,30 @@
 import { 
-    messageInput, 
-    searchButton, 
-    searchInput, 
-    searchContainer,
-    clearSearch,
-    toggleAllButton,
-    setCurrentChatID,
-    currentChatID
+    messageInput, searchButton, searchInput, searchContainer, clearSearch,
+    toggleAllButton, setCurrentChatID, currentChatID
 } from './constants.js';
 import { updateUnreadCounts, setupAnimationStyles, showLoading, hideLoading } from './ui.js';
 import { loadMessages, sendMessage } from './MessageManager.js';
 import { initializeCategories } from './categories.js';
 
-// Track if Shift key is pressed
+// Keyboard handling
 let isShiftPressed = false;
+document.addEventListener('keydown', (e) => isShiftPressed = e.key === 'Shift' || isShiftPressed);
+document.addEventListener('keyup', (e) => isShiftPressed = e.key === 'Shift' ? false : isShiftPressed);
 
-// Register keyboard event listeners
-document.addEventListener('keydown', (event) => {
-    if (event.key === 'Shift') {
-        isShiftPressed = true;
-    }
-});
-
-document.addEventListener('keyup', (event) => {
-    if (event.key === 'Shift') {
-        isShiftPressed = false;
-    }
-});
-
-// Send message when Enter is pressed
-messageInput.addEventListener('keypress', async (event) => {
-    if (event.key === 'Enter' && !event.shiftKey) {  // Allow Shift+Enter for new lines
-        event.preventDefault(); // Prevent default Enter key behavior
+// Send message on Enter (unless Shift is pressed for new line)
+messageInput.addEventListener('keypress', async (e) => {
+    if (e.key === 'Enter' && !e.shiftKey && currentChatID) {
+        e.preventDefault();
         const messageText = messageInput.value.trim();
-        if (messageText && currentChatID) {
-            const success = await sendMessage(currentChatID, messageText, await window.pywebview.api.get_user_id());
-            if (success) {
-                messageInput.value = ''; // Clear the input after sending
-            }
+        if (messageText && await sendMessage(currentChatID, messageText, await window.pywebview.api.get_user_id())) {
+            messageInput.value = '';
         }
     }
 });
 
-// Add event listener to toggle all categories
+// Category UI controls
 toggleAllButton.addEventListener('click', () => {
     const isCollapsing = toggleAllButton.textContent === 'Collapse All';
-
     document.querySelectorAll('.category-content').forEach(content => {
         content.classList.toggle('expanded', !isCollapsing);
         content.classList.toggle('collapsed', isCollapsing);
@@ -53,183 +32,205 @@ toggleAllButton.addEventListener('click', () => {
     document.querySelectorAll('.category-header').forEach(header => {
         header.classList.toggle('collapsed', isCollapsing);
     });
-
     toggleAllButton.textContent = isCollapsing ? 'Expand All' : 'Collapse All';
 });
 
-// Add event listener to show search input
+// Search functionality
 searchButton.addEventListener('click', () => {
     searchButton.style.display = 'none';
-    toggleAllButton.style.display = 'none'; // Hide the toggle-all button
+    toggleAllButton.style.display = 'none';
     searchContainer.style.display = 'flex';
     searchInput.focus();
 });
 
-// Add event listener to clear and exit search input
 clearSearch.addEventListener('click', () => {
     searchInput.value = '';
     searchContainer.style.display = 'none';
     searchButton.style.display = 'block';
-    toggleAllButton.style.display = 'block'; // Show the toggle-all button again
+    toggleAllButton.style.display = 'block';
     
-    // Reset all chat items visibility
-    const chatItems = document.querySelectorAll('.chat-item');
-    chatItems.forEach(chat => {
-        chat.style.display = 'flex';
-    });
-    
-    // Reset all categories visibility
-    const categories = document.querySelectorAll('.category');
-    categories.forEach(category => {
-        category.style.display = 'block';
-    });
+    // Reset visibility
+    document.querySelectorAll('.chat-item').forEach(chat => chat.style.display = 'flex');
+    document.querySelectorAll('.category').forEach(category => category.style.display = 'block');
 });
 
-// Search functionality
-searchInput.addEventListener('input', (event) => {
-    const searchTerm = event.target.value.toLowerCase();
-    const categories = document.querySelectorAll('.category');
+// Add event listener for Escape key on search input
+searchInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        // Mimic the behavior of clicking the X button
+        searchInput.value = '';
+        searchContainer.style.display = 'none';
+        searchButton.style.display = 'block';
+        toggleAllButton.style.display = 'block';
+        
+        // Reset visibility
+        document.querySelectorAll('.chat-item').forEach(chat => chat.style.display = 'flex');
+        document.querySelectorAll('.category').forEach(category => category.style.display = 'block');
+    }
+});
 
-    categories.forEach(category => {
+searchInput.addEventListener('input', (e) => {
+    const searchTerm = e.target.value.toLowerCase();
+    
+    document.querySelectorAll('.category').forEach(category => {
         const header = category.querySelector('.category-header');
         const content = category.querySelector('.category-content');
         let hasVisibleChats = false;
 
-        // Search through chat items in this category
-        const chats = content.querySelectorAll('.chat-item');
-        chats.forEach(chat => {
-            const chatTitle = chat.textContent.toLowerCase();
-            if (chatTitle.includes(searchTerm)) {
-                chat.style.display = 'flex';
-                hasVisibleChats = true;
-            } else {
-                chat.style.display = 'none';
-            }
+        content.querySelectorAll('.chat-item').forEach(chat => {
+            const isVisible = chat.textContent.toLowerCase().includes(searchTerm);
+            chat.style.display = isVisible ? 'flex' : 'none';
+            hasVisibleChats = hasVisibleChats || isVisible;
         });
 
-        // Show/hide category based on whether it has matching chats
-        if (hasVisibleChats || searchTerm === '') {
-            category.style.display = 'block';
-            if (searchTerm !== '') {
-                content.classList.remove('collapsed');
-                header.classList.remove('collapsed');
-            }
-        } else {
-            category.style.display = 'none';
+        category.style.display = (hasVisibleChats || searchTerm === '') ? 'block' : 'none';
+        if (searchTerm !== '' && hasVisibleChats) {
+            content.classList.remove('collapsed');
+            header.classList.remove('collapsed');
         }
     });
 });
 
-// Event listener for dropdown menu option clicks
-document.addEventListener('click', (event) => {
-    if (event.target.tagName === 'LI' && event.target.closest('.dropdown-menu')) {
-        const optionText = event.target.textContent;
-        const chatItem = event.target.closest('.chat-item');
+// Mark as read functionality
+document.addEventListener('click', (e) => {
+    if (e.target.tagName === 'LI' && e.target.closest('.dropdown-menu') && e.target.textContent === 'Mark as Read') {
+        const chatItem = e.target.closest('.chat-item');
+        if (!chatItem) return;
         
-        if (chatItem && optionText === 'Mark as Read') {
-            const chatID = chatItem.getAttribute('data-chat-id');
-            const chatTitle = chatItem.querySelector('.chat-title').textContent;
-            
-            if (chatID) {
-                // First find if this chat exists in the Unread category
-                const unreadCategory = Array.from(document.querySelectorAll('.category')).find(
-                    cat => cat.querySelector('.category-header').textContent === 'Unread'
-                );
+        const chatID = chatItem.getAttribute('data-chat-id');
+        const unreadCategory = Array.from(document.querySelectorAll('.category'))
+            .find(cat => cat.querySelector('.category-header').textContent === 'Unread');
+        
+        window.pywebview.api.markBubbleAsRead(chatID)
+            .then(() => {
+                document.querySelectorAll(`.chat-item[data-chat-id="${chatID}"] .unread-count`)
+                    .forEach(el => el.textContent = '0');
                 
-                window.pywebview.api.markBubbleAsRead(chatID)
-                    .then(() => {
-                        // Update unread count to zero in all instances of this chat
-                        document.querySelectorAll(`.chat-item[data-chat-id="${chatID}"] .unread-count`).forEach(countElement => {
-                            countElement.textContent = '0';
-                        });
-                        
-                        // Update visibility of unread counts
-                        updateUnreadCounts();
-                        
-                        // If the chat is in the Unread category, animate and remove it
-                        if (unreadCategory) {
-                            const unreadChatItem = Array.from(unreadCategory.querySelectorAll('.chat-item')).find(
-                                item => item.getAttribute('data-chat-id') === chatID
-                            );
+                updateUnreadCounts();
+                
+                if (unreadCategory) {
+                    const unreadChatItem = Array.from(unreadCategory.querySelectorAll('.chat-item'))
+                        .find(item => item.getAttribute('data-chat-id') === chatID);
+                    
+                    if (unreadChatItem) {
+                        unreadChatItem.classList.add('fade-out');
+                        setTimeout(() => {
+                            unreadChatItem.remove();
                             
-                            if (unreadChatItem) {
-                                // Add the fade-out class for animation
-                                unreadChatItem.classList.add('fade-out');
-                                
-                                // Remove the item after animation completes
-                                setTimeout(() => {
-                                    unreadChatItem.remove();
-                                    
-                                    // Check if the category is now empty
-                                    const remainingItems = unreadCategory.querySelectorAll('.category-content .chat-item');
-                                    if (remainingItems.length === 0) {
-                                        unreadCategory.classList.add('empty');
-                                        
-                                        // Animate the category removal with a delay
-                                        setTimeout(() => {
-                                            unreadCategory.classList.add('fade-out');
-                                            setTimeout(() => {
-                                                unreadCategory.remove();
-                                            }, 500);
-                                        }, 200);
-                                    }
-                                }, 500); // Match this duration with CSS transition time
+                            if (unreadCategory.querySelectorAll('.category-content .chat-item').length === 0) {
+                                unreadCategory.classList.add('empty', 'fade-out');
+                                setTimeout(() => unreadCategory.remove(), 500);
                             }
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error marking bubble as read:', error);
-                    });
-            }
-        }
+                        }, 500);
+                    }
+                }
+            })
+            .catch(error => console.error('Error marking bubble as read:', error));
     }
 });
 
-// Close dropdowns when clicking outside
-window.addEventListener('click', () => {
-    document.querySelectorAll('.dropdown-menu').forEach(menu => {
-        menu.classList.remove('show');
-    });
-});
-
-// Event delegation for dropdown menu buttons
-document.addEventListener('click', (event) => {
-    if (event.target.classList.contains('menu-button')) {
-        event.stopPropagation();
-        const dropdown = event.target.nextElementSibling;
-        dropdown.classList.toggle('show');
+// UI interaction handlers
+document.addEventListener('click', (e) => {
+    // Close all dropdowns when clicking anywhere
+    if (!e.target.classList.contains('menu-button')) {
+        document.querySelectorAll('.dropdown-menu').forEach(menu => menu.classList.remove('show'));
     }
-});
-
-// Event delegation for category headers
-document.addEventListener('click', (event) => {
-    if (event.target.classList.contains('category-header')) {
-        const content = event.target.nextElementSibling;
+    
+    // Toggle dropdown menu
+    if (e.target.classList.contains('menu-button')) {
+        e.stopPropagation();
+        e.target.nextElementSibling.classList.toggle('show');
+    }
+    
+    // Toggle category expansion
+    if (e.target.classList.contains('category-header')) {
+        const content = e.target.nextElementSibling;
         const isExpanded = content.classList.contains('expanded');
-
-        // Toggle the 'expanded' and 'collapsed' classes
         content.classList.toggle('expanded');
         content.classList.toggle('collapsed');
-
-        // Toggle the arrow direction
-        event.target.classList.toggle('collapsed', isExpanded);
+        e.target.classList.toggle('collapsed', isExpanded);
     }
 });
 
-// Function to wait for pywebview API to be ready
-function waitForPywebview() {
-    if (window.pywebview && window.pywebview.api) {
-        initializeBubbles();
-    } else {
-        setTimeout(waitForPywebview, 100); // Check again after 100ms
+// Settings functions
+function safeLocalStorage() {
+    try {
+        localStorage.setItem('__test__', '__test__');
+        localStorage.removeItem('__test__');
+        return localStorage;
+    } catch (e) {
+        console.warn('localStorage unavailable, using memory storage');
+        const memoryStorage = {};
+        return {
+            getItem: key => memoryStorage[key] || null,
+            setItem: (key, value) => { memoryStorage[key] = value; },
+            removeItem: key => { delete memoryStorage[key]; }
+        };
     }
 }
 
-// Function to initialize live bubbles and then categories
+function getDefaultSettings() {
+    return {
+        theme: 'light',
+        fontSize: 'medium',
+        enableNotifications: true,
+        notificationSound: true,
+        sendKey: 'enter',
+        readReceipts: true,
+        quickDelete: false,
+        showLoadingAnimation: true
+    };
+}
+
+function applySettings(settings) {
+    const fontSizes = { small: '14px', medium: '16px', large: '18px' };
+    document.documentElement.style.fontSize = fontSizes[settings.fontSize] || '16px';
+    document.body.classList.toggle('dark-theme', settings.theme === 'dark');
+}
+
+function loadSettings() {
+    return window.pywebview.api.load_settings()
+        .then(settings => {
+            if (settings) {
+                try {
+                    safeLocalStorage().setItem('chatSettings', JSON.stringify(settings));
+                } catch (error) {
+                    console.error('Error saving settings:', error);
+                }
+                applySettings(settings);
+                return settings;
+            }
+            return loadLocalSettings();
+        })
+        .catch(() => loadLocalSettings());
+}
+
+function loadLocalSettings() {
+    try {
+        const savedSettings = safeLocalStorage().getItem('chatSettings');
+        if (savedSettings) {
+            try {
+                const settings = JSON.parse(savedSettings);
+                applySettings(settings);
+                return settings;
+            } catch (e) {
+                console.error('Error parsing settings:', e);
+            }
+        }
+    } catch (error) {
+        console.error('Error accessing storage:', error);
+    }
+    
+    const defaultSettings = getDefaultSettings();
+    applySettings(defaultSettings);
+    return defaultSettings;
+}
+
+// Initialization
 async function initializeBubbles() {
     try {
-        console.log("Fetching live bubbles");
         await window.pywebview.api.get_live_bubbles();
+        loadSettings();
         initializeCategories();
     } catch (error) {
         console.error("Error fetching live bubbles:", error);
@@ -239,13 +240,46 @@ async function initializeBubbles() {
     }
 }
 
-// Initialize app when DOM is loaded
+// Initialize app
 window.addEventListener('DOMContentLoaded', () => {
-    console.log('chat.html DOMContentLoaded');
     setupAnimationStyles();
-    showLoading();
-    waitForPywebview();
+    
+    // Check if loading animation should be shown
+    const tryGetSettings = () => {
+        try {
+            const savedSettings = safeLocalStorage().getItem('chatSettings');
+            if (savedSettings) {
+                const settings = JSON.parse(savedSettings);
+                return settings.showLoadingAnimation !== false; // Default to true if not specified
+            }
+        } catch (error) {
+            console.error('Error loading animation setting:', error);
+        }
+        return true; // Default to showing animation if setting can't be loaded
+    };
+    
+    // Only show loading if the setting is enabled or not set
+    if (tryGetSettings()) {
+        showLoading();
+    }
+    
+    // Wait for pywebview API
+    (function waitForPywebview() {
+        if (window.pywebview?.api) {
+            initializeBubbles();
+        } else {
+            setTimeout(waitForPywebview, 100);
+        }
+    })();
+    
+    // Settings button handler
+    const settingsButton = document.getElementById('settings-button');
+    if (settingsButton) {
+        settingsButton.addEventListener('click', () => {
+            import('./ui.js').then(module => module.showSettings());
+        });
+    }
 });
 
-// Expose currentChatID to window for access from other modules
+// Expose currentChatID globally
 window.currentChatID = currentChatID;

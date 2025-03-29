@@ -23,12 +23,7 @@
 }
 
 .message-group:hover {
-  background-color: rgba(0, 0, 0, 0.02);
-}
-
-.message-group:hover .message-actions {
-  opacity: 1;
-  visibility: visible;
+  background-color: transparent; /* Remove background hover from group */
 }
 
 .avatar-container {
@@ -92,21 +87,75 @@
 
 .message {
   position: relative;
-  padding: 0;
-  margin-bottom: 2px;
-  background: transparent;
+  padding: 8px 10px;  /* Add padding inside each message */
+  margin-bottom: 4px; /* Space between messages */
+  background-color: #f2f3f5; /* Light gray background for each message */
+  border-radius: 8px; /* Rounded corners */
   font-size: 14px;
   word-wrap: break-word;
   white-space: pre-wrap;
   color: #2e3338;
   line-height: 1.375rem;
   width: 100%;
-  border-left: none;
+  box-sizing: border-box;
+  transition: background-color 0.2s ease;
+}
+
+/* Improved message animations */
+.message-new {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { 
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Improved deletion states */
+.message.deleting-in-progress {
+  opacity: 0.6;
+  background-color: rgba(255, 68, 68, 0.1);
+}
+
+.message.deleting,
+.message-group.deleting {
+  pointer-events: none !important;
+  position: relative !important;
+  z-index: 1 !important;
+  opacity: 0 !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  overflow: hidden !important;
+  transition: all 0.3s ease !important;
+  min-height: 0 !important;
+  max-height: 0 !important;
+  transform: translateY(-10px) !important;
+}
+
+/* Ensure all child elements also collapse */
+.deleting * {
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  min-height: 0 !important;
+  max-height: 0 !important;
+}
+
+.message:hover {
+  background-color: #e3e5e8; /* Slightly darker on hover */
 }
 
 .message-wrapper {
-  padding: 2px 0;
-  border-radius: 8px;
+  padding: 0;
   display: block;
   width: 100%;
 }
@@ -116,13 +165,15 @@
   margin: 0;
   word-break: break-word;
   overflow-wrap: anywhere;
+  padding-right: 30px; /* Space for action icons */
 }
 
 /* Message actions */
 .message-actions {
   position: absolute;
-  top: -18px;
-  right: 0;
+  top: 50%;
+  right: 8px; /* Position to the right of each message */
+  transform: translateY(-50%); /* Center vertically */
   display: flex;
   gap: 4px;
   background-color: #ffffff;
@@ -133,6 +184,12 @@
   visibility: hidden;
   transition: all 0.1s ease;
   z-index: 10;
+}
+
+/* Show actions only when hovering the specific message */
+.message:hover .message-actions {
+  opacity: 1;
+  visibility: visible;
 }
 
 .message-action-btn {
@@ -178,7 +235,7 @@
   z-index: 1000;
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.2s ease, visibility 0.2s ease;
+  transition: opacity 0.25s ease, visibility 0.25s ease;
 }
 
 .delete-confirmation-modal.active {
@@ -193,8 +250,8 @@
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
   padding: 20px;
   text-align: center;
-  transform: scale(0.9);
-  transition: transform 0.2s ease;
+  transform: scale(0.95);
+  transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .delete-confirmation-modal.active .delete-confirmation-content {
@@ -223,7 +280,22 @@
   border-radius: 4px;
   font-size: 14px;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.delete-confirmation-btn:active {
+  transform: scale(0.95);
+}
+
+.delete-confirmation-btn:focus {
+  outline: 2px solid rgba(0, 0, 0, 0.2);
+}
+
+.delete-confirmation-btn.delete:disabled {
+  background-color: #ff8888;
+  cursor: not-allowed;
 }
 
 .delete-confirmation-btn.cancel {
@@ -341,7 +413,7 @@
   max-width: 400px;
   padding: 8px 12px;
   border-radius: 4px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -349,7 +421,8 @@
   pointer-events: auto;
   transform: translateY(20px);
   opacity: 0;
-  transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+              opacity 0.3s ease-out;
   font-size: 12px;
   animation: slideIn 0.3s ease-out forwards;
 }
@@ -411,4 +484,31 @@
   height: 2px;
   background-color: rgba(255, 255, 255, 0.7);
   transition: width linear;
+}
+
+/* Sending indicator animation */
+.sending-message-indicator {
+  display: flex;
+  justify-content: center;
+  padding: 8px;
+  opacity: 0.6;
+  animation: fadeIn 0.2s ease-out forwards;
+}
+
+.sending-dot {
+  width: 8px;
+  height: 8px;
+  margin: 0 3px;
+  background-color: #888;
+  border-radius: 50%;
+  animation: dotPulse 1.4s infinite ease-in-out;
+}
+
+.sending-dot:nth-child(1) { animation-delay: 0s; }
+.sending-dot:nth-child(2) { animation-delay: 0.2s; }
+.sending-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes dotPulse {
+  0%, 80%, 100% { transform: scale(0.6); opacity: 0.6; }
+  40% { transform: scale(1); opacity: 1; }
 }

@@ -1,0 +1,179 @@
+<div class="settings-container">
+    <div class="settings-header">
+        <h2>Settings</h2>
+        <button id="close-settings" class="close-settings-button" aria-label="Close settings">×</button>
+    </div>
+    
+    <!-- Fixed tab navigation bar -->
+    <div class="settings-tabs">
+        <button class="settings-tab-button" data-tab="interface">Interface</button>
+        <button class="settings-tab-button" data-tab="encryption">Encryption</button>
+        <button class="settings-tab-button" data-tab="macros">Macros</button>
+        <button class="settings-tab-button" data-tab="logs">Logs</button>
+        <button class="settings-tab-button" data-tab="general">General</button>
+    </div>
+    
+    <form id="settings-form">
+        <!-- Interface Tab -->
+        <div id="interface-tab" class="settings-tab-content">
+            <div class="settings-section">
+                <h3>Appearance</h3>
+                <div class="setting-item">
+                    <label for="theme-select">Theme</label>
+                    <select id="theme-select" class="settings-select">
+                        <option value="light">Light</option>
+                        <option value="dark">Dark</option>
+                        <option value="system">System Default</option>
+                    </select>
+                    <div class="setting-note" style="font-size: 0.8em; color: #888; margin-top: 5px;">
+                        Note: Theme selection is saved but not currently applied.
+                    </div>
+                </div>
+                <div class="setting-item">
+                    <label for="font-size">Font Size</label>
+                    <select id="font-size" class="settings-select">
+                        <option value="small">Small</option>
+                        <option value="medium">Medium</option>
+                        <option value="large">Large</option>
+                    </select>
+                </div>
+                <div class="setting-item">
+                    <label for="show-loading-animation">Show Loading Animation</label>
+                    <label class="switch">
+                        <input type="checkbox" id="show-loading-animation" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Encryption Tab -->
+        <div id="encryption-tab" class="settings-tab-content">
+            <div class="settings-section">
+                <h3>Message Encryption</h3>
+                <div class="setting-item">
+                    <label for="encryption-enabled">Enable End-to-End Encryption</label>
+                    <label class="switch">
+                        <input type="checkbox" id="encryption-enabled" disabled>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="settings-notice">
+                    <p>Encryption features will be available in a future update.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Macros Tab -->
+        <div id="macros-tab" class="settings-tab-content">
+            <div class="settings-section">
+                <h3>Message Macros</h3>
+                <div class="setting-item">
+                    <label for="macros-enabled">Enable Message Macros</label>
+                    <label class="switch">
+                        <input type="checkbox" id="macros-enabled" disabled>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="settings-notice">
+                    <p>Macro features will be available in a future update.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Logs Tab -->
+        <div id="logs-tab" class="settings-tab-content">
+            <div class="settings-section">
+                <h3>Application Logs</h3>
+                <div class="setting-item">
+                    <label for="log-level">Log Level</label>
+                    <select id="log-level" class="settings-select" disabled>
+                        <option value="error">Error</option>
+                        <option value="warn">Warning</option>
+                        <option value="info">Info</option>
+                        <option value="debug">Debug</option>
+                    </select>
+                </div>
+                <div class="settings-notice">
+                    <p>Advanced logging options will be available in a future update.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- General Tab -->
+        <div id="general-tab" class="settings-tab-content">
+            <div class="settings-section">
+                <h3>Notifications</h3>
+                <div class="setting-item">
+                    <label for="enable-notifications">Enable Notifications</label>
+                    <label class="switch">
+                        <input type="checkbox" id="enable-notifications">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="setting-item">
+                    <label for="notification-sound">Notification Sound</label>
+                    <label class="switch">
+                        <input type="checkbox" id="notification-sound">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="settings-section">
+                <h3>Chat</h3>
+                <div class="setting-item">
+                    <label for="send-key">Send messages with</label>
+                    <select id="send-key" class="settings-select">
+                        <option value="enter">Enter</option>
+                        <option value="ctrl-enter">Ctrl+Enter</option>
+                    </select>
+                </div>
+                <div class="setting-item">
+                    <label for="read-receipts">Show Read Receipts</label>
+                    <label class="switch">
+                        <input type="checkbox" id="read-receipts" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="setting-item">
+                    <label for="quick-delete">Quick Delete Messages</label>
+                    <label class="switch">
+                        <input type="checkbox" id="quick-delete">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+        
+        <div class="settings-footer">
+            <button type="button" id="reset-settings" class="settings-button">Reset to Default</button>
+            <button type="button" id="save-settings" class="settings-button primary">Save Settings</button>
+        </div>
+    </form>
+</div>
+
+<script type="module">
+    // Load the settings module directly in this file to ensure it's available
+    import('../js/settings.js')
+        .then(module => {
+            console.log('Settings module loaded in settings.html');
+            if (typeof module.initializeSettings === 'function') {
+                window.addEventListener('DOMContentLoaded', () => {
+                    setTimeout(module.initializeSettings, 100);
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error loading settings module in settings.html:', error);
+            // Try alternative path
+            import('./js/settings.js')
+                .then(module => {
+                    console.log('Settings module loaded via alternative path');
+                    if (typeof module.initializeSettings === 'function') {
+                        setTimeout(module.initializeSettings, 100);
+                    }
+                })
+                .catch(err => console.error('All attempts to load settings module failed:', err));
+        });
+</script>

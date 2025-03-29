@@ -1,7 +1,7 @@
 import webview, os, json, re, time, uuid, mimetypes, requests, urllib.parse
-from bpro.pronto import *
+from bpro.pronto import Pronto
 from bpro.systemcheck import *
-from bpro.readjson import *
+from bpro.readjson import ReadJSON
 import asyncio
 import threading
 import shutil
@@ -10,14 +10,21 @@ import tempfile
 import base64
 
 auth_path, chats_path, bubbles_path, loginTokenJSONPath, authTokenJSONPath, verificationCodeResponseJSONPath, settings_path, encryption_path, logs_path, settingsJSONPath, keysJSONPath, bubbleOverviewJSONPath, users_path = createappfolders()
+print(f"Settings JSON Path: {settingsJSONPath}")
+# Verify the directory exists
+if not os.path.exists(os.path.dirname(settingsJSONPath)):
+    print(f"Creating settings directory: {os.path.dirname(settingsJSONPath)}")
+    os.makedirs(os.path.dirname(settingsJSONPath), exist_ok=True)
 accesstoken = ""
-user_info = get_clientUserInfo(authTokenJSONPath)
+user_info = ReadJSON.get_clientUserInfo(authTokenJSONPath)
 userID = user_info["id"] if user_info else None
-print(f"User ID: {userID}")
+
+# Initialize Pronto instance
+pronto = Pronto()
 
 def getLocalAccesstoken():
     global accesstoken
-    accesstoken = getaccesstoken(authTokenJSONPath)
+    accesstoken = ReadJSON.getaccesstoken(authTokenJSONPath)
     if accesstoken:
         print(f"Access token retrieved successfully: {accesstoken[:5]}...{accesstoken[-5:]}") 
     else:
@@ -29,32 +36,14 @@ html_path = os.path.join(current_dir, 'frontend', 'html', 'chat.html')
 
 # Function to save response data to a file
 def save_response_to_file(response_data, file_path):
-    try:
-        with open(file_path, "w") as file:
-            json.dump(response_data, file, indent=4)
-    except Exception as e:
-        print(f"Error saving response to file: {e}")
+    ReadJSON.save_response_to_file(response_data, file_path)
 
 def getvalueLogin(file_path, value):
-    try:
-        with open(file_path, "r") as file:
-            data = json.load(file)
-            print(f"Loaded JSON data: {data}")  # Debugging statement
-            if "users" in data and len(data["users"]) > 0:
-                value = data["users"][0][value]
-                return value
-            else:
-                print("No users found in JSON data")
-                return None
-    except Exception as e:
-        print(f"Error reading JSON file: {e}")
-        return None
+    return ReadJSON.getvalueLogin(file_path, value)
 
 # Function to sanitize folder names
 def sanitize_folder_name(name):
     sanitized_name = re.sub(r'[<>:"/\\|?*]', '_', name)
-    # Comment out or remove the debug statement after verification
-    # print(f"Sanitized folder name: {sanitized_name}")  # Debug statement
     return sanitized_name
 
 def download_image(image_url, save_path, access_token):
@@ -115,7 +104,7 @@ class Api:
     def handle_email(self, email):
         if "stanford.edu" in email:
             self.email = email
-            response = requestVerificationEmail(email)
+            response = pronto.requestVerificationEmail(email)
             print("Response:", response)
             return "Email accepted"
         else:
@@ -123,7 +112,7 @@ class Api:
 
     def handle_verification_code(self, code):
         print("Verification code checked")
-        response = verification_code_to_login_token(self.email, code)
+        response = pronto.verification_code_to_login_token(self.email, code)
         if "ok" in response:
             print("Login token received")
         save_response_to_file(response, loginTokenJSONPath)
@@ -134,7 +123,7 @@ class Api:
         logintoken = getvalueLogin(loginTokenJSONPath, "logintoken")
         if logintoken:
             print(f"Login token found: {logintoken}")
-            response = login_token_to_access_token(logintoken)
+            response = pronto.login_token_to_access_token(logintoken)
             print(f"Access token response: {response}")
             if response:
                 save_response_to_file(response, f"{authTokenJSONPath}")
@@ -154,16 +143,14 @@ class Api:
             return None
 
     ## Dynamic Data Fetching
-    ## dynamic and local data fetching should be called at the same, possibly through a threading system,
-    ## although local data fetching is fast enough that this complexity may not be necessary
     def get_user_id(self):
-        user_info = get_clientUserInfo(authTokenJSONPath)
+        user_info = ReadJSON.get_clientUserInfo(authTokenJSONPath)
         return user_info["id"] if user_info else None
+
     def get_live_bubbles(self, *args):
-        response = getUsersBubbles(accesstoken)
+        response = pronto.getUsersBubbles(accesstoken)
         save_response_to_file(response, bubbleOverviewJSONPath)
-        ## function to make bubble folders for all the individual bubbles in the overview
-        create_bubble_folders(bubbleOverviewJSONPath, bubbles_path, sanitize_folder_name)
+        ReadJSON.create_bubble_folders(bubbleOverviewJSONPath, bubbles_path, sanitize_folder_name)
 
     def get_dynamicdetailed_messages(self, bubbleID):
         if not bubbleID:
@@ -171,7 +158,7 @@ class Api:
             return {"messages": []}
         print(f"Fetching detailed messages for bubble ID: {bubbleID}")
         try:
-            response = get_bubble_messages(accesstoken, bubbleID)
+            response = pronto.get_bubble_messages(accesstoken, bubbleID)
             if response is None or 'messages' not in response:
                 print("401 Unauthorized: Access token may be invalid or expired.")
                 raise Exception("401 Unauthorized")
@@ -418,36 +405,33 @@ class Api:
             return {"messages": []}
 
     ## Local JSON Fetching and Parsing
-    ## These functions should be called first to fetch the data from the local JSON files
-    ## while the dynamic data is also fetched
-
     def get_Localdms(self, *args):
         print("Fetching DMs")
-        dms = get_dms(bubbleOverviewJSONPath)
+        dms = ReadJSON.get_dms(bubbleOverviewJSONPath)
         print("DMs:", dms)
         return dms
 
     def get_Localcategorized_bubbles(self, *args):
         print("Fetching categorized bubbles")
-        categorized_bubbles = get_categorized_bubbles(bubbleOverviewJSONPath)
+        categorized_bubbles = ReadJSON.get_categorized_bubbles(bubbleOverviewJSONPath)
         print("Categorized Bubbles:", categorized_bubbles)
         return categorized_bubbles
 
     def get_Localuncategorized_bubbles(self, *args):
         print("Fetching uncategorized bubbles")
-        uncategorized_bubbles = get_uncategorized_bubbles(bubbleOverviewJSONPath)
+        uncategorized_bubbles = ReadJSON.get_uncategorized_bubbles(bubbleOverviewJSONPath)
         print("Uncategorized Bubbles:", uncategorized_bubbles)
         return uncategorized_bubbles
 
     def get_Localunread_bubbles(self, *args):
         print("Fetching unread bubbles")
-        unread_bubbles = get_unread_bubbles(bubbleOverviewJSONPath)
+        unread_bubbles = ReadJSON.get_unread_bubbles(bubbleOverviewJSONPath)
         print("Unread Bubbles:", unread_bubbles)
         return unread_bubbles
 
     def get_Localcategories(self, *args):
         print("Fetching categories")
-        categories = get_categories(bubbleOverviewJSONPath)
+        categories = ReadJSON.get_categories(bubbleOverviewJSONPath)
         print("Categories:", categories)
         return categories
 
@@ -455,22 +439,14 @@ class Api:
         print(f"Clicked on chat: {chat_name}, ID: {chat_id}")
 
     ## Sending data
-    ## such as updating bubbles
-    ## sending messages
-    ## updating profiles
-    ## possibly custom reactions
-    ##
-
     def send_message(self, bubbleID, message, userID, parentmessage_id=None):
         userID = [userID]
         print(f"Sending message to bubble ID {bubbleID}: {message}")
         created_at = time.time()
         unique_uuid = str(uuid.uuid4())
         try:
-            response = send_message_to_bubble(accesstoken, bubbleID, created_at, message, userID, unique_uuid, parentmessage_id=None)
+            response = pronto.send_message_to_bubble(accesstoken, bubbleID, created_at, message, userID, unique_uuid, parentmessage_id)
             print(f"Response: {response}")
-            
-            # If response is successful, return formatted response
             if isinstance(response, dict) and response.get('ok'):
                 return {
                     'ok': True,
@@ -490,22 +466,16 @@ class Api:
     def markBubbleAsRead(self, bubbleID, message_id=None):
         print(f"DEBUG: markBubbleAsRead called for bubble {bubbleID}, message_id: {message_id}")
         try:
-            # If message_id is not provided, get the most recent message
             if not message_id:
-                # Get messages for the bubble
-                bubble_messages = get_bubble_messages(accesstoken, bubbleID)
+                bubble_messages = pronto.get_bubble_messages(accesstoken, bubbleID)
                 if bubble_messages and 'messages' in bubble_messages and bubble_messages['messages']:
-                    # Get the most recent message ID
                     messages = bubble_messages['messages']
                     message_id = messages[0]['id']
                     print(f"DEBUG: Using most recent message ID: {message_id}")
                 else:
                     print("DEBUG: No messages found for the bubble, cannot mark as read")
                     return None
-            
-            # Call markBubble with the proper payload structure
-            print(f"DEBUG: Marking bubble as read with bubble_id: {bubbleID}, message_id: {message_id}")
-            response = markBubble(accesstoken, bubbleID, message_id=message_id)
+            response = pronto.markBubble(accesstoken, bubbleID, message_id=message_id)
             print(f"Marked bubble {bubbleID} as read with message ID {message_id}: {response}")
             return response
         except Exception as e:
@@ -514,26 +484,72 @@ class Api:
 
     def delete_message(self, messageID):
         try:
-            response = deleteMessage(accesstoken, messageID)
+            response = pronto.deleteMessage(accesstoken, messageID)
             print(f"Deleted message {messageID}: {response}")
-            
-            # Check if response is a dictionary and has an 'ok' key
             if isinstance(response, dict):
                 if response.get('ok'):
                     return {"ok": True, "response": response}
                 else:
-                    # Return the specific error message from the response
                     return {
                         "ok": False, 
                         "error": response.get('error', 'Unknown error occurred')
                     }
             else:
                 return {"ok": False, "error": "Invalid response format"}
-                
         except Exception as e:
             print(f"Error deleting message: {e}")
             return {"ok": False, "error": str(e)}
+
+    # Update the save_settings method to ensure proper JSON formatting and error handling
+    def save_settings(self, settings):
+        print(f"SETTINGS API: save_settings called with: {settings}")
+        try:
+            if not isinstance(settings, dict):
+                print(f"SETTINGS ERROR: Invalid settings format: {type(settings)}")
+                return {"ok": False, "error": "Invalid settings format"}
             
+            os.makedirs(os.path.dirname(settingsJSONPath), exist_ok=True)
+            
+            with open(settingsJSONPath, "w") as file:
+                json.dump(settings, file, indent=4)
+            
+            if os.path.exists(settingsJSONPath):
+                print(f"SETTINGS SUCCESS: File saved successfully.")
+                return {"ok": True, "message": "Settings saved successfully"}
+            else:
+                print("SETTINGS WARNING: File does not exist after save operation")
+                return {"ok": False, "error": "File save failed"}
+        except Exception as e:
+            print(f"SETTINGS ERROR: Error saving settings: {e}")
+            return {"ok": False, "error": str(e)}
+
+    def load_settings(self):
+        try:
+            if os.path.exists(settingsJSONPath) and os.path.getsize(settingsJSONPath) > 0:
+                with open(settingsJSONPath, "r") as file:
+                    data = json.load(file)
+                print(f"Settings loaded successfully: {data}")
+                return data
+            else:
+                print(f"Settings file not found or empty: {settingsJSONPath}")
+                default_settings = {
+                    "theme": "light",
+                    "fontSize": "medium",
+                    "enableNotifications": True,
+                    "notificationSound": True,
+                    "sendKey": "enter",
+                    "readReceipts": True,
+                    "quickDelete": False
+                }
+                self.save_settings(default_settings)
+                return default_settings
+        except json.JSONDecodeError as e:
+            print(f"Error parsing settings JSON: {e}")
+            return {"ok": False, "error": str(e)}
+        except Exception as e:
+            print(f"Error loading settings: {e}")
+            return {"ok": False, "error": str(e)}
+
 # Create an instance of the Api class with the accesstoken
 api = Api(accesstoken)
 # Create a webview window with the specified HTML file and API
@@ -541,12 +557,11 @@ window = webview.create_window(
     'Better Pronto Alpha',
     f'file://{html_path}',
     js_api=api,
-    text_select=True,  # Ensure text selection is enabled
-    width=1200,  # Set the width of the window
-    height=800,   # Set the height of the window
+    text_select=True,
+    width=1200,
+    height=800,
     easy_drag=True,
     maximized=True,
     zoomable=True,
 )
-
-webview.start(debug=False)
+webview.start(debug=True)
