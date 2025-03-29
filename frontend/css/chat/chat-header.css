@@ -1,0 +1,26 @@
+/* Styles for the chat header */
+.chat-header {
+    height: 50px; /* Match the height of the sidebar header */
+    padding: 10px;
+    background-color: #ddd;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: None;
+}
+
+.chat-header h3 {
+    margin: 0;
+    font-size: 18px;
+}
+
+.settings-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.settings-button:hover {
+    color: #007bff;
+}

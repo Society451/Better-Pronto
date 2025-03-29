@@ -1,0 +1,31 @@
+/* Styles for the message input area */
+.message-input {
+    display: flex;
+    padding: 10px;
+    background-color: #ddd;
+    border-top: 1px solid #ccc;
+}
+
+textarea#message-input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    resize: none;
+    font-size: 14px;
+}
+
+button#send-button {
+    margin-left: 10px;
+    padding: 10px;
+    border: none;
+    background-color: #007bff;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+button#send-button:hover {
+    background-color: #0056b3;
+}
