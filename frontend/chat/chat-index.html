@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Better Pronto</title>
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" href="../resources/images/BetterProntoLogo0.png">
-    <!-- Use relative paths for CSS references -->
-    <link rel="stylesheet" type="text/css" href="sidebar/sidebar.css">
-    <link rel="stylesheet" type="text/css" href="chat-header/chat-header.css">
-    <link rel="stylesheet" type="text/css" href="messages/messages.css">
-    <link rel="stylesheet" type="text/css" href="message-input/message-input.css">
+    <!-- Favicon with absolute path -->
+    <link rel="icon" type="image/png" href="/resources/images/BetterProntoLogo0.png">
+    <!-- Use absolute paths for CSS/JS references to work with the /chat/:id route -->
+    <link rel="stylesheet" type="text/css" href="/sidebar/sidebar.css">
+    <link rel="stylesheet" type="text/css" href="/chat-header/chat-header.css">
+    <link rel="stylesheet" type="text/css" href="/messages/messages.css">
+    <link rel="stylesheet" type="text/css" href="/message-input/message-input.css">
     <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
         * {
@@ -135,9 +135,9 @@
     </div>
 
     <!-- Load JavaScript files -->
-    <script src="sidebar/sidebar.js"></script>
-    <script src="chat-header/chat-header.js"></script>
-    <script src="messages/messages.js"></script>
-    <script src="message-input/message-input.js"></script>
+    <script src="/sidebar/sidebar.js"></script>
+    <script src="/chat-header/chat-header.js"></script>
+    <script src="/messages/messages.js"></script>
+    <script src="/message-input/message-input.js"></script>
 </body>
 </html>
