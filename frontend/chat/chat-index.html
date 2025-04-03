@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Better Pronto UI Update 2.0</title>
+    <!-- Use relative paths for CSS references -->
+    <link rel="stylesheet" type="text/css" href="sidebar/sidebar.css">
+    <link rel="stylesheet" type="text/css" href="chat-header/chat-header.css">
+    <link rel="stylesheet" type="text/css" href="messages/messages.css">
+    <link rel="stylesheet" type="text/css" href="message-input/message-input.css">
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        /* Layout styles for the chat app */
+        .chat-app {
+            display: grid;
+            grid-template-rows: auto 1fr auto; /* Header, messages, input field */
+            grid-template-columns: 25% 75%; /* Sidebar and main chat area */
+            height: 100vh; /* Full viewport height */
+            overflow: hidden; /* Prevent overflow */
+        }
+
+        /* Sidebar spans the first column and all three rows */
+        #sidebar-container {
+            grid-row: 1 / span 3;
+            grid-column: 1;
+            border-right: 1px solid #ddd;
+            background-color: #f4f4f4;
+            overflow-y: auto;
+        }
+
+        /* Chat header spans the top row of the second column */
+        #chat-header-container {
+            grid-row: 1;
+            grid-column: 2;
+            border-bottom: 1px solid #ddd;
+            background-color: #ddd;
+        }
+
+        /* Messages area spans the middle row of the second column */
+        #messages-container {
+            grid-row: 2;
+            grid-column: 2;
+            overflow-y: auto;
+            background-color: #f9f9f9;
+        }
+
+        /* Input field spans the bottom row of the second column */
+        #message-input-container {
+            grid-row: 3;
+            grid-column: 2;
+            border-top: 1px solid #ddd;
+            background-color: #ddd;
+        }
+        
+        /* Adjust sidebar header to fit search bar */
+        .sidebar-header {
+            padding: 8px !important;
+            flex-wrap: wrap !important;
+            height: auto !important;
+            min-height: 50px;
+        }
+        
+        /* Responsive adjustments for smaller screens */
+        @media (max-width: 768px) {
+            .chat-app {
+                grid-template-columns: 30% 70%;
+            }
+            
+            .search-container {
+                margin: 5px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-app">
+        <!-- Sidebar -->
+        <div id="sidebar-container">
+            <div class="sidebar">
+                <div class="sidebar-header">
+                    <button class="toggle-search-button" title="Search Chats">
+                        <i class="fas fa-search"></i>
+                    </button>
+                    <div class="search-container">
+                        <input type="text" id="chat-search" placeholder="Search chats..." aria-label="Search chats">
+                        <button class="clear-search-btn" id="clear-search" title="Clear search">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="chat-list" id="chat-list">
+                    <!-- Chat items will be populated dynamically via JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Header -->
+        <div id="chat-header-container">
+            <!-- Will be populated by JavaScript -->
+        </div>
+
+        <!-- Messages Area -->
+        <div id="messages-container">
+            <div class="messages" id="messages">
+                <!-- Message content will be populated dynamically by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Message Input -->
+        <div id="message-input-container">
+            <div class="message-input">
+                <textarea id="message-input" placeholder="Type a message..."></textarea>
+                <button id="send-button" title="Send Message">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load JavaScript files -->
+    <script src="sidebar/sidebar.js"></script>
+    <script src="chat-header/chat-header.js"></script>
+    <script src="messages/messages.js"></script>
+    <script src="message-input/message-input.js"></script>
+</body>
+</html>

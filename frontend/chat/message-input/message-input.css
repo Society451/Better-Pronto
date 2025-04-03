@@ -1,0 +1,120 @@
+/* Styles for the message input area */
+.message-input {
+    display: flex;
+    padding: 10px;
+    background-color: #f2f2f2;
+    border-top: 1px solid #ddd;
+    align-items: flex-end;
+}
+
+/* Control buttons container */
+.message-input-controls {
+    display: flex;
+    margin-right: 8px;
+}
+
+.control-button {
+    background: none;
+    border: none;
+    color: #555;
+    font-size: 16px;
+    padding: 8px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.control-button:hover {
+    background-color: #e0e0e0;
+    color: #333;
+}
+
+/* Text input wrapper */
+.text-input-wrapper {
+    position: relative;
+    flex: 1;
+    margin: 0 5px;
+}
+
+textarea#message-input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    resize: none;
+    font-size: 14px;
+    line-height: 1.4;
+    font-family: inherit;
+    max-height: 120px;
+    min-height: 44px;
+    transition: border-color 0.2s;
+}
+
+textarea#message-input:focus {
+    outline: none;
+    border-color: #007bff;
+}
+
+/* Character counter */
+.character-counter {
+    position: absolute;
+    right: 12px;
+    bottom: 8px;
+    font-size: 11px;
+    color: #999;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.text-input-wrapper:focus-within .character-counter {
+    opacity: 1;
+}
+
+.character-counter.limit-near {
+    color: #ff9800;
+}
+
+.character-counter.limit-reached {
+    color: #f44336;
+}
+
+/* Send button */
+button#send-button {
+    margin-left: 8px;
+    width: 44px;
+    height: 44px;
+    border: none;
+    background-color: #007bff;
+    color: white;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.2s, transform 0.1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+button#send-button:hover {
+    background-color: #0056b3;
+}
+
+button#send-button:active {
+    transform: scale(0.95);
+}
+
+/* Disabled state for send button */
+button#send-button.disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+/* Add transition for placeholder */
+textarea#message-input::placeholder {
+    transition: opacity 0.2s;
+}
+
+textarea#message-input:focus::placeholder {
+    opacity: 0.5;
+}
