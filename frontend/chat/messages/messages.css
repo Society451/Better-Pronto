@@ -1,0 +1,347 @@
+/* Styles for the messages area */
+.messages {
+    flex: 1;
+    padding: 10px;
+    overflow-y: auto;
+    background-color: #f9f9f9;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Messages wrapper - container for all messages */
+.messages-wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    min-height: 100%;
+    width: 100%;
+}
+
+/* Message container styling - Discord-like layout */
+.message-container {
+    display: flex;
+    margin-bottom: 2px; /* Reduced spacing between messages from same user */
+    max-width: 100%;
+    padding: 4px 16px; /* Padding similar to Discord */
+    border-radius: 0; /* Discord doesn't use rounded corners for messages */
+}
+
+.message-container:hover {
+    background-color: rgba(0,0,0,0.02); /* Light highlight on hover like Discord */
+}
+
+/* Group messages from the same user */
+.message-container.continuation {
+    margin-top: -4px; /* Negative margin to bring consecutive messages closer */
+    padding-top: 0;
+}
+
+.message-container.continuation .profile-picture {
+    visibility: hidden; /* Hide profile pic for continuation messages */
+}
+
+/* Discord-like user message grouping */
+.message-container.new-group {
+    margin-top: 16px; /* Add spacing between different user message groups */
+}
+
+/* Profile picture styles */
+.message-container .profile-picture {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #ddd; /* Default background for empty profile pics */
+    margin-right: 16px;
+    flex-shrink: 0; /* Prevent the profile picture from shrinking */
+    align-self: flex-start; /* Align to the top of the message */
+    position: relative; /* For positioning status indicator */
+    overflow: hidden; /* Contain the image */
+}
+
+/* Profile image within profile picture container */
+.profile-picture .profile-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Make sure image covers the container properly */
+    border-radius: 50%; /* Keep the circular shape */
+}
+
+/* Profile initials styling */
+.profile-picture .profile-initials {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+    text-transform: uppercase;
+    border-radius: 50%;
+}
+
+/* Message content styles - Discord-like */
+.message-content {
+    background-color: transparent; /* Discord doesn't use background colors for messages */
+    padding: 0; /* Remove padding */
+    position: relative;
+    flex: 1;
+    word-break: break-word; /* Break long words */
+    overflow-wrap: break-word; /* Better wrapping for URLs */
+    max-width: calc(100% - 56px); /* Account for profile picture width */
+}
+
+/* Discord-like styling for sent vs received */
+.message-container.sent {
+    flex-direction: row; /* Keep same direction for all messages */
+    justify-content: flex-start; /* Always align to start */
+}
+
+/* Styles for the message header - Discord style */
+.message-header {
+    display: flex; /* Use Flexbox to align items horizontally */
+    align-items: baseline; /* Better alignment of sender name and timestamp */
+    margin-bottom: 4px; /* Small spacing to message content */
+}
+
+.sender {
+    font-weight: 600; /* Discord uses semi-bold for usernames */
+    font-size: 16px; /* Discord user names are slightly larger */
+    color: #000; /* Black color for all sender names */
+    margin-right: 8px; /* Space between name and timestamp */
+}
+
+.timestamp {
+    font-size: 0.7rem; /* Smaller font size for timestamp */
+    color: #72767d; /* Discord's timestamp color */
+}
+
+/* Message text with better text wrapping */
+.message-content p {
+    margin: 0; /* Remove default margins */
+    line-height: 1.4; /* Better line height for readability */
+    color: #2e3338; /* Discord-like text color */
+    font-size: 15px; /* Standard Discord font size */
+    white-space: pre-wrap; /* Preserve whitespace and wrap */
+}
+
+/* Delete button styling - positioned on hover like Discord */
+.message-delete-btn {
+    opacity: 0; /* Hidden by default */
+    position: absolute;
+    right: -16px;
+    top: 0;
+    background: transparent;
+    border: none;
+    color: #72767d; /* Discord's icon color */
+    cursor: pointer;
+    transition: opacity 0.2s, color 0.2s;
+    padding: 3px;
+    font-size: 14px;
+    border-radius: 4px;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.message-container:hover .message-delete-btn {
+    opacity: 0.8; /* Show on hover */
+}
+
+.message-delete-btn:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+    color: #000;
+    opacity: 1;
+}
+
+.message-delete-btn.delete-active {
+    color: #f04747; /* Discord's red color */
+    opacity: 1;
+}
+
+/* Status indicator within profile picture */
+.status-indicator {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid #f9f9f9; /* Match parent background */
+}
+
+.status-online {
+    background-color: #43b581; /* Discord green for online */
+}
+
+.status-offline {
+    background-color: #747f8d; /* Discord grey for offline */
+    opacity: 0.7;
+}
+
+/* Loading state and empty state styling */
+.messages-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #777;
+}
+
+.loading-spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #7289da; /* Discord color */
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 15px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.no-messages-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+.empty-state {
+    text-align: center;
+    color: #72767d; /* Discord's secondary text color */
+    padding: 20px;
+}
+
+.empty-state i {
+    font-size: 50px;
+    margin-bottom: 15px;
+    opacity: 0.5;
+}
+
+.empty-state p {
+    margin: 5px 0;
+    font-size: 16px;
+}
+
+.empty-state .hint {
+    font-size: 14px;
+    opacity: 0.7;
+}
+
+/* Message deletion animation */
+.message-container.deleting {
+    opacity: 0;
+    height: 0;
+    margin: 0;
+    padding: 0;
+    transition: opacity 0.3s, height 0.3s, margin 0.3s, padding 0.3s;
+}
+
+/* Date separator for message groups */
+.date-separator {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 16px 0;
+    text-align: center;
+}
+
+.date-separator .date-line {
+    flex-grow: 1;
+    height: 1px;
+    background-color: #dcddde; /* Discord's divider color */
+}
+
+.date-separator .date-text {
+    padding: 0 15px;
+    font-size: 12px;
+    color: #72767d; /* Discord's secondary text color */
+    background-color: #f9f9f9;
+}
+
+/* Discord-style mention formatting */
+.mention {
+    background-color: rgba(114, 137, 218, 0.1);
+    color: #7289da;
+    padding: 0 2px;
+    border-radius: 3px;
+}
+
+/* Code block styling */
+.code-block {
+    background-color: #2f3136;
+    color: #dcddde;
+    padding: 8px;
+    border-radius: 4px;
+    font-family: 'Consolas', 'Monaco', monospace;
+    white-space: pre;
+    overflow-x: auto;
+    margin: 6px 0;
+}
+
+/* Inline code styling */
+.inline-code {
+    background-color: #2f3136;
+    color: #dcddde;
+    padding: 0 4px;
+    border-radius: 3px;
+    font-family: 'Consolas', 'Monaco', monospace;
+}
+
+/* Reactions styling like Discord */
+.reactions-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 4px;
+}
+
+.reaction {
+    background-color: rgba(0, 0, 0, 0.05);
+    padding: 0 6px;
+    border-radius: 4px;
+    font-size: 16px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.reaction:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.reaction::after {
+    content: attr(data-count);
+    font-size: 12px;
+    margin-left: 4px;
+    color: #72767d;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .message-content {
+        max-width: calc(100% - 46px);
+    }
+    
+    .message-container .profile-picture {
+        width: 32px;
+        height: 32px;
+        margin-right: 12px;
+    }
+    
+    .sender {
+        font-size: 14px;
+    }
+    
+    .message-content p {
+        font-size: 14px;
+    }
+}

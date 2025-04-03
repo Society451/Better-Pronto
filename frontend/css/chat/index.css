@@ -1,8 +1,0 @@
-/* Main CSS file that imports all component styles */
-@import 'layout.css';
-@import 'sidebar.css';
-@import 'messages.css';
-@import 'inputs.css';
-@import 'search.css';
-@import 'animations.css';
-@import '../settings.css';

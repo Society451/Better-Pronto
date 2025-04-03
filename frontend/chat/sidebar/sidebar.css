@@ -1,0 +1,566 @@
+/* Styles for the sidebar */
+.sidebar {
+    width: 100%; /* Take full width of container */
+    height: 100%; /* Take full height of container */
+    background-color: #f4f4f4;
+    border-right: 1px solid #ddd;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Prevent sidebar from causing horizontal scrollbars */
+}
+
+.sidebar-header {
+    min-height: 50px; /* Set minimum height */
+    padding: 8px;
+    background-color: #ddd;
+    display: flex;
+    justify-content: flex-end; /* Changed to align items to the right */
+    align-items: center;
+    border-bottom: 1px solid #ccc;
+    position: relative; /* Added for absolute positioning of children */
+    flex-shrink: 0; /* Prevent header from shrinking */
+    gap: 8px; /* Add spacing between buttons */
+}
+
+/* Collapse all button */
+.collapse-all-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    color: #555;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.3s ease, background-color 0.3s ease, transform 0.3s ease;
+}
+
+.collapse-all-button:hover {
+    background-color: #ccc;
+    transform: scale(1.05);
+}
+
+.collapse-all-button.active {
+    color: #007bff;
+    transform: rotate(180deg);
+}
+
+/* Search toggle button positioned on the right */
+.toggle-search-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    color: #555;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2; /* Ensure button stays above the search box */
+    transition: color 0.3s ease, background-color 0.3s ease, transform 0.3s ease; /* Added transform for better feedback */
+}
+
+.toggle-search-button:hover {
+    background-color: #ccc;
+    transform: scale(1.05); /* Slight scale effect on hover */
+}
+
+.toggle-search-button.active {
+    color: #007bff;
+    transform: rotate(90deg); /* Rotate when active for better visual feedback */
+}
+
+/* Title styling */
+.sidebar-header h2 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 500;
+    margin-right: auto; /* Push to the left, away from search button */
+}
+
+/* Search container styles with improved animation */
+.search-container {
+    position: absolute;
+    top: 50%;
+    right: 45px; /* Position to the left of the search button */
+    transform: translateY(-50%); /* Center vertically */
+    width: 0; /* Start with no width */
+    opacity: 0;
+    visibility: hidden; /* Hide completely when inactive */
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Use a more dynamic easing function */
+    overflow: hidden; /* Hide content when collapsed */
+    z-index: 1;
+}
+
+.search-container.active {
+    width: calc(100% - 100px); /* Expand to full width minus padding and buttons */
+    opacity: 1;
+    visibility: visible;
+}
+
+#chat-search {
+    width: 100%;
+    padding: 8px 30px 8px 10px;
+    border: 1px solid #ccc;
+    border-radius: 15px;
+    font-size: 14px;
+    background-color: #fff;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease; /* Smooth transition */
+}
+
+#chat-search:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.4); /* Slightly stronger glow effect */
+}
+
+/* Clear button styles with improved animation */
+.clear-search-btn {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #999;
+    cursor: pointer;
+    padding: 0;
+    width: 16px;
+    height: 16px;
+    text-align: center;
+    line-height: 1;
+    opacity: 0;
+    visibility: hidden; /* Hide completely when inactive */
+    transition: opacity 0.2s ease, color 0.2s ease, transform 0.2s ease; /* Added transform for feedback */
+}
+
+.clear-search-btn:hover {
+    color: #555;
+    transform: translateY(-50%) scale(1.2); /* Scale effect on hover */
+}
+
+.search-container.active .clear-search-btn {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Show clear button when input has content */
+.search-container.has-content .clear-search-btn {
+    display: block;
+    opacity: 1;
+    visibility: visible;
+}
+
+/* No results message */
+.no-results {
+    padding: 15px;
+    text-align: center;
+    color: #777;
+    font-style: italic;
+}
+
+/* Completely restructured chat list with proper scrolling */
+.chat-list {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 5px 0; /* Add some padding at top and bottom */
+    scrollbar-width: thin; /* For Firefox */
+    scrollbar-color: #aaa #f4f4f4; /* For Firefox */
+    box-sizing: border-box;
+}
+
+/* Custom scrollbar styling for WebKit browsers */
+.chat-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.chat-list::-webkit-scrollbar-track {
+    background: #f4f4f4;
+}
+
+.chat-list::-webkit-scrollbar-thumb {
+    background: #aaa;
+    border-radius: 3px;
+}
+
+.chat-list::-webkit-scrollbar-thumb:hover {
+    background: #888;
+}
+
+/* Styles for chat categories - fix layout issues */
+.chat-category {
+    margin-bottom: 8px; /* Increased space between categories */
+    background-color: transparent;
+    display: block;  /* Change to block to fix layout issues */
+    width: 100%;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    position: relative; /* Added for z-index context */
+    z-index: 1; /* Base z-index for category */
+}
+
+.category-header {
+    display: flex;
+    align-items: center;
+    padding: 8px 10px;
+    background-color: #e5e5e5;
+    cursor: pointer;
+    user-select: none;
+    border-bottom: 1px solid #ddd;
+    transition: background-color 0.2s ease;
+    position: relative; /* Create new stacking context */
+    z-index: 5; /* Lower than chat items but higher than general content */
+}
+
+.category-header:hover {
+    background-color: #ddd;
+}
+
+.category-header i {
+    margin-right: 8px;
+    transition: transform 0.2s ease;
+    width: 16px;
+    text-align: center;
+}
+
+.category-title {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #444;
+    flex: 1;
+}
+
+/* Fixed category items container */
+.category-items {
+    max-height: none; /* Remove max height limitation */
+    overflow: visible; /* Important - allow content to overflow for dropdowns */
+    display: block; /* Important - ensures elements stack properly */
+    width: 100%;
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+    background-color: #f4f4f4;
+    opacity: 1;
+    position: relative; /* Make this a positioning context */
+    z-index: 2; /* Above category */
+}
+
+.category-items.collapsed {
+    max-height: 0;
+    overflow: hidden;
+    display: none;
+    opacity: 0;
+}
+
+/* Chat item styling for better separation */
+.chat-item {
+    padding: 10px;
+    border-bottom: 1px solid #e0e0e0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    position: relative;
+    transition: background-color 0.2s ease;
+    background-color: #f9f9f9;
+    margin: 0;
+    z-index: 10; /* Base z-index for chat items */
+}
+
+.chat-item:hover {
+    background-color: #eaeaea;
+}
+
+.chat-item.selected {
+    background-color: #e0e0e0;
+    border-left: 3px solid #007bff;
+}
+
+/* Ensure dropdown stays on top when hovered */
+.chat-item:hover .dropdown {
+    z-index: 600;
+}
+
+/* Enhanced profile picture styles */
+.profile-picture {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #ddd; /* Default background color */
+    margin-right: 10px;
+    flex-shrink: 0;
+    position: relative; /* For status indicator */
+    overflow: hidden; /* Contain the image within rounded shape */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* Actual profile image styling */
+.profile-picture img.profile-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Ensures image covers the container while maintaining aspect ratio */
+    border-radius: 50%;
+}
+
+/* Profile initials styling */
+.profile-picture .profile-initials {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+    text-transform: uppercase;
+    border-radius: 50%;
+}
+
+/* Status indicator */
+.status-indicator {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid #f4f4f4; /* Match parent background */
+    z-index: 1; /* Ensure it's above the profile picture */
+}
+
+.status-online {
+    background-color: #4CAF50; /* Green for online */
+}
+
+.status-offline {
+    background-color: #ccc; /* Grey for offline */
+    opacity: 0.7;
+}
+
+/* Chat content styles */
+.chat-content {
+    flex: 1;
+    overflow: hidden;
+    text-align: left; /* Left-align the chat name instead of center */
+    min-width: 0; /* Important for text overflow to work */
+}
+
+.chat-name {
+    font-weight: bold;
+    margin-bottom: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.chat-preview {
+    font-size: 12px;
+    color: #777;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Dropdown styles - improved to ensure visibility */
+.dropdown {
+    position: relative;
+    margin-left: 5px;
+    z-index: 500; /* Significantly higher z-index to ensure visibility */
+}
+
+.dropdown-trigger {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    color: #777;
+    transition: color 0.2s ease;
+}
+
+.dropdown-trigger:hover {
+    color: #333;
+}
+
+.dropdown-menu {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 5px); /* Position slightly below to prevent accidental closing */
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2); /* Stronger shadow for better visibility */
+    display: none;
+    min-width: 150px;
+    z-index: 999; /* Higher than dropdown button */
+    overflow: visible; /* Ensure content isn't clipped */
+}
+
+.dropdown-menu.active {
+    display: block;
+    animation: fadeIn 0.15s ease-in; /* Smooth animation */
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.dropdown-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 8px 12px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s;
+}
+
+.dropdown-item:hover {
+    background-color: #f5f5f5;
+}
+
+/* Highlight search results */
+.highlight {
+    background-color: #ffffa0;
+}
+
+/* Loading indicator */
+.loading-indicator {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    color: #777;
+}
+
+.loading-spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #3498db;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    animation: spin 1s linear infinite;
+    margin-right: 10px;
+}
+
+/* Updating indicator - appears when fetching live data */
+.updating-indicator {
+    text-align: center;
+    font-size: 12px;
+    color: #777;
+    padding: 8px;
+    margin-top: 5px;
+    border-top: 1px dashed #ddd;
+    background-color: #f9f9f9;
+    font-style: italic;
+    animation: pulse 1.5s infinite ease-in-out;
+}
+
+/* Toast notifications */
+#toast-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    pointer-events: none; /* Allow clicks to pass through */
+}
+
+.toast {
+    padding: 10px 15px;
+    margin: 5px 0;
+    border-radius: 4px;
+    color: white;
+    font-size: 14px;
+    max-width: 300px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    transform: translateX(100%);
+    opacity: 0;
+    transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+}
+
+.toast.show {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.toast-success {
+    background-color: #4CAF50;
+}
+
+.toast-info {
+    background-color: #2196F3;
+}
+
+.toast-warning {
+    background-color: #FF9800;
+}
+
+.toast-error {
+    background-color: #F44336;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+    0% { opacity: 0.5; }
+    50% { opacity: 1; }
+    100% { opacity: 0.5; }
+}
+
+/* Media queries for responsive design */
+@media (max-width: 768px) {
+    .sidebar-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .search-container {
+        width: 100%;
+        margin: 5px 0;
+        position: relative;
+        transform: none;
+        right: auto;
+        top: auto;
+        max-width: 100%;
+    }
+    
+    .toggle-search-button {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+    }
+
+    .collapse-all-button {
+        position: absolute;
+        top: 8px;
+        right: 45px;
+    }
+    
+    #toast-container {
+        bottom: 10px;
+        right: 10px;
+        max-width: 90%;
+    }
+    
+    .toast {
+        max-width: 100%;
+        font-size: 12px;
+    }
+    
+    .profile-picture {
+        width: 36px;
+        height: 36px;
+    }
+}
