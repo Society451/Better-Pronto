@@ -1,3 +1,13 @@
+### 03-17-25, 3:15:45 PM, CST
+[@Society451](https://github.com/Society451)
+
+- Backend Team:
+    - Migrated completely to Flask 
+    - Added auto navigation to proper localhost
+
+Frontend Team:
+    - Improved sidebar rendering of noticiations and mark as read
+
 ### 02-17-25, 4:42:10 PM, CST
 [@Society451](https://github.com/Society451)
 
