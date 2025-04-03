@@ -15,30 +15,61 @@ let collapsedCategories = {}; // Keep track of collapsed state
 let currentSelectedBubbleId = null;
 let allCategoriesCollapsed = false; // State for collapse all button
 
-// Check if pywebview API is available
-function checkApiAvailability() {
-    if (window.pywebview && window.pywebview.api) {
-        console.log('PyWebView API is available');
-        isApiAvailable = true;
-        loadInitialChatData();
-    } else {
-        console.log('PyWebView API not available yet, retrying in 500ms');
-        setTimeout(checkApiAvailability, 500);
+// Ensure the API object is initialized properly
+let api = {
+    get_Localdms: async () => {
+        const response = await fetch('/api/get_Localdms');
+        return response.ok ? response.json() : [];
+    },
+    get_Localcategorized_bubbles: async () => {
+        const response = await fetch('/api/get_Localcategorized_bubbles');
+        return response.ok ? response.json() : {};
+    },
+    get_Localuncategorized_bubbles: async () => {
+        const response = await fetch('/api/get_Localuncategorized_bubbles');
+        return response.ok ? response.json() : [];
+    },
+    get_Localunread_bubbles: async () => {
+        const response = await fetch('/api/get_Localunread_bubbles');
+        return response.ok ? response.json() : [];
+    },
+    get_Localcategories: async () => {
+        const response = await fetch('/api/get_Localcategories');
+        return response.ok ? response.json() : [];
     }
+};
+
+// Update API availability check to use Flask endpoints
+function checkApiAvailability() {
+    fetch('/api/methods')
+        .then(response => {
+            if (response.ok) {
+                console.log('Flask API is available');
+                isApiAvailable = true;
+                loadInitialChatData();
+            } else {
+                console.log('Flask API not available yet, retrying in 500ms');
+                setTimeout(checkApiAvailability, 500);
+            }
+        })
+        .catch(error => {
+            console.error('Error checking Flask API availability:', error);
+            setTimeout(checkApiAvailability, 500);
+        });
 }
 
-// Load initial chat data from local storage
+// Update loadInitialChatData to use the initialized API object
 async function loadInitialChatData() {
     try {
         console.log('Loading initial chat data from local storage...');
         
         // Load local data first (in parallel)
         const [dms, categorizedChats, uncategorizedChats, unreadChats, categoryList] = await Promise.all([
-            window.pywebview.api.get_Localdms(),
-            window.pywebview.api.get_Localcategorized_bubbles(),
-            window.pywebview.api.get_Localuncategorized_bubbles(),
-            window.pywebview.api.get_Localunread_bubbles(),
-            window.pywebview.api.get_Localcategories()
+            api.get_Localdms(),
+            api.get_Localcategorized_bubbles(),
+            api.get_Localuncategorized_bubbles(),
+            api.get_Localunread_bubbles(),
+            api.get_Localcategories()
         ]);
         
         // Store the data
@@ -76,17 +107,27 @@ async function fetchLiveBubbleData() {
         console.log('Fetching live bubble data...');
         
         // Call the API to get live bubbles data
-        await window.pywebview.api.get_live_bubbles();
+        const liveBubblesResponse = await fetch('/api/get_live_bubbles');
+        if (!liveBubblesResponse.ok) {
+            throw new Error(`Failed to fetch live bubbles: ${liveBubblesResponse.status}`);
+        }
         console.log('Live bubble data fetched and saved');
         
         // Reload data from local storage (which should now contain updated data)
-        const [dms, categorizedChats, uncategorizedChats, unreadChats, categoryList] = await Promise.all([
-            window.pywebview.api.get_Localdms(),
-            window.pywebview.api.get_Localcategorized_bubbles(),
-            window.pywebview.api.get_Localuncategorized_bubbles(),
-            window.pywebview.api.get_Localunread_bubbles(),
-            window.pywebview.api.get_Localcategories()
+        const [dmsResponse, categorizedChatsResponse, uncategorizedChatsResponse, unreadChatsResponse, categoryListResponse] = await Promise.all([
+            fetch('/api/get_Localdms'),
+            fetch('/api/get_Localcategorized_bubbles'),
+            fetch('/api/get_Localuncategorized_bubbles'),
+            fetch('/api/get_Localunread_bubbles'),
+            fetch('/api/get_Localcategories')
         ]);
+        
+        // Parse all the JSON responses
+        const dms = await dmsResponse.json();
+        const categorizedChats = await categorizedChatsResponse.json();
+        const uncategorizedChats = await uncategorizedChatsResponse.json();
+        const unreadChats = await unreadChatsResponse.json();
+        const categoryList = await categoryListResponse.json();
         
         // Update the data with fresh information
         directMessages = dms || [];
@@ -682,15 +723,18 @@ function handleDropdownAction(action, chatId) {
     switch (action) {
         case 'markAsRead':
             console.log(`Marking chat ${chatId} as read`);
-            if (window.pywebview.api.markBubbleAsRead) {
-                window.pywebview.api.markBubbleAsRead(chatId)
-                    .then(response => {
-                        console.log('Mark as read response:', response);
-                        // Refresh data after marking as read
-                        fetchLiveBubbleData();
-                    })
-                    .catch(error => console.error('Error marking as read:', error));
-            }
+            fetch('/api/markBubbleAsRead', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ bubbleId: chatId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Mark as read response:', data);
+                // Refresh data after marking as read
+                fetchLiveBubbleData();
+            })
+            .catch(error => console.error('Error marking as read:', error));
             break;
         case 'toggleMute':
             console.log(`Toggle mute for chat ${chatId}`);
@@ -785,8 +829,9 @@ async function loadBubbleMessages(bubbleId, chatName) {
         // Start timer for local messages
         const localStartTime = performance.now();
         
-        // Get local messages first
-        const localMessages = await window.pywebview.api.get_Localmessages(bubbleId);
+        // Get local messages first using fetch API
+        const localResponse = await fetch(`/api/get_Localmessages?bubbleID=${bubbleId}`);
+        const localMessages = await localResponse.json();
         
         // Calculate local fetch time
         const localFetchTime = performance.now() - localStartTime;
@@ -807,7 +852,8 @@ async function loadBubbleMessages(bubbleId, chatName) {
         
         // Then get dynamic (live) messages
         const dynamicStartTime = performance.now();
-        const dynamicMessages = await window.pywebview.api.get_dynamicdetailed_messages(bubbleId);
+        const dynamicResponse = await fetch(`/api/get_dynamicdetailed_messages?bubbleID=${bubbleId}`);
+        const dynamicMessages = await dynamicResponse.json();
         
         // Calculate dynamic fetch time
         const dynamicFetchTime = performance.now() - dynamicStartTime;

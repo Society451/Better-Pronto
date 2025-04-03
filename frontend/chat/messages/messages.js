@@ -566,31 +566,39 @@ document.addEventListener('DOMContentLoaded', function() {
         // If not already sending via API (we only have temp message object)
         if (!messageObj.user || messageObj.user.fullname === 'You' || messageObj.id.toString().startsWith('temp')) {
             // Send message via API if available
-            if (window.pywebview && window.pywebview.api && window.pywebview.api.send_message) {
-                const messageText = messageObj.message || messageObj.content;
-                
-                console.log(`Sending message to bubble ID ${currentChatId}: ${messageText}`);
-                
-                window.pywebview.api.send_message(currentChatId, messageText)
-                    .then(response => {
-                        console.log('Message sent via API:', response);
-                        
-                        if (response && response.ok && response.message) {
-                            // Update the temporary message with real data
-                            const tempMessageElement = messagesContainer.querySelector(`.message-container[data-message-id="${messageObj.id}"]`);
-                            if (tempMessageElement) {
-                                tempMessageElement.dataset.messageId = response.message.id;
-                            }
+            const messageText = messageObj.message || messageObj.content;
+            
+            console.log(`Sending message to bubble ID ${currentChatId}: ${messageText}`);
+            
+            // Update message sending logic to use Flask API
+            if (currentChatId && messageText) {
+                fetch(`/api/send_message`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ chatId: currentChatId, message: messageText })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Message sent via Flask API:', data);
+
+                    if (data && data.ok && data.message) {
+                        // Update the temporary message with real data
+                        const tempMessageElement = messagesContainer.querySelector(`.message-container[data-message-id="${messageObj.id}"]`);
+                        if (tempMessageElement) {
+                            tempMessageElement.dataset.messageId = data.message.id;
                         }
-                        
-                        // After successful send, refresh messages to get the proper message ID
-                        if (window.triggerMessagesRefresh) {
-                            window.triggerMessagesRefresh(currentChatId);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error sending message:', error);
-                    });
+                    }
+
+                    // After successful send, refresh messages to get the proper message ID
+                    if (window.triggerMessagesRefresh) {
+                        window.triggerMessagesRefresh(currentChatId);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error sending message via Flask API:', error);
+                });
             }
         }
         
