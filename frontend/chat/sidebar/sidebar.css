@@ -525,13 +525,14 @@
 .dropdown-menu {
     position: absolute;
     right: 0;
-    top: calc(100% + 5px); /* Position slightly below to prevent accidental closing */
+    top: 0; /* Will be positioned properly in JS */
     background-color: white;
     border: 1px solid #ddd;
     border-radius: 4px;
     box-shadow: 0 4px 8px rgba(0,0,0,0.2); /* Stronger shadow for better visibility */
     display: none;
     min-width: 150px;
+    width: max-content; /* Make sure the menu is wide enough for its content */
     z-index: 999; /* Higher than dropdown button */
     overflow: visible; /* Ensure content isn't clipped */
 }
@@ -539,6 +540,14 @@
 .dropdown-menu.active {
     display: block;
     animation: fadeIn 0.15s ease-in; /* Smooth animation */
+    z-index: 1000; /* Ensure above all other elements */
+}
+
+/* Context menu specific styling */
+.dropdown-menu.context-menu {
+    position: fixed; /* Fixed position relative to viewport */
+    width: 180px; /* Fixed width for context menus */
+    box-shadow: 0 6px 12px rgba(0,0,0,0.25); /* Stronger shadow for context menu */
 }
 
 @keyframes fadeIn {
@@ -556,6 +565,7 @@
     cursor: pointer;
     font-size: 14px;
     transition: background-color 0.2s;
+    white-space: nowrap; /* Prevent text wrapping */
 }
 
 .dropdown-item:hover {
@@ -656,7 +666,7 @@
     100% { opacity: 0.5; }
 }
 
-/* Unread badge styling - updated positioning */
+/* Unread badge styling - improved positioning and transition */
 .unread-badge {
     display: flex;
     align-items: center;
@@ -671,7 +681,7 @@
     box-sizing: border-box;
     font-weight: bold;
     position: absolute;
-    right: 10px; /* Position where the dropdown dots would be */
+    right: 10px; /* Position exactly where the dropdown would be */
     top: 50%;
     transform: translateY(-50%);
     transition: transform 0.2s ease, right 0.2s ease;

@@ -586,11 +586,17 @@ function escapeRegExp(string) {
 
 // Set up event listeners for dropdowns and chat items
 function setupEventListeners() {
-    // Toggle dropdown menu visibility
+    // Toggle dropdown menu visibility via three dots
     document.querySelectorAll('.dropdown-trigger').forEach(trigger => {
         trigger.addEventListener('click', function(e) {
             e.stopPropagation(); // Prevent event bubbling
-            toggleDropdown(this.nextElementSibling);
+            e.preventDefault();
+            
+            // Get the associated dropdown menu
+            const menu = this.nextElementSibling;
+            if (menu) {
+                showDropdownMenu(menu, e, false);
+            }
         });
     });
     
@@ -608,64 +614,157 @@ function setupEventListeners() {
             
             // Close dropdown
             const menu = this.closest('.dropdown-menu');
-            if (menu) menu.classList.remove('active');
+            if (menu) {
+                if (menu.classList.contains('context-menu')) {
+                    menu.remove();
+                } else {
+                    menu.classList.remove('active');
+                }
+            }
         });
     });
     
-    // Chat item click to select chat (and not show dropdown)
+    // Chat item click to select chat
     document.querySelectorAll('.chat-item').forEach(item => {
+        // Regular left click - select chat
         item.addEventListener('click', function(e) {
-            const chatId = this.dataset.id;
-            
-            // Only handle the dropdown if we're not clicking on it directly
+            // Only if we're not clicking on dropdown
             if (!e.target.closest('.dropdown')) {
-                // Select the chat
+                const chatId = this.dataset.id;
                 selectChat(chatId);
             }
         });
         
-        // Right click (context menu) to show dropdown
+        // Right click - show context menu
         item.addEventListener('contextmenu', function(e) {
             e.preventDefault(); // Prevent default context menu
+            e.stopPropagation(); // Stop propagation
+            
             const dropdown = this.querySelector('.dropdown-menu');
             if (dropdown) {
-                toggleDropdown(dropdown);
+                // Clone the dropdown and show it at cursor position
+                showDropdownMenu(dropdown, e, true);
             }
-            
-            // Also select the chat
-            const chatId = this.dataset.id;
-            selectChat(chatId);
         });
     });
 }
 
-// Helper function to toggle dropdown menus
-function toggleDropdown(menu) {
-    if (!menu) return;
-    
+/**
+ * Shows a dropdown menu either as a context menu at cursor position or in its default position
+ * @param {HTMLElement} menu - The dropdown menu element
+ * @param {Event} event - The triggering event
+ * @param {boolean} asContextMenu - Whether to show as context menu at cursor position
+ */
+function showDropdownMenu(menu, event, asContextMenu) {
     // First close all other dropdowns
     document.querySelectorAll('.dropdown-menu').forEach(item => {
-        if (item !== menu) {
+        if (item.classList.contains('context-menu')) {
+            item.remove();
+        } else if (item !== menu) {
             item.classList.remove('active');
         }
     });
     
-    // Toggle current dropdown with a slight delay to ensure proper rendering
-    setTimeout(() => {
-        menu.classList.toggle('active');
+    // If showing as context menu, clone and position at cursor
+    if (asContextMenu) {
+        const clonedMenu = menu.cloneNode(true);
+        clonedMenu.classList.add('context-menu');
         
-        // Ensure the menu is visible and not clipped
-        const rect = menu.getBoundingClientRect();
-        const viewportHeight = window.innerHeight;
+        // Add click listeners to dropdown items in the cloned menu
+        clonedMenu.querySelectorAll('.dropdown-item').forEach(menuItem => {
+            menuItem.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const action = this.dataset.action;
+                const chatId = this.dataset.chatId;
+                
+                // Handle the action
+                handleDropdownAction(action, chatId);
+                
+                // Remove the context menu
+                clonedMenu.remove();
+            });
+        });
         
-        // If menu would extend beyond viewport, position it above the trigger instead
-        if (rect.bottom > viewportHeight) {
-            menu.style.top = 'auto';
-            menu.style.bottom = '100%';
-            menu.style.marginBottom = '5px';
+        // Add to document body for absolute positioning
+        document.body.appendChild(clonedMenu);
+        
+        // Position menu to avoid going off screen
+        const menuWidth = 180; // Matching the CSS width
+        const menuHeight = clonedMenu.offsetHeight || 150; // Estimate height if not yet rendered
+        
+        // Calculate optimal position
+        let leftPos = event.clientX;
+        let topPos = event.clientY;
+        
+        // Adjust if would go off screen
+        if (leftPos + menuWidth > window.innerWidth) {
+            leftPos = window.innerWidth - menuWidth - 10;
         }
-    }, 0);
+        
+        if (topPos + menuHeight > window.innerHeight) {
+            topPos = window.innerHeight - menuHeight - 10;
+        }
+        
+        // Position and show
+        clonedMenu.style.left = `${leftPos}px`;
+        clonedMenu.style.top = `${topPos}px`;
+        clonedMenu.classList.add('active');
+        
+        // Add global click listener to close the context menu
+        setTimeout(() => {
+            const closeContextMenu = (evt) => {
+                if (!clonedMenu.contains(evt.target)) {
+                    clonedMenu.remove();
+                    document.removeEventListener('click', closeContextMenu);
+                }
+            };
+            document.addEventListener('click', closeContextMenu);
+        }, 0);
+    } else {
+        // Toggle normal dropdown
+        setTimeout(() => {
+            menu.classList.toggle('active');
+            
+            // Check if dropdown would go off screen
+            if (menu.classList.contains('active')) {
+                const rect = menu.getBoundingClientRect();
+                const viewportHeight = window.innerHeight;
+                const parentRect = menu.parentElement.getBoundingClientRect();
+                
+                // If menu would extend beyond viewport, position it above the trigger
+                if (rect.bottom > viewportHeight) {
+                    menu.style.top = 'auto';
+                    menu.style.bottom = '100%';
+                    menu.style.marginBottom = '5px';
+                } else {
+                    // Reset positioning if not needed
+                    menu.style.top = '';
+                    menu.style.bottom = '';
+                    menu.style.marginBottom = '';
+                }
+            }
+        }, 0);
+    }
 }
+
+// Improved global click handler to better manage dropdowns
+document.addEventListener('click', function(e) {
+    // Only close regular dropdowns if clicking outside any dropdown
+    if (!e.target.closest('.dropdown')) {
+        document.querySelectorAll('.dropdown-menu:not(.context-menu)').forEach(menu => {
+            menu.classList.remove('active');
+        });
+    }
+    
+    // Always close context menus when clicking anywhere
+    if (!e.target.closest('.dropdown-menu.context-menu')) {
+        document.querySelectorAll('.dropdown-menu.context-menu').forEach(menu => {
+            menu.remove();
+        });
+    }
+});
 
 // Function to toggle collapse state for all categories
 function toggleCollapseAll() {
@@ -1114,10 +1213,17 @@ function showToast(message, type = 'info', duration = 3000) {
 
 // Improved global click handler to better manage dropdowns
 document.addEventListener('click', function(e) {
-    // Only close dropdowns if clicking outside any dropdown
+    // Only close regular dropdowns if clicking outside any dropdown
     if (!e.target.closest('.dropdown')) {
-        document.querySelectorAll('.dropdown-menu').forEach(menu => {
+        document.querySelectorAll('.dropdown-menu:not(.context-menu)').forEach(menu => {
             menu.classList.remove('active');
+        });
+    }
+    
+    // Always close context menus when clicking anywhere
+    if (!e.target.closest('.dropdown-menu.context-menu')) {
+        document.querySelectorAll('.dropdown-menu.context-menu').forEach(menu => {
+            menu.remove();
         });
     }
 });
