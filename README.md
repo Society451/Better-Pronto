@@ -14,7 +14,7 @@ Documentation can be found at [this page here](https://society451.github.io/Bett
 - [@sage0sw](https://github.com/sage0sw) (Special thanks for designing our logo!)
 
 Dependencies:
-- `pywebview` 
+- `Flask` 
 
 ![Screenshot from 2025-01-16 19-08-30](https://github.com/user-attachments/assets/785d6bd6-0d9e-435d-bf7a-84c77823275d)
 
