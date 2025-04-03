@@ -50,7 +50,7 @@ api = Api(accesstoken)
 print("Available API methods:", dir(api))
 
 # Initialize Flask app
-app = Flask(__name__, static_folder='frontend/chat', static_url_path='/')
+app = Flask(__name__, static_folder='frontend', static_url_path='/')
 
 # Flag to track if browser has been opened
 browser_opened = False
@@ -68,6 +68,11 @@ def open_browser():
 # Serve the chat-index.html file
 @app.route('/')
 def index():
+    return send_from_directory('frontend/chat', 'chat-index.html')
+
+# Handle chat-specific routes
+@app.route('/chat/<chat_id>')
+def chat_route(chat_id):
     return send_from_directory('frontend/chat', 'chat-index.html')
 
 # API endpoints to match the functions in api class

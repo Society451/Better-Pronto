@@ -14,8 +14,18 @@ function initMessageInput() {
     
     // Auto-resize the textarea based on content
     function autoResizeTextarea() {
-        messageInput.style.height = 'auto'; // Reset height
-        messageInput.style.height = Math.min(messageInput.scrollHeight, 120) + 'px';
+        // Reset height to a minimal value to get correct scrollHeight measurement
+        messageInput.style.height = '0';
+        
+        // Set height to scrollHeight with a max limit
+        const maxHeight = 120;
+        const contentHeight = messageInput.scrollHeight;
+        
+        // Apply the new height, clamped to the maximum
+        messageInput.style.height = Math.min(contentHeight, maxHeight) + 'px';
+        
+        // Only show scrollbar when content exceeds max height
+        messageInput.style.overflowY = contentHeight > maxHeight ? 'auto' : 'hidden';
     }
     
     // Handle input for auto-resize and character count
@@ -39,16 +49,8 @@ function initMessageInput() {
             sendMessage();
         }
         
-        // Shortcuts for emoji (Ctrl+E) and attach (Ctrl+A)
-        if (e.ctrlKey || e.metaKey) {
-            if (e.key === 'e') {
-                e.preventDefault();
-                toggleEmojiPicker();
-            } else if (e.key === 'a') {
-                e.preventDefault();
-                openFileAttachment();
-            }
-        }
+        // After any keydown, ensure proper sizing
+        setTimeout(autoResizeTextarea, 0);
     });
     
     // Emoji button click
@@ -61,8 +63,8 @@ function initMessageInput() {
         attachButton.addEventListener('click', openFileAttachment);
     }
     
-    // Initial resize
-    autoResizeTextarea();
+    // Initial resize to ensure proper sizing on load
+    setTimeout(autoResizeTextarea, 0);
 }
 
 // Function to update character counter
@@ -203,7 +205,6 @@ function openFileAttachment() {
     fileInput.addEventListener('change', function(e) {
         if (e.target.files.length > 0) {
             // This would handle the file upload in a real application
-            alert(`Selected ${e.target.files.length} file(s). In a real app, these would be uploaded or attached to the message.`);
         }
     });
     

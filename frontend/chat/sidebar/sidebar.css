@@ -1,25 +1,25 @@
 /* Styles for the sidebar */
 .sidebar {
-    width: 100%; /* Take full width of container */
-    height: 100%; /* Take full height of container */
+    width: 100%;
+    height: 100%;
     background-color: #f4f4f4;
     border-right: 1px solid #ddd;
     display: flex;
     flex-direction: column;
-    overflow: hidden; /* Prevent sidebar from causing horizontal scrollbars */
+    overflow: hidden;
 }
 
 .sidebar-header {
-    min-height: 50px; /* Set minimum height */
+    min-height: 50px;
     padding: 8px;
     background-color: #ddd;
     display: flex;
-    justify-content: flex-end; /* Changed to align items to the right */
+    justify-content: flex-end;
     align-items: center;
     border-bottom: 1px solid #ccc;
-    position: relative; /* Added for absolute positioning of children */
-    flex-shrink: 0; /* Prevent header from shrinking */
-    gap: 8px; /* Add spacing between buttons */
+    position: relative;
+    flex-shrink: 0;
+    gap: 8px;
 }
 
 /* Collapse all button */
@@ -48,7 +48,7 @@
     transform: rotate(180deg);
 }
 
-/* Search toggle button positioned on the right */
+/* Search toggle button */
 .toggle-search-button {
     background: none;
     border: none;
@@ -61,18 +61,18 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 2; /* Ensure button stays above the search box */
-    transition: color 0.3s ease, background-color 0.3s ease, transform 0.3s ease; /* Added transform for better feedback */
+    z-index: 2;
+    transition: color 0.3s ease, background-color 0.3s ease, transform 0.3s ease;
 }
 
 .toggle-search-button:hover {
     background-color: #ccc;
-    transform: scale(1.05); /* Slight scale effect on hover */
+    transform: scale(1.05);
 }
 
 .toggle-search-button.active {
     color: #007bff;
-    transform: rotate(90deg); /* Rotate when active for better visual feedback */
+    transform: rotate(90deg);
 }
 
 /* Title styling */
@@ -80,25 +80,25 @@
     margin: 0;
     font-size: 1.2rem;
     font-weight: 500;
-    margin-right: auto; /* Push to the left, away from search button */
+    margin-right: auto;
 }
 
-/* Search container styles with improved animation */
+/* Search container styles */
 .search-container {
     position: absolute;
     top: 50%;
-    right: 45px; /* Position to the left of the search button */
-    transform: translateY(-50%); /* Center vertically */
-    width: 0; /* Start with no width */
+    right: 45px;
+    transform: translateY(-50%);
+    width: 0;
     opacity: 0;
-    visibility: hidden; /* Hide completely when inactive */
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Use a more dynamic easing function */
-    overflow: hidden; /* Hide content when collapsed */
+    visibility: hidden;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    overflow: hidden;
     z-index: 1;
 }
 
 .search-container.active {
-    width: calc(100% - 100px); /* Expand to full width minus padding and buttons */
+    width: calc(100% - 100px);
     opacity: 1;
     visibility: visible;
 }
@@ -110,16 +110,16 @@
     border-radius: 15px;
     font-size: 14px;
     background-color: #fff;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease; /* Smooth transition */
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 #chat-search:focus {
     outline: none;
     border-color: #007bff;
-    box-shadow: 0 0 5px rgba(0, 123, 255, 0.4); /* Slightly stronger glow effect */
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.4);
 }
 
-/* Clear button styles with improved animation */
+/* Clear button styles */
 .clear-search-btn {
     position: absolute;
     right: 8px;
@@ -135,23 +135,17 @@
     text-align: center;
     line-height: 1;
     opacity: 0;
-    visibility: hidden; /* Hide completely when inactive */
-    transition: opacity 0.2s ease, color 0.2s ease, transform 0.2s ease; /* Added transform for feedback */
+    visibility: hidden;
+    transition: opacity 0.2s ease, color 0.2s ease, transform 0.2s ease;
 }
 
 .clear-search-btn:hover {
     color: #555;
-    transform: translateY(-50%) scale(1.2); /* Scale effect on hover */
+    transform: translateY(-50%) scale(1.2);
 }
 
-.search-container.active .clear-search-btn {
-    opacity: 1;
-    visibility: visible;
-}
-
-/* Show clear button when input has content */
+.search-container.active .clear-search-btn,
 .search-container.has-content .clear-search-btn {
-    display: block;
     opacity: 1;
     visibility: visible;
 }
@@ -164,18 +158,18 @@
     font-style: italic;
 }
 
-/* Completely restructured chat list with proper scrolling */
+/* Chat list container */
 .chat-list {
     flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
-    padding: 5px 0; /* Add some padding at top and bottom */
-    scrollbar-width: thin; /* For Firefox */
-    scrollbar-color: #aaa #f4f4f4; /* For Firefox */
+    padding: 5px 0;
+    scrollbar-width: thin;
+    scrollbar-color: #aaa #f4f4f4;
     box-sizing: border-box;
 }
 
-/* Custom scrollbar styling for WebKit browsers */
+/* Custom scrollbar styling */
 .chat-list::-webkit-scrollbar {
     width: 6px;
 }
@@ -193,15 +187,15 @@
     background: #888;
 }
 
-/* Styles for chat categories - fix layout issues */
+/* Chat category styles */
 .chat-category {
-    margin-bottom: 8px; /* Increased space between categories */
+    margin-bottom: 8px;
     background-color: transparent;
-    display: block;  /* Change to block to fix layout issues */
+    display: block;
     width: 100%;
     border-bottom: 1px solid rgba(0,0,0,0.05);
-    position: relative; /* Added for z-index context */
-    z-index: 1; /* Base z-index for category */
+    position: relative;
+    z-index: 1;
 }
 
 .category-header {
@@ -213,8 +207,8 @@
     user-select: none;
     border-bottom: 1px solid #ddd;
     transition: background-color 0.2s ease;
-    position: relative; /* Create new stacking context */
-    z-index: 5; /* Lower than chat items but higher than general content */
+    position: relative;
+    z-index: 5;
 }
 
 .category-header:hover {
@@ -235,55 +229,42 @@
     flex: 1;
 }
 
-/* Fixed category items container */
 .category-items {
-    max-height: none; /* Remove max height limitation */
-    overflow: visible; /* Important - allow content to overflow for dropdowns */
-    display: block; /* Important - ensures elements stack properly */
+    max-height: none;
+    overflow: visible;
+    display: block;
     width: 100%;
     transition: max-height 0.3s ease, opacity 0.3s ease;
     background-color: #f4f4f4;
     opacity: 1;
-    position: relative; /* Make this a positioning context */
-    z-index: 2; /* Above category */
+    position: relative;
+    z-index: 2;
 }
 
 .category-items.collapsed {
     max-height: 0;
     overflow: hidden;
-    /* Remove display: none to allow transition to work properly */
     opacity: 0;
 }
 
-/* Add a specific style for the unread category to make it more distinct */
+/* Unread category styling */
 .chat-category[data-category-id="unread"] .category-header {
-    background-color: #ffebee; /* Light red background */
-    border-left: 3px solid #f44336; /* Red border */
-}
-
-.chat-category[data-category-id="unread"] .category-items {
-    border-left: 3px solid #ffcdd2; /* Lighter red border for the items container */
-}
-
-/* Enhance the unread category styling */
-.chat-category[data-category-id="unread"] .category-header {
-    background-color: #ffebee; /* Light red background */
-    border-left: 3px solid #f44336; /* Red border */
+    background-color: #e8e8e8;
+    border-left: 3px solid #888888;
     font-weight: bold;
 }
 
 .chat-category[data-category-id="unread"] .category-items {
-    border-left: 3px solid #ffcdd2; /* Lighter red border for the items container */
+    border-left: 3px solid #d8d8d8;
 }
 
-/* Make unread chat items stand out more */
 .chat-category[data-category-id="unread"] .chat-item {
-    background-color: #fff8e1; /* Light yellow background */
-    border-bottom: 1px solid #ffe0b2;
+    background-color: #f9f9f9;
+    border-bottom: 1px solid #e0e0e0;
 }
 
 .chat-category[data-category-id="unread"] .chat-item:hover {
-    background-color: #ffecb3; /* Slightly darker yellow on hover */
+    background-color: #eaeaea;
 }
 
 .chat-category[data-category-id="unread"] .chat-item .chat-preview {
@@ -291,7 +272,7 @@
     font-style: italic;
 }
 
-/* Chat item styling for better separation */
+/* Chat item styling */
 .chat-item {
     padding: 10px;
     border-bottom: 1px solid #e0e0e0;
@@ -302,7 +283,7 @@
     transition: background-color 0.2s ease;
     background-color: #f9f9f9;
     margin: 0;
-    z-index: 10; /* Base z-index for chat items */
+    z-index: 10;
 }
 
 .chat-item:hover {
@@ -314,36 +295,29 @@
     border-left: 3px solid #007bff;
 }
 
-/* Ensure dropdown stays on top when hovered */
-.chat-item:hover .dropdown {
-    z-index: 600;
-}
-
-/* Enhanced profile picture styles */
+/* Profile picture styles */
 .profile-picture {
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background-color: #ddd; /* Default background color */
+    background-color: #ddd;
     margin-right: 10px;
     flex-shrink: 0;
-    position: relative; /* For status indicator */
-    overflow: hidden; /* Contain the image within rounded shape */
+    position: relative;
+    overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
-/* Actual profile image styling */
 .profile-picture img.profile-img {
     width: 100%;
     height: 100%;
-    object-fit: cover; /* Ensures image covers the container while maintaining aspect ratio */
+    object-fit: cover;
     border-radius: 50%;
 }
 
-/* Profile initials styling */
 .profile-picture .profile-initials {
     width: 100%;
     height: 100%;
@@ -364,16 +338,16 @@
     width: 12px;
     height: 12px;
     border-radius: 50%;
-    border: 2px solid #f4f4f4; /* Match parent background */
-    z-index: 1; /* Ensure it's above the profile picture */
+    border: 2px solid #f4f4f4;
+    z-index: 1;
 }
 
 .status-online {
-    background-color: #4CAF50; /* Green for online */
+    background-color: #4CAF50;
 }
 
 .status-offline {
-    background-color: #ccc; /* Grey for offline */
+    background-color: #ccc;
     opacity: 0.7;
 }
 
@@ -381,8 +355,8 @@
 .chat-content {
     flex: 1;
     overflow: hidden;
-    text-align: left; /* Left-align the chat name instead of center */
-    min-width: 0; /* Important for text overflow to work */
+    text-align: left;
+    min-width: 0;
 }
 
 .chat-name {
@@ -401,11 +375,18 @@
     text-overflow: ellipsis;
 }
 
-/* Dropdown styles - improved to ensure visibility */
+/* Dropdown styles */
 .dropdown {
     position: relative;
     margin-left: 5px;
-    z-index: 500; /* Significantly higher z-index to ensure visibility */
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.chat-item:hover .dropdown {
+    opacity: 1;
+    z-index: 600;
 }
 
 .dropdown-trigger {
@@ -421,28 +402,29 @@
     color: #333;
 }
 
+/* Dropdown menu */
 .dropdown-menu {
-    position: absolute;
+    position: fixed;
     right: 0;
-    top: calc(100% + 5px); /* Position slightly below to prevent accidental closing */
+    top: 0;
     background-color: white;
     border: 1px solid #ddd;
     border-radius: 4px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2); /* Stronger shadow for better visibility */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     display: none;
-    min-width: 150px;
-    z-index: 999; /* Higher than dropdown button */
-    overflow: visible; /* Ensure content isn't clipped */
+    width: 180px;
+    z-index: 2000;
+    overflow: visible;
+    box-sizing: border-box;
 }
 
 .dropdown-menu.active {
     display: block;
-    animation: fadeIn 0.15s ease-in; /* Smooth animation */
+    animation: fadeIn 0.15s ease-in;
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-5px); }
-    to { opacity: 1; transform: translateY(0); }
+.dropdown-menu.context-menu {
+    box-shadow: 0 6px 12px rgba(0,0,0,0.25);
 }
 
 .dropdown-item {
@@ -455,10 +437,29 @@
     cursor: pointer;
     font-size: 14px;
     transition: background-color 0.2s;
+    white-space: nowrap;
+    box-sizing: border-box;
 }
 
 .dropdown-item:hover {
     background-color: #f5f5f5;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+    0% { opacity: 0.5; }
+    50% { opacity: 1; }
+    100% { opacity: 0.5; }
 }
 
 /* Highlight search results */
@@ -485,7 +486,7 @@
     margin-right: 10px;
 }
 
-/* Updating indicator - appears when fetching live data */
+/* Updating indicator */
 .updating-indicator {
     text-align: center;
     font-size: 12px;
@@ -507,7 +508,7 @@
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    pointer-events: none; /* Allow clicks to pass through */
+    pointer-events: none;
 }
 
 .toast {
@@ -528,34 +529,49 @@
     opacity: 1;
 }
 
-.toast-success {
-    background-color: #4CAF50;
+.toast-success { background-color: #4CAF50; }
+.toast-info { background-color: #2196F3; }
+.toast-warning { background-color: #FF9800; }
+.toast-error { background-color: #F44336; }
+
+/* Unread badge styling */
+.unread-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #888;
+    color: white;
+    font-size: 12px;
+    border-radius: 50%;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 4px;
+    box-sizing: border-box;
+    font-weight: bold;
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    transition: transform 0.2s ease, right 0.2s ease;
+    z-index: 499;
 }
 
-.toast-info {
-    background-color: #2196F3;
+.chat-item:hover .unread-badge {
+    right: 35px;
 }
 
-.toast-warning {
-    background-color: #FF9800;
+.unread-badge.mentions {
+    background-color: #e91e63;
 }
 
-.toast-error {
-    background-color: #F44336;
+.chat-content-with-badge {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    position: relative;
 }
 
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-@keyframes pulse {
-    0% { opacity: 0.5; }
-    50% { opacity: 1; }
-    100% { opacity: 0.5; }
-}
-
-/* Media queries for responsive design */
+/* Media queries */
 @media (max-width: 768px) {
     .sidebar-header {
         flex-direction: column;
