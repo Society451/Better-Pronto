@@ -612,25 +612,29 @@ function setupEventListeners() {
         });
     });
     
-    // Chat item click to either select chat or show dropdown
+    // Chat item click to select chat (and not show dropdown)
     document.querySelectorAll('.chat-item').forEach(item => {
         item.addEventListener('click', function(e) {
             const chatId = this.dataset.id;
             
-            // If it's a left click (button 0)
-            if (e.button === 0) {
-                if (!e.target.closest('.dropdown')) {
-                    // Get the dropdown menu for this chat item
-                    const dropdown = this.querySelector('.dropdown-menu');
-                    if (dropdown) {
-                        // Toggle dropdown visibility
-                        toggleDropdown(dropdown);
-                    }
-                }
-                
-                // Select the chat regardless
+            // Only handle the dropdown if we're not clicking on it directly
+            if (!e.target.closest('.dropdown')) {
+                // Select the chat
                 selectChat(chatId);
             }
+        });
+        
+        // Right click (context menu) to show dropdown
+        item.addEventListener('contextmenu', function(e) {
+            e.preventDefault(); // Prevent default context menu
+            const dropdown = this.querySelector('.dropdown-menu');
+            if (dropdown) {
+                toggleDropdown(dropdown);
+            }
+            
+            // Also select the chat
+            const chatId = this.dataset.id;
+            selectChat(chatId);
         });
     });
 }

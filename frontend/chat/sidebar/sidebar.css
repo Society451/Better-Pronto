@@ -656,7 +656,7 @@
     100% { opacity: 0.5; }
 }
 
-/* Unread badge styling */
+/* Unread badge styling - updated positioning */
 .unread-badge {
     display: flex;
     align-items: center;
@@ -671,15 +671,15 @@
     box-sizing: border-box;
     font-weight: bold;
     position: absolute;
-    right: 10px;
+    right: 10px; /* Position where the dropdown dots would be */
     top: 50%;
     transform: translateY(-50%);
     transition: transform 0.2s ease, right 0.2s ease;
-    z-index: 400;
+    z-index: 499; /* Just below the dropdown z-index */
 }
 
 .chat-item:hover .unread-badge {
-    right: 30px; /* Move to the left when hovering */
+    right: 35px; /* Move more to the left when hovering to fully reveal dropdown */
 }
 
 .unread-badge.mentions {
