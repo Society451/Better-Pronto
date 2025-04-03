@@ -691,7 +691,7 @@ function showDropdownMenu(menu, event, asContextMenu) {
         document.body.appendChild(clonedMenu);
         
         // Position menu to avoid going off screen
-        const menuWidth = 180; // Matching the CSS width
+        const menuWidth = 180; // Fixed width for consistency
         const menuHeight = clonedMenu.offsetHeight || 150; // Estimate height if not yet rendered
         
         // Calculate optimal position
@@ -723,38 +723,90 @@ function showDropdownMenu(menu, event, asContextMenu) {
             document.addEventListener('click', closeContextMenu);
         }, 0);
     } else {
-        // Toggle normal dropdown
-        setTimeout(() => {
-            menu.classList.toggle('active');
+        // For regular (three dots) dropdown menu, use fixed positioning relative to trigger button
+        const trigger = menu.previousElementSibling; // The dropdown trigger button
+        
+        // Get positions needed for calculations
+        const triggerRect = trigger.getBoundingClientRect();
+        
+        // Toggle activation state
+        menu.classList.toggle('active');
+        
+        if (menu.classList.contains('active')) {
+            // Clone menu and position it properly using fixed positioning
+            const clonedMenu = menu.cloneNode(true);
+            clonedMenu.classList.add('fixed-dropdown');
             
-            // Check if dropdown would go off screen
-            if (menu.classList.contains('active')) {
-                const rect = menu.getBoundingClientRect();
-                const viewportHeight = window.innerHeight;
-                const parentRect = menu.parentElement.getBoundingClientRect();
-                
-                // If menu would extend beyond viewport, position it above the trigger
-                if (rect.bottom > viewportHeight) {
-                    menu.style.top = 'auto';
-                    menu.style.bottom = '100%';
-                    menu.style.marginBottom = '5px';
-                } else {
-                    // Reset positioning if not needed
-                    menu.style.top = '';
-                    menu.style.bottom = '';
-                    menu.style.marginBottom = '';
-                }
+            // Add click listeners to dropdown items in the cloned menu
+            clonedMenu.querySelectorAll('.dropdown-item').forEach(menuItem => {
+                menuItem.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const action = this.dataset.action;
+                    const chatId = this.dataset.chatId;
+                    
+                    // Handle the action
+                    handleDropdownAction(action, chatId);
+                    
+                    // Close dropdown
+                    document.body.removeChild(clonedMenu);
+                    menu.classList.remove('active');
+                });
+            });
+            
+            // Add to document body for fixed positioning
+            document.body.appendChild(clonedMenu);
+            
+            // Calculate optimal position next to the trigger button
+            const leftPos = triggerRect.right - clonedMenu.offsetWidth;
+            const topPos = triggerRect.top;
+            
+            // Position the menu
+            clonedMenu.style.position = 'fixed';
+            clonedMenu.style.left = `${leftPos}px`;
+            clonedMenu.style.top = `${topPos}px`;
+            
+            // Store reference to the original menu for cleanup
+            clonedMenu.dataset.originalMenuId = menu.id || `menu-${Math.random().toString(36).substr(2, 9)}`;
+            if (!menu.id) {
+                menu.id = clonedMenu.dataset.originalMenuId;
             }
-        }, 0);
+            
+            // Add global click listener to close this dropdown
+            setTimeout(() => {
+                const closeDropdown = (evt) => {
+                    if (!clonedMenu.contains(evt.target) && !trigger.contains(evt.target)) {
+                        document.body.removeChild(clonedMenu);
+                        menu.classList.remove('active');
+                        document.removeEventListener('click', closeDropdown);
+                    }
+                };
+                document.addEventListener('click', closeDropdown);
+            }, 0);
+        } else {
+            // Remove any existing cloned menus for this dropdown
+            const existingClones = document.querySelectorAll('.fixed-dropdown');
+            existingClones.forEach(clone => {
+                if (clone.dataset.originalMenuId === menu.id) {
+                    document.body.removeChild(clone);
+                }
+            });
+        }
     }
 }
 
 // Improved global click handler to better manage dropdowns
 document.addEventListener('click', function(e) {
     // Only close regular dropdowns if clicking outside any dropdown
-    if (!e.target.closest('.dropdown')) {
+    if (!e.target.closest('.dropdown') && !e.target.closest('.fixed-dropdown')) {
         document.querySelectorAll('.dropdown-menu:not(.context-menu)').forEach(menu => {
             menu.classList.remove('active');
+        });
+        
+        // Remove any fixed-positioned dropdown clones
+        document.querySelectorAll('.fixed-dropdown').forEach(menu => {
+            document.body.removeChild(menu);
         });
     }
     
@@ -1214,9 +1266,14 @@ function showToast(message, type = 'info', duration = 3000) {
 // Improved global click handler to better manage dropdowns
 document.addEventListener('click', function(e) {
     // Only close regular dropdowns if clicking outside any dropdown
-    if (!e.target.closest('.dropdown')) {
+    if (!e.target.closest('.dropdown') && !e.target.closest('.fixed-dropdown')) {
         document.querySelectorAll('.dropdown-menu:not(.context-menu)').forEach(menu => {
             menu.classList.remove('active');
+        });
+        
+        // Remove any fixed-positioned dropdown clones
+        document.querySelectorAll('.fixed-dropdown').forEach(menu => {
+            document.body.removeChild(menu);
         });
     }
     

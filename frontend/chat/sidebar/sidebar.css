@@ -401,112 +401,44 @@
     text-overflow: ellipsis;
 }
 
-/* Dropdown styles - improved to ensure visibility */
-.dropdown {
-    position: relative;
-    margin-left: 5px;
-    z-index: 500; /* Significantly higher z-index to ensure visibility */
-    opacity: 0; /* Hide by default */
-    transition: opacity 0.2s ease, transform 0.2s ease;
-}
-
-.chat-item:hover .dropdown {
-    opacity: 1; /* Show on hover */
-}
-
-/* Enhanced profile picture styles */
-.profile-picture {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background-color: #ddd; /* Default background color */
-    margin-right: 10px;
-    flex-shrink: 0;
-    position: relative; /* For status indicator */
-    overflow: hidden; /* Contain the image within rounded shape */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
-
-/* Actual profile image styling */
-.profile-picture img.profile-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover; /* Ensures image covers the container while maintaining aspect ratio */
-    border-radius: 50%;
-}
-
-/* Profile initials styling */
-.profile-picture .profile-initials {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    font-size: 14px;
-    text-transform: uppercase;
-    border-radius: 50%;
-}
-
-/* Status indicator */
-.status-indicator {
+/* Improved dropdown menu styling with consistent width and positioning */
+.dropdown-menu {
     position: absolute;
-    bottom: 0;
     right: 0;
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    border: 2px solid #f4f4f4; /* Match parent background */
-    z-index: 1; /* Ensure it's above the profile picture */
+    top: 0; /* Will be positioned in JS */
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    display: none;
+    width: 180px; /* Fixed width for all dropdowns */
+    z-index: 1500; /* Higher z-index to ensure it's above everything */
+    overflow: visible;
+    box-sizing: border-box;
 }
 
-.status-online {
-    background-color: #4CAF50; /* Green for online */
+.dropdown-menu.active {
+    display: block;
+    animation: fadeIn 0.15s ease-in;
 }
 
-.status-offline {
-    background-color: #ccc; /* Grey for offline */
-    opacity: 0.7;
+/* Context menu specific styling */
+.dropdown-menu.context-menu {
+    position: fixed; /* Fixed position relative to viewport */
+    box-shadow: 0 6px 12px rgba(0,0,0,0.25); /* Stronger shadow for context menu */
 }
 
-/* Chat content styles */
-.chat-content {
-    flex: 1;
-    overflow: hidden;
-    text-align: left; /* Left-align the chat name instead of center */
-    min-width: 0; /* Important for text overflow to work */
-}
-
-.chat-name {
-    font-weight: bold;
-    margin-bottom: 3px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.chat-preview {
-    font-size: 12px;
-    color: #777;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-/* Dropdown styles - improved to ensure visibility */
+/* Ensure dropdown container is properly positioned */
 .dropdown {
     position: relative;
     margin-left: 5px;
-    z-index: 500; /* Significantly higher z-index to ensure visibility */
-    opacity: 0; /* Hide by default */
+    z-index: 1000; /* Higher z-index to ensure proper stacking */
+    opacity: 0;
     transition: opacity 0.2s ease;
 }
 
 .chat-item:hover .dropdown {
-    opacity: 1; /* Show on hover */
+    opacity: 1;
 }
 
 .dropdown-trigger {
@@ -522,39 +454,35 @@
     color: #333;
 }
 
+/* Improved dropdown menu positioning to prevent being cut off */
 .dropdown-menu {
     position: absolute;
     right: 0;
-    top: 0; /* Will be positioned properly in JS */
+    top: 0; /* Will be positioned in JS */
     background-color: white;
     border: 1px solid #ddd;
     border-radius: 4px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2); /* Stronger shadow for better visibility */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     display: none;
-    min-width: 150px;
-    width: max-content; /* Make sure the menu is wide enough for its content */
-    z-index: 999; /* Higher than dropdown button */
-    overflow: visible; /* Ensure content isn't clipped */
+    width: 180px; /* Fixed width for all dropdowns */
+    z-index: 2000; /* Very high z-index to ensure it's above everything */
+    overflow: visible;
+    box-sizing: border-box;
+    /* Fixed position to ensure it's not affected by scrolling */
+    position: fixed;
 }
 
 .dropdown-menu.active {
     display: block;
-    animation: fadeIn 0.15s ease-in; /* Smooth animation */
-    z-index: 1000; /* Ensure above all other elements */
+    animation: fadeIn 0.15s ease-in;
 }
 
 /* Context menu specific styling */
 .dropdown-menu.context-menu {
-    position: fixed; /* Fixed position relative to viewport */
-    width: 180px; /* Fixed width for context menus */
     box-shadow: 0 6px 12px rgba(0,0,0,0.25); /* Stronger shadow for context menu */
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-5px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
+/* Consistent dropdown item styling */
 .dropdown-item {
     display: block;
     width: 100%;
@@ -565,7 +493,8 @@
     cursor: pointer;
     font-size: 14px;
     transition: background-color 0.2s;
-    white-space: nowrap; /* Prevent text wrapping */
+    white-space: nowrap;
+    box-sizing: border-box;
 }
 
 .dropdown-item:hover {
