@@ -189,11 +189,25 @@ function renderSidebar(searchTerm = '') {
     // Render unread messages section if there are any
     const filteredUnreadBubbles = filterChatsBySearch(unreadBubbles, currentSearchTerm);
     if (filteredUnreadBubbles.length > 0) {
-        // Always make sure unread category is expanded unless in "all collapsed" mode
-        if (!allCategoriesCollapsed) {
-            collapsedCategories['unread'] = false;
+        // Process unread bubbles to ensure they have valid IDs
+        const processedUnreadBubbles = processUnreadBubbles(filteredUnreadBubbles);
+        
+        // Make sure the unread category is ALWAYS initialized in the collapsedCategories object
+        // and only collapse it if explicitly set or all categories are collapsed
+        if (collapsedCategories['unread'] === undefined) {
+            collapsedCategories['unread'] = false; // Default to expanded
         }
-        renderChatCategory('Unread', filteredUnreadBubbles, 'unread', chatList);
+        
+        // Only force expand if not in all-collapsed mode
+        if (allCategoriesCollapsed) {
+            collapsedCategories['unread'] = true;
+        }
+        
+        console.log('Rendering unread category:', { 
+            bubbles: processedUnreadBubbles.length, 
+            collapsed: collapsedCategories['unread'] 
+        });
+        renderChatCategory('Unread', processedUnreadBubbles, 'unread', chatList);
     }
     
     // Render direct messages
@@ -252,6 +266,53 @@ function filterChatsBySearch(chats, searchTerm) {
     });
 }
 
+// Special function to handle unread bubbles which have a different structure
+function processUnreadBubbles(unreadBubbles) {
+    // Process the unread bubbles to include a proper id field
+    return unreadBubbles.map(bubble => {
+        // Check if bubble already has an id, if not try to find one
+        if (!bubble.id && bubble.bubble_id) {
+            // If bubble has bubble_id property, use that as id
+            bubble.id = bubble.bubble_id;
+        } else if (!bubble.id) {
+            // Try to find this bubble's ID by matching title in other collections
+            const matchInDMs = directMessages.find(dm => dm.title === bubble.title);
+            if (matchInDMs) {
+                bubble.id = matchInDMs.id;
+            } else {
+                // Look through categorized bubbles
+                for (const category in categorizedBubbles) {
+                    const match = categorizedBubbles[category].find(
+                        chat => chat.title === bubble.title
+                    );
+                    if (match) {
+                        bubble.id = match.id;
+                        break;
+                    }
+                }
+                
+                // Look through uncategorized bubbles if still not found
+                if (!bubble.id) {
+                    const match = uncategorizedBubbles.find(
+                        chat => chat.title === bubble.title
+                    );
+                    if (match) {
+                        bubble.id = match.id;
+                    }
+                }
+            }
+        }
+        
+        // If we still couldn't find an ID, create a temporary one based on title
+        if (!bubble.id) {
+            console.log(`Creating temporary ID for unread bubble: ${bubble.title}`);
+            bubble.id = `unread-${btoa(bubble.title)}`;
+        }
+        
+        return bubble;
+    });
+}
+
 // Render a category of chats with collapsible header
 function renderChatCategory(categoryName, chats, categoryId, container) {
     if (!chats || chats.length === 0) return;
@@ -280,12 +341,30 @@ function renderChatCategory(categoryName, chats, categoryId, container) {
     categoryHeader.appendChild(toggleIcon);
     categoryHeader.appendChild(categoryTitle);
     
-    // Add click event to toggle collapse
-    categoryHeader.addEventListener('click', () => {
+    // Add click event to toggle collapse with improved handling
+    categoryHeader.addEventListener('click', (event) => {
+        // Stop event propagation to prevent other handlers from interfering
+        event.stopPropagation();
+        
         const chatItems = categoryContainer.querySelector('.category-items');
-        const isCollapsed = chatItems.classList.toggle('collapsed');
+        if (!chatItems) return;
+        
+        // Toggle the collapsed state
+        const isCollapsed = !chatItems.classList.contains('collapsed');
+        
+        // Update the DOM
+        if (isCollapsed) {
+            chatItems.classList.add('collapsed');
+            toggleIcon.className = 'fas fa-chevron-right';
+        } else {
+            chatItems.classList.remove('collapsed');
+            toggleIcon.className = 'fas fa-chevron-down';
+        }
+        
+        // Store the state
         collapsedCategories[categoryId] = isCollapsed;
-        toggleIcon.className = isCollapsed ? 'fas fa-chevron-right' : 'fas fa-chevron-down';
+        
+        console.log(`Category ${categoryName} (${categoryId}) toggled:`, isCollapsed ? 'collapsed' : 'expanded');
         
         // Update collapse all button state after toggling
         updateCollapseAllButtonState();
@@ -360,9 +439,23 @@ function stringToHue(str) {
 
 // Create a chat item element
 function createChatItem(chat) {
-    if (!chat || !chat.id || !chat.title) {
+    if (!chat || !chat.title) {
         console.error('Invalid chat object:', chat);
         return document.createElement('div'); // Return empty div to avoid errors
+    }
+    
+    // For unread items, we may need to handle them specially since they have a different structure
+    const isUnreadItem = chat.unread !== undefined;
+    
+    // Special handling for ID in unread items
+    if (!chat.id && isUnreadItem) {
+        console.log(`Using title as ID for unread chat: ${chat.title}`);
+        chat.id = `unread-${btoa(chat.title)}`;
+    }
+    
+    if (!chat.id) {
+        console.warn(`Chat missing ID:`, chat);
+        return document.createElement('div');
     }
     
     const chatItem = document.createElement('div');
@@ -373,7 +466,7 @@ function createChatItem(chat) {
     const profilePic = document.createElement('div');
     profilePic.className = 'profile-picture';
     
-    // If chat has a profile picture URL, use it (you would need to add this property to your chat objects)
+    // If chat has a profile picture URL, use it
     if (chat.profilepicurl) {
         const img = document.createElement('img');
         img.src = chat.profilepicurl;
@@ -413,8 +506,22 @@ function createChatItem(chat) {
     
     chatContent.appendChild(chatName);
     
-    // Create chat preview if available
-    if (chat.preview) {
+    // For unread items, show unread count instead of preview
+    if (isUnreadItem) {
+        const unreadPreview = document.createElement('div');
+        unreadPreview.className = 'chat-preview';
+        
+        if (chat.unread_mentions > 0) {
+            unreadPreview.textContent = `${chat.unread} unread, ${chat.unread_mentions} mentions`;
+            unreadPreview.style.color = '#f44336'; // Red for mentions
+        } else {
+            unreadPreview.textContent = `${chat.unread} unread messages`;
+        }
+        
+        chatContent.appendChild(unreadPreview);
+    }
+    // Normal preview handling for regular chat items
+    else if (chat.preview) {
         const chatPreview = document.createElement('div');
         chatPreview.className = 'chat-preview';
         chatPreview.textContent = chat.preview;
@@ -559,6 +666,11 @@ function toggleCollapseAll() {
                 chatItems.classList.remove('collapsed');
                 toggleIcon.className = 'fas fa-chevron-down';
                 collapsedCategories[categoryId] = false;
+            }
+            
+            // Log status if this is the unread category
+            if (categoryId === 'unread') {
+                console.log(`Unread category is now ${allCategoriesCollapsed ? 'collapsed' : 'expanded'}`);
             }
         }
     });
@@ -750,6 +862,45 @@ function handleDropdownAction(action, chatId) {
 // Function to select a chat and load its messages
 function selectChat(chatId) {
     if (!isApiAvailable) return;
+    
+    // Check if this is an unread temporary ID
+    if (chatId.startsWith('unread-')) {
+        // Find the actual bubble by title
+        const encodedTitle = chatId.substring(7); // Remove 'unread-' prefix
+        const title = atob(encodedTitle);
+        
+        // Look for a matching chat with this title and a real ID
+        let realChatId = null;
+        
+        // Check in direct messages
+        const dmMatch = directMessages.find(chat => chat.title === title);
+        if (dmMatch) realChatId = dmMatch.id;
+        
+        // If not found, check in categorized bubbles
+        if (!realChatId) {
+            for (const category in categorizedBubbles) {
+                const match = categorizedBubbles[category].find(chat => chat.title === title);
+                if (match) {
+                    realChatId = match.id;
+                    break;
+                }
+            }
+        }
+        
+        // If still not found, check in uncategorized bubbles
+        if (!realChatId) {
+            const match = uncategorizedBubbles.find(chat => chat.title === title);
+            if (match) realChatId = match.id;
+        }
+        
+        // If found a real ID, use it instead
+        if (realChatId) {
+            console.log(`Resolved unread chat ID ${chatId} to real ID ${realChatId}`);
+            chatId = realChatId;
+        } else {
+            console.error(`Could not find real ID for unread chat: ${title}`);
+        }
+    }
     
     // Store the current selected bubble ID
     currentSelectedBubbleId = chatId;
