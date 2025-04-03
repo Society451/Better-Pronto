@@ -7,7 +7,6 @@ import datetime
 import webbrowser
 from flask import Flask, send_from_directory, jsonify, request
 
-# Port configuration - changed to higher port number that doesn't require root privileges
 PORT = 6969
 
 auth_path, chats_path, bubbles_path, loginTokenJSONPath, authTokenJSONPath, verificationCodeResponseJSONPath, settings_path, encryption_path, logs_path, settingsJSONPath, keysJSONPath, bubbleOverviewJSONPath, users_path = createappfolders()
