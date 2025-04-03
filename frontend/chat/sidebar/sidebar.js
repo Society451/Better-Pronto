@@ -506,22 +506,8 @@ function createChatItem(chat) {
     
     chatContent.appendChild(chatName);
     
-    // For unread items, show unread count instead of preview
-    if (isUnreadItem) {
-        const unreadPreview = document.createElement('div');
-        unreadPreview.className = 'chat-preview';
-        
-        if (chat.unread_mentions > 0) {
-            unreadPreview.textContent = `${chat.unread} unread, ${chat.unread_mentions} mentions`;
-            unreadPreview.style.color = '#f44336'; // Red for mentions
-        } else {
-            unreadPreview.textContent = `${chat.unread} unread messages`;
-        }
-        
-        chatContent.appendChild(unreadPreview);
-    }
     // Normal preview handling for regular chat items
-    else if (chat.preview) {
+    if (!isUnreadItem && chat.preview) {
         const chatPreview = document.createElement('div');
         chatPreview.className = 'chat-preview';
         chatPreview.textContent = chat.preview;
@@ -564,6 +550,24 @@ function createChatItem(chat) {
     chatItem.appendChild(chatContent);
     chatItem.appendChild(dropdown);
     
+    // Add unread badge if this is an unread item
+    if (isUnreadItem) {
+        const unreadBadge = document.createElement('div');
+        
+        // Determine badge style and content
+        if (chat.unread_mentions > 0) {
+            // Show only mention count in red if we have mentions
+            unreadBadge.className = 'unread-badge mentions';
+            unreadBadge.textContent = chat.unread_mentions;
+        } else {
+            // Show total unread count in grey, with "99+" for large numbers
+            unreadBadge.className = 'unread-badge';
+            unreadBadge.textContent = chat.unread >= 100 ? '99+' : chat.unread;
+        }
+        
+        chatItem.appendChild(unreadBadge);
+    }
+    
     return chatItem;
 }
 
@@ -586,32 +590,7 @@ function setupEventListeners() {
     document.querySelectorAll('.dropdown-trigger').forEach(trigger => {
         trigger.addEventListener('click', function(e) {
             e.stopPropagation(); // Prevent event bubbling
-            
-            // Get the associated menu
-            const menu = this.nextElementSibling;
-            
-            // First close all other dropdowns
-            document.querySelectorAll('.dropdown-menu').forEach(item => {
-                if (item !== menu) {
-                    item.classList.remove('active');
-                }
-            });
-            
-            // Toggle current dropdown with a slight delay to ensure proper rendering
-            setTimeout(() => {
-                menu.classList.toggle('active');
-                
-                // Ensure the menu is visible and not clipped
-                const rect = menu.getBoundingClientRect();
-                const viewportHeight = window.innerHeight;
-                
-                // If menu would extend beyond viewport, position it above the trigger instead
-                if (rect.bottom > viewportHeight) {
-                    menu.style.top = 'auto';
-                    menu.style.bottom = '100%';
-                    menu.style.marginBottom = '5px';
-                }
-            }, 0);
+            toggleDropdown(this.nextElementSibling);
         });
     });
     
@@ -633,16 +612,55 @@ function setupEventListeners() {
         });
     });
     
-    // Chat item click to select chat
+    // Chat item click to either select chat or show dropdown
     document.querySelectorAll('.chat-item').forEach(item => {
         item.addEventListener('click', function(e) {
-            if (!e.target.closest('.dropdown')) {
-                // Only trigger if not clicking on dropdown
-                const chatId = this.dataset.id;
+            const chatId = this.dataset.id;
+            
+            // If it's a left click (button 0)
+            if (e.button === 0) {
+                if (!e.target.closest('.dropdown')) {
+                    // Get the dropdown menu for this chat item
+                    const dropdown = this.querySelector('.dropdown-menu');
+                    if (dropdown) {
+                        // Toggle dropdown visibility
+                        toggleDropdown(dropdown);
+                    }
+                }
+                
+                // Select the chat regardless
                 selectChat(chatId);
             }
         });
     });
+}
+
+// Helper function to toggle dropdown menus
+function toggleDropdown(menu) {
+    if (!menu) return;
+    
+    // First close all other dropdowns
+    document.querySelectorAll('.dropdown-menu').forEach(item => {
+        if (item !== menu) {
+            item.classList.remove('active');
+        }
+    });
+    
+    // Toggle current dropdown with a slight delay to ensure proper rendering
+    setTimeout(() => {
+        menu.classList.toggle('active');
+        
+        // Ensure the menu is visible and not clipped
+        const rect = menu.getBoundingClientRect();
+        const viewportHeight = window.innerHeight;
+        
+        // If menu would extend beyond viewport, position it above the trigger instead
+        if (rect.bottom > viewportHeight) {
+            menu.style.top = 'auto';
+            menu.style.bottom = '100%';
+            menu.style.marginBottom = '5px';
+        }
+    }, 0);
 }
 
 // Function to toggle collapse state for all categories
