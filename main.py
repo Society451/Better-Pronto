@@ -50,7 +50,7 @@ api = Api(accesstoken)
 print("Available API methods:", dir(api))
 
 # Initialize Flask app
-app = Flask(__name__, static_folder='frontend/chat', static_url_path='/')
+app = Flask(__name__, static_folder='frontend', static_url_path='/')
 
 # Flag to track if browser has been opened
 browser_opened = False
