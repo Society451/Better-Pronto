@@ -44,9 +44,6 @@ function initMessageInput() {
             if (e.key === 'e') {
                 e.preventDefault();
                 toggleEmojiPicker();
-            } else if (e.key === 'a') {
-                e.preventDefault();
-                openFileAttachment();
             }
         }
     });
@@ -203,7 +200,6 @@ function openFileAttachment() {
     fileInput.addEventListener('change', function(e) {
         if (e.target.files.length > 0) {
             // This would handle the file upload in a real application
-            alert(`Selected ${e.target.files.length} file(s). In a real app, these would be uploaded or attached to the message.`);
         }
     });
     

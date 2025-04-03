@@ -938,6 +938,23 @@ function selectChat(chatId) {
         window.updateChatHeader(selectedChat.title, false);
     }
     
+    // Show message container and input bar when a chat is selected
+    const messagesContainer = document.getElementById('messages-container');
+    const messageInputContainer = document.getElementById('message-input-container');
+    
+    if (messagesContainer) {
+        messagesContainer.style.display = 'block';
+    }
+    
+    if (messageInputContainer) {
+        messageInputContainer.style.display = 'block';
+    }
+    
+    // Update URL with chat ID for routing
+    const chatUrl = `/chat/${chatId}`;
+    history.pushState({ chatId: chatId }, selectedChat.title, chatUrl);
+    document.title = `${selectedChat.title} - Better Pronto`;
+    
     // Log chat info if API available
     if (window.pywebview?.api?.print_chat_info) {
         window.pywebview.api.print_chat_info(selectedChat.title, chatId);
@@ -1056,6 +1073,63 @@ function init() {
     setupSearchToggle();
     setupCollapseAllButton();
     checkApiAvailability();
+    
+    // Handle route-based navigation for URLs like /chat/chatId
+    handleURLRouting();
+}
+
+// Handle URL-based routing to load specific chats
+function handleURLRouting() {
+    // Check if URL has a chat route
+    const path = window.location.pathname;
+    const chatRouteMatch = path.match(/\/chat\/([^\/]+)/);
+    
+    if (chatRouteMatch && chatRouteMatch[1]) {
+        const chatId = chatRouteMatch[1];
+        console.log(`Found chat ID ${chatId} in URL, will select after data loads`);
+        
+        // Create a function to check and select the chat once data is loaded
+        const attemptChatSelection = function() {
+            // Wait until data is loaded
+            if (!isDataLoaded) {
+                setTimeout(attemptChatSelection, 500);
+                return;
+            }
+            
+            // Try to find the chat in our data
+            let chatExists = false;
+            
+            // Check in direct messages
+            if (directMessages.some(chat => chat.id == chatId)) {
+                chatExists = true;
+            }
+            
+            // Check in categorized bubbles if not found
+            if (!chatExists) {
+                for (const category in categorizedBubbles) {
+                    if (categorizedBubbles[category].some(chat => chat.id == chatId)) {
+                        chatExists = true;
+                        break;
+                    }
+                }
+            }
+            
+            // Check in uncategorized bubbles if still not found
+            if (!chatExists && uncategorizedBubbles.some(chat => chat.id == chatId)) {
+                chatExists = true;
+            }
+            
+            if (chatExists) {
+                console.log(`Selecting chat ${chatId} from URL route`);
+                selectChat(chatId);
+            } else {
+                console.error(`Chat with ID ${chatId} from URL not found in loaded data`);
+            }
+        };
+        
+        // Start attempting to select the chat
+        attemptChatSelection();
+    }
 }
 
 // Initialize as soon as DOM is ready

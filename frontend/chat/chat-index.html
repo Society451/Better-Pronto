@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Better Pronto</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="../resources/images/BetterProntoLogo0.png">
     <!-- Use relative paths for CSS references -->
     <link rel="stylesheet" type="text/css" href="sidebar/sidebar.css">
     <link rel="stylesheet" type="text/css" href="chat-header/chat-header.css">
@@ -55,6 +57,7 @@
             grid-column: 2;
             overflow-y: auto;
             background-color: #f9f9f9;
+            display: none;
         }
 
         /* Input field spans the bottom row of the second column */
@@ -63,6 +66,7 @@
             grid-column: 2;
             border-top: 1px solid #ddd;
             background-color: #ddd;
+            display: none;
         }
         
         /* Adjust sidebar header to fit search bar */
@@ -113,14 +117,14 @@
         </div>
 
         <!-- Messages Area -->
-        <div id="messages-container">
+        <div id="messages-container" style="display: none;">
             <div class="messages" id="messages">
                 <!-- Message content will be populated dynamically by JavaScript -->
             </div>
         </div>
 
         <!-- Message Input -->
-        <div id="message-input-container">
+        <div id="message-input-container" style="display: none;">
             <div class="message-input">
                 <textarea id="message-input" placeholder="Type a message..."></textarea>
                 <button id="send-button" title="Send Message">

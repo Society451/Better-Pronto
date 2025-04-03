@@ -70,6 +70,11 @@ def open_browser():
 def index():
     return send_from_directory('frontend/chat', 'chat-index.html')
 
+# Handle chat-specific routes
+@app.route('/chat/<chat_id>')
+def chat_route(chat_id):
+    return send_from_directory('frontend/chat', 'chat-index.html')
+
 # API endpoints to match the functions in api class
 @app.route('/api/methods', methods=['GET'])
 def api_methods():
