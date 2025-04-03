@@ -381,11 +381,21 @@ function clearMessages() {
 
 // Function to delete a message via API
 async function deleteMessage(messageId) {
-    if (!window.pywebview || !window.pywebview.api || !messageId) return false;
+    if (!messageId) return false;
     
     try {
-        const response = await window.pywebview.api.delete_message(messageId);
-        if (response && response.ok) {
+        // Use the Flask API endpoint instead of pywebview
+        const response = await fetch('/api/delete_message', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ messageId: messageId })
+        });
+        
+        const data = await response.json();
+        
+        if (data && data.ok) {
             // Find and remove the message from the DOM
             const messageElement = document.querySelector(`.message-container[data-message-id="${messageId}"]`);
             if (messageElement) {
@@ -404,14 +414,14 @@ async function deleteMessage(messageId) {
             }
             
             // Remove from current messages array
-            const index = currentMessages.findIndex(msg => msg.message_id === messageId);
+            const index = currentMessages.findIndex(msg => (msg.message_id === messageId || msg.id === messageId));
             if (index !== -1) {
                 currentMessages.splice(index, 1);
             }
             
             return true;
         } else {
-            console.error('Error deleting message:', response?.error || 'Unknown error');
+            console.error('Error deleting message:', data?.error || 'Unknown error');
             return false;
         }
     } catch (error) {
@@ -446,10 +456,6 @@ document.addEventListener('DOMContentLoaded', function() {
             // If user scrolls up more than 100px from bottom, disable auto-scroll
             const isNearBottom = messagesContainer.scrollHeight - messagesContainer.scrollTop - messagesContainer.clientHeight < 100;
             autoScrollToBottom = isNearBottom;
-            
-            console.log('Scroll event detected, position:', messagesContainer.scrollTop, 
-                        'of', messagesContainer.scrollHeight, 
-                        'auto-scroll:', autoScrollToBottom);
         });
     }
     
@@ -462,40 +468,52 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Set up global shift key tracking for delete functionality
+    // Simple shift key tracking
     let shiftKeyPressed = false;
+    
+    // Update delete buttons based on shift key state
+    function updateDeleteButtons() {
+        document.querySelectorAll('.message-delete-btn').forEach(btn => {
+            btn.classList.toggle('delete-active', shiftKeyPressed);
+        });
+    }
+    
+    // Add key event listeners
     document.addEventListener('keydown', function(e) {
-        if (e.key === 'Shift') {
+        if (e.key === 'Shift' && !shiftKeyPressed) {
             shiftKeyPressed = true;
-            document.querySelectorAll('.message-delete-btn').forEach(btn => {
-                btn.classList.add('delete-active');
-            });
+            updateDeleteButtons();
         }
     });
     
     document.addEventListener('keyup', function(e) {
         if (e.key === 'Shift') {
             shiftKeyPressed = false;
-            document.querySelectorAll('.message-delete-btn').forEach(btn => {
-                btn.classList.remove('delete-active');
-            });
+            updateDeleteButtons();
         }
     });
     
-    // Event delegation for delete buttons
+    // Handle window blur to reset shift state
+    window.addEventListener('blur', function() {
+        shiftKeyPressed = false;
+        updateDeleteButtons();
+    });
+    
+    // Handle message deletion clicks
     document.addEventListener('click', async function(e) {
-        if (e.target.closest('.message-delete-btn')) {
-            const messageContainer = e.target.closest('.message-container');
+        const deleteButton = e.target.closest('.message-delete-btn');
+        if (deleteButton) {
+            const messageContainer = deleteButton.closest('.message-container');
             if (messageContainer) {
                 const messageId = messageContainer.dataset.messageId;
-                if (messageId && window.pywebview && window.pywebview.api) {
-                    const confirmed = confirm('Are you sure you want to delete this message?');
-                    if (confirmed) {
-                        const success = await deleteMessage(messageId);
-                        if (success) {
-                            console.log('Message deleted successfully');
-                        } else {
-                            console.error('Failed to delete message');
+                if (messageId) {
+                    // Delete without confirmation if shift is pressed
+                    if (e.shiftKey) {
+                        await deleteMessage(messageId);
+                    } else {
+                        const confirmed = confirm('Are you sure you want to delete this message?');
+                        if (confirmed) {
+                            await deleteMessage(messageId);
                         }
                     }
                 }

@@ -47,7 +47,8 @@ textarea#message-input {
     font-family: inherit;
     max-height: 120px;
     min-height: 44px;
-    transition: border-color 0.2s;
+    transition: border-color 0.2s, height 0.2s;
+    overflow: hidden; /* Hide scrollbar by default */
 }
 
 textarea#message-input:focus {
