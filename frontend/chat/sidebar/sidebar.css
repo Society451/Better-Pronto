@@ -249,22 +249,22 @@
 
 /* Unread category styling */
 .chat-category[data-category-id="unread"] .category-header {
-    background-color: #ffebee;
-    border-left: 3px solid #f44336;
+    background-color: #e8e8e8;
+    border-left: 3px solid #888888;
     font-weight: bold;
 }
 
 .chat-category[data-category-id="unread"] .category-items {
-    border-left: 3px solid #ffcdd2;
+    border-left: 3px solid #d8d8d8;
 }
 
 .chat-category[data-category-id="unread"] .chat-item {
-    background-color: #fff8e1;
-    border-bottom: 1px solid #ffe0b2;
+    background-color: #f9f9f9;
+    border-bottom: 1px solid #e0e0e0;
 }
 
 .chat-category[data-category-id="unread"] .chat-item:hover {
-    background-color: #ffecb3;
+    background-color: #eaeaea;
 }
 
 .chat-category[data-category-id="unread"] .chat-item .chat-preview {
