@@ -1067,11 +1067,126 @@ function showToast(message, type = 'info', duration = 3000) {
     }, duration);
 }
 
+// Set up settings button functionality
+function setupSettingsButton() {
+    const settingsButton = document.querySelector('.settings-button');
+    if (!settingsButton) return;
+    
+    // Create settings menu if it doesn't exist
+    let settingsMenu = document.querySelector('.settings-menu');
+    if (!settingsMenu) {
+        settingsMenu = document.createElement('div');
+        settingsMenu.className = 'settings-menu';
+        settingsMenu.innerHTML = `
+            <button class="settings-menu-item" data-action="account">
+                <i class="fas fa-user-circle fa-fw"></i> Account Settings
+            </button>
+            <button class="settings-menu-item" data-action="appearance">
+                <i class="fas fa-palette fa-fw"></i> Appearance
+            </button>
+            <button class="settings-menu-item" data-action="notifications">
+                <i class="fas fa-bell fa-fw"></i> Notifications
+            </button>
+            <div class="settings-menu-separator"></div>
+            <button class="settings-menu-item" data-action="preferences">
+                <i class="fas fa-sliders-h fa-fw"></i> Preferences
+            </button>
+            <button class="settings-menu-item" data-action="help">
+                <i class="fas fa-question-circle fa-fw"></i> Help & Support
+            </button>
+            <div class="settings-menu-separator"></div>
+            <button class="settings-menu-item" data-action="logout">
+                <i class="fas fa-sign-out-alt fa-fw"></i> Logout
+            </button>
+        `;
+        document.querySelector('.sidebar-header').appendChild(settingsMenu);
+        
+        // Add event listeners to menu items
+        settingsMenu.querySelectorAll('.settings-menu-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.stopPropagation();
+                handleSettingsAction(this.dataset.action);
+                settingsMenu.classList.remove('active');
+                settingsButton.classList.remove('active');
+            });
+        });
+    }
+    
+    // Toggle settings menu on button click
+    settingsButton.addEventListener('click', function(e) {
+        e.stopPropagation();
+        
+        const isActive = !settingsMenu.classList.contains('active');
+        settingsMenu.classList.toggle('active', isActive);
+        settingsButton.classList.toggle('active', isActive);
+    });
+    
+    // Close settings menu when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!settingsMenu.contains(e.target) && !settingsButton.contains(e.target)) {
+            settingsMenu.classList.remove('active');
+            settingsButton.classList.remove('active');
+        }
+    });
+}
+
+// Handle settings menu actions
+function handleSettingsAction(action) {
+    if (!isApiAvailable) return;
+    
+    switch (action) {
+        case 'account':
+            console.log('Opening account settings');
+            showToast('Account settings feature coming soon', 'info');
+            break;
+        case 'appearance':
+            console.log('Opening appearance settings');
+            showToast('Appearance settings feature coming soon', 'info');
+            break;
+        case 'notifications':
+            console.log('Opening notification settings');
+            showToast('Notification settings feature coming soon', 'info');
+            break;
+        case 'preferences':
+            console.log('Opening preferences');
+            showToast('Preferences feature coming soon', 'info');
+            break;
+        case 'help':
+            console.log('Opening help & support');
+            showToast('Help & support feature coming soon', 'info');
+            break;
+        case 'logout':
+            if (confirm('Are you sure you want to logout?')) {
+                console.log('Logging out');
+                fetch('/api/logout', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.ok) {
+                        window.location.href = '/login';
+                    } else {
+                        showToast('Logout failed: ' + (data.error || 'Unknown error'), 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error during logout:', error);
+                    showToast('Logout failed. Please try again.', 'error');
+                });
+            }
+            break;
+        default:
+            console.log(`Unknown settings action: ${action}`);
+    }
+}
+
 // Initialize sidebar
 function init() {
     setupSearchFunctionality();
     setupSearchToggle();
     setupCollapseAllButton();
+    setupSettingsButton();  // Add this line
     checkApiAvailability();
     
     // Handle route-based navigation for URLs like /chat/chatId
