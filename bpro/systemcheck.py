@@ -1,3 +1,7 @@
+#Author: Paul Estrada
+#Email: paul257@ohs.stanford.edu
+#URL: https://github.com/Society451/Better-Pronto
+
 import os
 
 def createappfolders():

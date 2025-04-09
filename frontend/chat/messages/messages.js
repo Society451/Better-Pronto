@@ -379,6 +379,100 @@ function clearMessages() {
     currentMessages = [];
 }
 
+// Toast notification display
+function showToast(message, type = 'info', duration = 3000) {
+    // Create container if needed
+    let toastContainer = document.getElementById('toast-container');
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.id = 'toast-container';
+        document.body.appendChild(toastContainer);
+    }
+    
+    // Create toast
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.textContent = message;
+    toastContainer.appendChild(toast);
+    
+    // Show with animation
+    setTimeout(() => toast.classList.add('show'), 10);
+    
+    // Auto remove after duration
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, duration);
+}
+
+// Show confirmation popup for message deletion
+function showDeleteConfirmation(messageId, callback) {
+    // Remove any existing confirmation popups
+    const existingPopup = document.getElementById('message-delete-confirmation');
+    if (existingPopup) {
+        existingPopup.remove();
+    }
+
+    // Create confirmation popup
+    const confirmPopup = document.createElement('div');
+    confirmPopup.id = 'message-delete-confirmation';
+    confirmPopup.className = 'message-delete-popup';
+    
+    confirmPopup.innerHTML = `
+        <div class="popup-content">
+            <p>Delete this message?</p>
+            <div class="popup-buttons">
+                <button class="btn-cancel">Cancel</button>
+                <button class="btn-delete">Delete</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(confirmPopup);
+    
+    // Position the popup near the message
+    const messageElement = document.querySelector(`.message-container[data-message-id="${messageId}"]`);
+    if (messageElement) {
+        const rect = messageElement.getBoundingClientRect();
+        
+        // Position popup near the message
+        confirmPopup.style.position = 'fixed';
+        confirmPopup.style.top = `${rect.top + window.scrollY}px`;
+        confirmPopup.style.left = `${rect.left + rect.width / 2}px`;
+        confirmPopup.style.transform = 'translate(-50%, -100%)';
+        
+        // Add active class after a brief delay to trigger animation
+        setTimeout(() => confirmPopup.classList.add('active'), 10);
+    }
+    
+    // Setup event listeners
+    const cancelBtn = confirmPopup.querySelector('.btn-cancel');
+    const deleteBtn = confirmPopup.querySelector('.btn-delete');
+    
+    cancelBtn.addEventListener('click', () => {
+        confirmPopup.classList.remove('active');
+        setTimeout(() => confirmPopup.remove(), 300);
+    });
+    
+    deleteBtn.addEventListener('click', async () => {
+        confirmPopup.classList.remove('active');
+        setTimeout(() => confirmPopup.remove(), 300);
+        
+        if (typeof callback === 'function') {
+            callback(true);
+        }
+    });
+    
+    // Handle clicks outside popup to cancel
+    document.addEventListener('click', function closePopup(event) {
+        if (!confirmPopup.contains(event.target) && event.target.closest('.message-delete-btn') === null) {
+            confirmPopup.classList.remove('active');
+            setTimeout(() => confirmPopup.remove(), 300);
+            document.removeEventListener('click', closePopup);
+        }
+    });
+}
+
 // Function to delete a message via API
 async function deleteMessage(messageId) {
     if (!messageId) return false;
@@ -419,13 +513,25 @@ async function deleteMessage(messageId) {
                 currentMessages.splice(index, 1);
             }
             
+            // Show success toast
+            showToast('Message deleted successfully', 'success');
+            
             return true;
         } else {
             console.error('Error deleting message:', data?.error || 'Unknown error');
+            
+            // Show error toast with specific message if available
+            if (data && data.error === 'MESSAGE_ACCESSDENIED') {
+                showToast('You do not have permission to delete this message', 'error');
+            } else {
+                showToast('Failed to delete message: ' + (data?.error || 'Unknown error'), 'error');
+            }
+            
             return false;
         }
     } catch (error) {
         console.error('Error deleting message:', error);
+        showToast('Failed to delete message: Network error', 'error');
         return false;
     }
 }
@@ -511,10 +617,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (e.shiftKey) {
                         await deleteMessage(messageId);
                     } else {
-                        const confirmed = confirm('Are you sure you want to delete this message?');
-                        if (confirmed) {
-                            await deleteMessage(messageId);
-                        }
+                        // Use custom confirmation popup
+                        showDeleteConfirmation(messageId, async (confirmed) => {
+                            if (confirmed) {
+                                await deleteMessage(messageId);
+                            }
+                        });
                     }
                 }
             }
@@ -527,6 +635,7 @@ document.addEventListener('DOMContentLoaded', function() {
     window.showMessageLoadingIndicator = showMessageLoadingIndicator;
     window.hideMessageLoadingIndicator = hideMessageLoadingIndicator;
     window.showNoMessagesPlaceholder = showNoMessagesPlaceholder;
+    window.showToast = showToast;
     
     // Function to add a new message to the chat (used by message input component)
     window.addMessageToChat = function(messageData) {

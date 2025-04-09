@@ -1,0 +1,43 @@
+name: Auto Tag Version
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Get current version
+        id: get_version
+        run: |
+          git fetch --tags
+          current_tag=$(git describe --tags --abbrev=0)
+          echo "Current tag: $current_tag"
+          echo "::set-output name=current_tag::$current_tag"
+
+      - name: Parse version
+        id: parse_version
+        run: |
+          IFS='.' read -r major minor patch <<< "${{ steps.get_version.outputs.current_tag }}"
+          patch=$((patch + 1))
+          if [ "$patch" -gt 9 ]; then
+            patch=0
+            minor=$((minor + 1))
+          fi
+          if [ "$minor" -gt 9 ]; then
+            minor=0
+            major=$((major + 1))
+          fi
+          new_tag="$major.$minor.$patch"
+          echo "New tag: $new_tag"
+          echo "::set-output name=new_tag::$new_tag"
+
+      - name: Create new tag
+        run: |
+          git tag "${{ steps.parse_version.outputs.new_tag }}"
+          git push origin "${{ steps.parse_version.outputs.new_tag }}"
