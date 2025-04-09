@@ -1,12 +1,19 @@
+#Author: Paul Estrada
+#Email: paul257@ohs.stanford.edu
+#URL: https://github.com/Society451/Better-Pronto
+
 from readjson import * 
 from websocketParsing import parse_event
 import sys, json, asyncio, requests, websockets
 
 api_base_url = "https://stanfordohs.pronto.io/"
 
+readjson = ReadJSON()
+
 auth_path, chats_path, bubbles_path, loginTokenJSONPath, authTokenJSONPath, verificationCodeResponseJSONPath, settings_path, encryption_path, logs_path, settingsJSONPath, keysJSONPath, bubbleOverviewJSONPath, users_path = createappfolders()
-accesstoken = getaccesstoken(authTokenJSONPath)
-user_info = get_clientUserInfo(authTokenJSONPath)
+accesstoken = readjson.getaccesstoken(authTokenJSONPath)
+print(f"Access token: {accesstoken[:5]}...{accesstoken[-5:]}")
+user_info = readjson.get_clientUserInfo(authTokenJSONPath)
 user_id = user_info["id"] if user_info else None
 print(f"User ID: {user_id}")
 bubble_id = "4003845"
@@ -17,7 +24,7 @@ print(f"Bubble ID: {bubble_id}")
 # Check if bubble_id consists only of digits to verify it's valid
 
 # NEW: Retrieve channelcode automatically using get_channelcodes.
-channelcode = get_channelcodes(bubbleOverviewJSONPath, bubble_id)
+channelcode = readjson.get_channelcodes(bubbleOverviewJSONPath, bubble_id)
 if not channelcode:
     print(f"No channelcode found for bubble id {bubble_id}.")
 
