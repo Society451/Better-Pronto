@@ -435,6 +435,86 @@
     background-color: #d32f2f;
 }
 
+/* Typing indicator styling */
+.typing-indicator {
+    display: flex;
+    align-items: flex-start;
+    margin: 8px 16px;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.3s, transform 0.3s;
+}
+
+.typing-indicator.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.typing-avatar {
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    margin-right: 12px;
+    border-radius: 50%;
+    overflow: hidden;
+    background-color: #f2f2f2;
+}
+
+.typing-avatar .profile-initials {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 12px;
+}
+
+.typing-bubble {
+    background-color: #f2f2f2;
+    padding: 8px 12px;
+    border-radius: 18px;
+    max-width: 120px;
+    display: flex;
+    align-items: center;
+}
+
+.typing-dots {
+    display: flex;
+}
+
+.typing-dots span {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #999;
+    margin: 0 2px;
+    animation: typingAnimation 1.4s infinite ease-in-out;
+}
+
+.typing-dots span:nth-child(1) {
+    animation-delay: 0s;
+}
+
+.typing-dots span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.typing-dots span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes typingAnimation {
+    0%, 60%, 100% {
+        transform: translateY(0);
+        opacity: 0.6;
+    }
+    30% {
+        transform: translateY(-5px);
+        opacity: 1;
+    }
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .message-content {

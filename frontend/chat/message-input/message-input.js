@@ -12,6 +12,42 @@ function initMessageInput() {
     updateCharCounter(messageInput, charCounter);
     updateSendButtonState(messageInput.value.trim(), sendButton);
     
+    // Track typing state
+    let isTyping = false;
+    let typingTimer = null;
+    
+    // Send typing indicator when user starts typing
+    function sendTypingIndicator() {
+        if (!isTyping && window.socket && window.currentChatId) {
+            isTyping = true;
+            // Emit socket event for typing - but only if we have an active socket connection
+            try {
+                window.socket.emit('user_typing', {
+                    thread_id: window.currentChatId
+                });
+            } catch (e) {
+                console.error('Error emitting typing event:', e);
+            }
+        }
+        
+        // Reset typing timer
+        if (typingTimer) clearTimeout(typingTimer);
+        
+        // After 2 seconds of no typing, send stopped typing event
+        typingTimer = setTimeout(() => {
+            if (isTyping && window.socket && window.currentChatId) {
+                isTyping = false;
+                try {
+                    window.socket.emit('user_stopped_typing', {
+                        thread_id: window.currentChatId
+                    });
+                } catch (e) {
+                    console.error('Error emitting stopped typing event:', e);
+                }
+            }
+        }, 2000);
+    }
+    
     // Auto-resize the textarea based on content
     function autoResizeTextarea() {
         // Reset height to a minimal value to get correct scrollHeight measurement
@@ -33,6 +69,9 @@ function initMessageInput() {
         autoResizeTextarea();
         updateCharCounter(messageInput, charCounter);
         updateSendButtonState(messageInput.value.trim(), sendButton);
+        
+        // Send typing indicator
+        sendTypingIndicator();
     });
     
     // Handle send button click

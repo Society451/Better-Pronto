@@ -140,10 +140,81 @@
         </div>
     </div>
 
+    <!-- Socket.IO client library -->
+    <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
+    
     <!-- Load JavaScript files -->
     <script src="/chat/sidebar/sidebar.js"></script>
     <script src="/chat/chat-header/chat-header.js"></script>
     <script src="/chat/messages/messages.js"></script>
     <script src="/chat/message-input/message-input.js"></script>
+    
+    <!-- Socket.IO Debugging UI (temporary) -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add a debug panel to test typing indicators
+        const debugPanel = document.createElement('div');
+        debugPanel.style.position = 'fixed';
+        debugPanel.style.bottom = '10px';
+        debugPanel.style.right = '10px';
+        debugPanel.style.background = '#f1f1f1';
+        debugPanel.style.padding = '10px';
+        debugPanel.style.border = '1px solid #ccc';
+        debugPanel.style.borderRadius = '4px';
+        debugPanel.style.zIndex = '9999';
+        debugPanel.style.fontSize = '12px';
+        debugPanel.style.maxWidth = '300px';
+        debugPanel.innerHTML = `
+            <div><strong>Socket.IO Status: <span id="socket-status">Disconnected</span></strong></div>
+            <div>
+                <button id="test-typing">Simulate Typing</button>
+                <button id="test-stop-typing">Simulate Stop</button>
+            </div>
+            <div id="typing-events" style="max-height: 100px; overflow-y: auto; margin-top: 5px; border-top: 1px solid #ccc; padding-top: 5px;">
+            </div>
+        `;
+        document.body.appendChild(debugPanel);
+        
+        // Setup event handlers for debug panel
+        if (window.socket) {
+            document.getElementById('socket-status').textContent = 'Connected';
+            document.getElementById('socket-status').style.color = 'green';
+            
+            // Monitor all socketio events
+            const events = document.getElementById('typing-events');
+            window.socket.onAny((event, ...args) => {
+                const eventItem = document.createElement('div');
+                eventItem.textContent = `${event}: ${JSON.stringify(args)}`;
+                events.prepend(eventItem);
+                while (events.children.length > 10) {
+                    events.removeChild(events.lastChild);
+                }
+            });
+            
+            // Test buttons
+            document.getElementById('test-typing').addEventListener('click', () => {
+                if (window.currentChatId) {
+                    window.socket.emit('user_typing', {
+                        thread_id: window.currentChatId
+                    });
+                    console.log('Emitted user_typing event');
+                } else {
+                    alert('No chat selected');
+                }
+            });
+            
+            document.getElementById('test-stop-typing').addEventListener('click', () => {
+                if (window.currentChatId) {
+                    window.socket.emit('user_stopped_typing', {
+                        thread_id: window.currentChatId
+                    });
+                    console.log('Emitted user_stopped_typing event');
+                } else {
+                    alert('No chat selected');
+                }
+            });
+        }
+    });
+    </script>
 </body>
 </html>

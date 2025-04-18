@@ -4,6 +4,9 @@ let currentChatId = null;
 let currentChatName = null;
 let isLoadingMessages = false;
 let autoScrollToBottom = true; // Flag to control automatic scrolling
+let typingUsers = {};          // Track users currently typing
+let typingTimeout = null;      // Timeout to hide typing indicator after inactivity
+let socket = null;             // Will store socket.io connection
 
 // New: format full YYYY‑MM‑DD HH:MM:SS UTC into local time string
 function formatDateTime(raw) {
@@ -554,6 +557,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Show empty state initially
     showNoMessagesPlaceholder();
     
+    // Initialize Socket.IO connection
+    initSocketConnection();
+    
     // Setup scrolling observer to check if scrolling works
     const messagesContainer = document.getElementById('messages');
     if (messagesContainer) {
@@ -745,6 +751,127 @@ window.triggerMessagesRefresh = function(bubbleId) {
         }
     }
 };
+
+// Initialize Socket.IO connection for real-time events
+function initSocketConnection() {
+    try {
+        // Connect to the server with explicit path and transports config
+        window.socket = io({
+            path: '/socket.io',
+            transports: ['polling', 'websocket'],
+            reconnection: true,
+            reconnectionDelay: 1000,
+            reconnectionDelayMax: 5000
+        });
+        
+        // Store socket reference globally
+        socket = window.socket;
+        
+        // Connection events
+        socket.on('connect', () => {
+            console.log('Socket.IO connected with ID:', socket.id);
+        });
+        
+        socket.on('disconnect', () => {
+            console.log('Socket.IO disconnected');
+        });
+        
+        socket.on('connect_error', (error) => {
+            console.error('Socket.IO connection error:', error);
+        });
+        
+        // Handle typing events
+        socket.on('user_typing', function(data) {
+            console.log('User typing received:', data);
+            const { user_id, thread_id } = data;
+            
+            // Only show typing indicator in current chat
+            if (thread_id && thread_id !== currentChatId) return;
+            
+            // Add or update user in typing users
+            typingUsers[user_id] = {
+                timestamp: Date.now(),
+                thread_id: thread_id
+            };
+            
+            // Show typing indicator
+            updateTypingIndicator();
+            
+            // Auto-clear typing status after 5 seconds
+            if (typingTimeout) {
+                clearTimeout(typingTimeout);
+            }
+            typingTimeout = setTimeout(hideTypingIndicator, 5000);
+        });
+        
+        // Handle when user stops typing
+        socket.on('user_stopped_typing', function(data) {
+            console.log('User stopped typing received:', data);
+            const { user_id } = data;
+            
+            // Remove user from typing users
+            if (typingUsers[user_id]) {
+                delete typingUsers[user_id];
+                updateTypingIndicator();
+            }
+        });
+        
+        console.log('Socket.IO initialized for typing indicators');
+    } catch (error) {
+        console.error('Failed to initialize Socket.IO:', error);
+    }
+}
+
+// Update typing indicator display
+function updateTypingIndicator() {
+    const indicator = document.getElementById('typing-indicator');
+    if (!indicator) return;
+    
+    const typers = Object.keys(typingUsers);
+    const messagesContainer = document.getElementById('messages');
+    
+    if (typers.length > 0) {
+        // Show typing indicator
+        indicator.style.display = 'flex';
+        indicator.classList.add('active');
+        
+        // Set avatar initial based on user
+        const initialElement = indicator.querySelector('.profile-initials');
+        if (initialElement) {
+            initialElement.textContent = typers.length > 1 ? typers.length : '...';
+            
+            // Generate color based on user ID
+            const hue = stringToHue(typers[0]);
+            initialElement.style.backgroundColor = `hsl(${hue}, 60%, 80%)`;
+            initialElement.style.color = `hsl(${hue}, 80%, 30%)`;
+        }
+        
+        // Scroll to show indicator if we're at the bottom
+        if (autoScrollToBottom && messagesContainer) {
+            scrollToBottom(messagesContainer);
+        }
+    } else {
+        hideTypingIndicator();
+    }
+}
+
+// Hide typing indicator
+function hideTypingIndicator() {
+    const indicator = document.getElementById('typing-indicator');
+    if (indicator) {
+        indicator.classList.remove('active');
+        setTimeout(() => {
+            if (Object.keys(typingUsers).length === 0) {
+                indicator.style.display = 'none';
+            }
+        }, 300);
+    }
+    
+    if (typingTimeout) {
+        clearTimeout(typingTimeout);
+        typingTimeout = null;
+    }
+}
 
 // Initialize immediately if DOM is already loaded
 if (document.readyState === "complete" || 
