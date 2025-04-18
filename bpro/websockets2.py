@@ -3,12 +3,13 @@
 #URL: https://github.com/r0adki110/Better-Pronto
 
 from readjson import * 
-from websocketParsing import parse_event
+from websocketParsing import WebSocketParser
 import sys, json, asyncio, requests, websockets
 
 api_base_url = "https://stanfordohs.pronto.io/"
 
 readjson = ReadJSON()
+parser = WebSocketParser()
 
 auth_path, chats_path, bubbles_path, loginTokenJSONPath, authTokenJSONPath, verificationCodeResponseJSONPath, settings_path, encryption_path, logs_path, settingsJSONPath, keysJSONPath, bubbleOverviewJSONPath, users_path = createappfolders()
 accesstoken = readjson.getaccesstoken(authTokenJSONPath)
@@ -16,10 +17,10 @@ print(f"Access token: {accesstoken[:5]}...{accesstoken[-5:]}")
 user_info = readjson.get_clientUserInfo(authTokenJSONPath)
 user_id = user_info["id"] if user_info else None
 print(f"User ID: {user_id}")
-bubble_id = "4003845"
+bubble_id = "4209040"
 print(f"Bubble ID: {bubble_id}")
 # 3640189 for bulletin
-# 4003845 for oocc
+# 4209040 for oocc
 # 3775720 for OHSMP
 # Check if bubble_id consists only of digits to verify it's valid
 
@@ -93,7 +94,7 @@ def start_push_with_channelcode(bubble_id):
                          await websocket.send("pong")  # Respond with pong to the ping
                     else:
                          # For any other type of message, print it out
-                         parse_event(message)  # Parse the event message using the provided function
+                         parser.parse_event(message)  # Parse the event message using the provided function
 
     # Define the main async function that initiates connection and listening
     async def main():

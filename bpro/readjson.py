@@ -5,7 +5,7 @@
 import json
 import os
 import datetime
-from .systemcheck import createappfolders  # updated relative import
+from systemcheck import createappfolders  # updated relative import
 
 class ReadJSON:
     auth_path, chats_path, bubbles_path, loginTokenJSONPath, authTokenJSONPath, verificationCodeResponseJSONPath, settings_path, encryption_path, logs_path, settingsJSONPath, keysJSONPath, bubbleOverviewJSONPath, users_path = createappfolders(debug=True)
