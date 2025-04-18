@@ -18,7 +18,7 @@ DEFAULT_PORT = 6969   # Define a default port
 PORT = DEFAULT_PORT   # This will be potentially updated if default port is in use
 default_chat_id = None
 accesstoken = ""
-ws_thread = None  # Track the websocket thread globally
+ws_client = None  # Track the WebSocket client globally
 
 # ─── Filesystem prep & token loading ────────────────────────────────────────────
 (auth_path, chats_path, bubbles_path,
@@ -106,58 +106,67 @@ def open_browser():
 
 # ─── WebSocket client initialization ────────────────────────────────────────────
 def start_websocket_client():
-    global ws_thread
+    global ws_client
+    
+    import threading
 
     try:
-        from bpro.websockets2 import WebSocketClient
+        from bpro.websocketClient import WebSocketClient
         
-        bubble_to_sub = "3832006"  # Set default_chat_id in thread to avoid race conditions
-        code = ReadJSON().get_channelcodes(bubbleOverviewJSONPath, bubble_to_sub)
+        # Hardcode the api base url since the Api class doesn't have this attribute
+        api_base_url = "https://stanfordohs.pronto.io"
         
-        if not code:
-            print("ERROR: No channel code found for bubble", bubble_to_sub)
-            return False
-            
-        def ws_thread_target():
-            try:
-                print("WebSocket thread starting...")
-                ws_client = WebSocketClient(api.api_base_url, accesstoken, bubble_to_sub, code, on_ws_event)
-                ws_client.start()  # This will block the thread
-            except Exception as ex:
-                print("WebSocket thread error:", ex)
-                
-        # Create and start the thread
-        ws_thread = threading.Thread(
-            target=ws_thread_target,
-            name="WebSocketThread",
-            daemon=True
-        )
-        ws_thread.start()
+        # Create WebSocketClient instance with callback
+        ws_client = WebSocketClient(api_base_url, accesstoken, on_ws_event)
         
-        # Store the ID we want to open in the browser
+        # Set default chat bubble to connect to
+        bubble_to_sub = "4209040"  # Changed to a bubble we know works
+        
+        # Store the ID as default to open in the browser
         global default_chat_id
         default_chat_id = bubble_to_sub
         
-        print("WebSocket thread started")
-        return True
+        # Connect to the default bubble
+        if ws_client.connect_to_bubble(bubble_to_sub):
+            print(f"WebSocket client connected to default bubble {bubble_to_sub}")
+            return True
+        else:
+            print(f"Failed to connect to default bubble {bubble_to_sub}")
+            return False
     except Exception as ex:
-        print("Failed to start WebSocket client:", ex)
+        print(f"Failed to start WebSocket client: {ex}")
+        import traceback
+        traceback.print_exc()
         return False
 
 # ─── WebSocket → Socket.IO bridge ───────────────────────────────────────────────
 def on_ws_event(e):
     et = e.get("event","").split("\\")[-1]
     data = json.loads(e.get("data","{}"))
-    print("WS event:", et, data)
+    bubble_id = e.get("_bubble_id", "unknown")  # Get the bubble ID from the event
+    
+    print(f"WS event from bubble {bubble_id}: {et}")
+    
+    # Use emit without the broadcast parameter to fix the error
     if et=="UserTyping":
-        socketio.emit("user_typing", {
+        event_data = {
             "user_id": data.get("user_id"),
-            "thread_id": data.get("thread_id")
-        }, broadcast=True)
+            "thread_id": data.get("thread_id"),
+            "bubble_id": bubble_id
+        }
+        socketio.emit("user_typing", event_data)
     elif et=="UserStoppedTyping":
-        socketio.emit("user_stopped_typing", {
-            "user_id": data.get("user_id")
-        }, broadcast=True)
+        event_data = {
+            "user_id": data.get("user_id"),
+            "bubble_id": bubble_id
+        }
+        socketio.emit("user_stopped_typing", event_data)
+    
+    # Emit raw log entry
+    socketio.emit("ws_log", {
+        "bubble_id": bubble_id,
+        "event": et
+    })
 
 # ─── Auth routes ────────────────────────────────────────────────────────────────
 @app.route("/login")
@@ -204,12 +213,23 @@ def handle_verification_code():
 @app.route("/")
 def index():
     if not is_authenticated(): return redirect("/login")
+    # Add user ID to the template context
     return send_from_directory("frontend/chat", "chat-index.html")
 
 @app.route("/chat/<chat_id>")
 def chat_route(chat_id):
     if not is_authenticated(): return redirect("/login")
     return send_from_directory("frontend/chat", "chat-index.html")
+
+@app.route("/api/user_info")
+def get_user_info():
+    """Return basic user info for the frontend"""
+    if not userID:
+        return jsonify(error="No user ID available"), 404
+    return jsonify({
+        "user_id": userID,
+        "user_info": user_info
+    })
 
 # ─── Auth check middleware ─────────────────────────────────────────────────────
 @app.before_request
@@ -285,9 +305,28 @@ def send_message():
     data = request.json or {}
     bid, txt = data.get("chatId"), data.get("message")
     if not bid or not txt:
-        return jsonify(error="Missing chatId/message"),400
-    res = api.send_message(bid, txt, userID, data.get("parentMessageId"))
-    return (jsonify(res),200) if res.get("ok") else (jsonify(res),500)
+        return jsonify(error="Missing chatId/message"), 400
+    
+    try:
+        # Send message using the API
+        res = api.send_message(bid, txt, userID, data.get("parentMessageId"))
+        
+        if res.get("ok") and res.get("message"):
+            # Log the successful message send
+            print(f"Message sent to {bid}: {res.get('message').get('id')}")
+            
+            # If it has a user field but no profilepicurl, add it
+            message = res.get("message")
+            if message and message.get("user") and not message.get("user").get("profilepicurl") and message.get("user").get("profilepic"):
+                user_id = message["user"]["id"]
+                message["user"]["profilepicurl"] = f"https://files.pronto.io/files/users/{user_id}/profilepic"
+            
+            return jsonify(res), 200
+        else:
+            return jsonify(res), 500
+    except Exception as e:
+        print(f"Error sending message: {str(e)}")
+        return jsonify(error=str(e), ok=False), 500
 
 @app.route("/api/markBubbleAsRead", methods=["POST"])
 def mark_read():
@@ -304,29 +343,62 @@ def delete_message():
     res = api.delete_message(mid)
     return (jsonify(res),200) if res.get("ok") else (jsonify(res),500)
 
+@app.route("/api/set_active_bubble", methods=["POST"])
+def set_active_bubble():
+    """API endpoint to tell the server which bubble is currently active in the UI"""
+    global ws_client
+    
+    if not ws_client:
+        print("WebSocket client not initialized, creating now...")
+        # Try to initialize it if it doesn't exist
+        if not start_websocket_client():
+            return jsonify(error="Failed to initialize WebSocket client"), 500
+        
+    data = request.json or {}
+    bubble_id = data.get("bubbleId")
+    
+    if not bubble_id:
+        return jsonify(error="bubbleId required"), 400
+    
+    try:    
+        # Connect to the new bubble
+        success = ws_client.connect_to_bubble(bubble_id)
+        
+        if success:
+            return jsonify(success=True, message=f"Connected to bubble {bubble_id}")
+        else:
+            return jsonify(success=False, error=f"Failed to connect to bubble {bubble_id}"), 500
+    except Exception as e:
+        print(f"Error connecting to bubble {bubble_id}: {e}")
+        return jsonify(success=False, error=str(e)), 500
+
 # ─── Socket.IO event handlers ─────────────────────────────────────────────
 @socketio.on('connect')
 def handle_connect():
-    print(f"SocketIO: Client connected")
+    print("SocketIO: Client connected")
 
 @socketio.on('disconnect')
 def handle_disconnect():
-    print(f"SocketIO: Client disconnected")
+    print("SocketIO: Client disconnected")
 
 @socketio.on('user_typing')
 def handle_user_typing(data):
     print(f"SocketIO: User typing event: {data}")
-    # No need to re-broadcast as the typing event already comes from the Pusher client
-    # However, we could add server-side typing status tracking here if needed
+    # Re-emit to all clients without broadcast parameter
+    socketio.emit("user_typing", data)
 
 @socketio.on('user_stopped_typing')
 def handle_user_stopped_typing(data):
     print(f"SocketIO: User stopped typing event: {data}")
-    # No need to re-broadcast as the event already comes from the Pusher client
+    # Re-emit to all clients without broadcast parameter
+    socketio.emit("user_stopped_typing", data)
 
 # ─── Main entrypoint ────────────────────────────────────────────────────────────
 if __name__=="__main__":
     print("=== Entering __main__ ===")
+    
+    # Create a global WebSocketClient instance
+    ws_client = None
     
     # Find an available port
     PORT = find_available_port(DEFAULT_PORT)

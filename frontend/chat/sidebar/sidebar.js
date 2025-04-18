@@ -962,6 +962,31 @@ function selectChat(chatId) {
         window.pywebview.api.print_chat_info(selectedChat.title, chatId);
     }
     
+    // Notify server about bubble selection to establish WebSocket connection
+    fetch('/api/set_active_bubble', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ bubbleId: chatId })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (!data.success) {
+            console.warn('Failed to set active bubble:', data.error);
+        } else {
+            console.log('WebSocket connected to bubble:', chatId);
+        }
+    })
+    .catch(error => {
+        console.error('Error setting active bubble:', error);
+    });
+    
     // Load messages
     loadBubbleMessages(chatId, selectedChat.title);
     

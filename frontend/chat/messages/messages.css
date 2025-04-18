@@ -515,6 +515,66 @@
     }
 }
 
+/* Updated typing indicator styling */
+.typing-indicator-container {
+    display: flex;
+    align-items: center;
+    padding: 8px 16px;
+    margin: 0;
+    background-color: #f9f9f9;
+    border-top: 1px solid #e0e0e0;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.3s, transform 0.3s;
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    width: 100%;
+    z-index: 100;
+}
+
+.typing-indicator-container.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.typing-avatar {
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    margin-right: 12px;
+    border-radius: 50%;
+    overflow: hidden;
+    background-color: #f2f2f2;
+}
+
+.typing-avatar .profile-initials {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 12px;
+}
+
+.typing-content {
+    display: flex;
+    align-items: center;
+    color: #72767d;
+    font-size: 13px;
+}
+
+.typing-username {
+    font-weight: 600;
+    margin-right: 5px;
+}
+
+/* Keep the existing typing dots animation */
+.typing-dots {
+    display: flex;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .message-content {
