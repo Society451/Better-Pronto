@@ -20,9 +20,9 @@
 /* Message container styling - Discord-like layout */
 .message-container {
     display: flex;
-    margin-bottom: 2px; /* Reduced spacing between messages from same user */
+    margin-bottom: 1px; /* Reduced spacing between messages from same user */
     max-width: 100%;
-    padding: 4px 16px; /* Padding similar to Discord */
+    padding: 1px 16px; /* reduced top/bottom padding */
     border-radius: 0; /* Discord doesn't use rounded corners for messages */
 }
 
@@ -32,8 +32,8 @@
 
 /* Group messages from the same user */
 .message-container.continuation {
-    margin-top: -4px; /* Negative margin to bring consecutive messages closer */
-    padding-top: 0;
+    margin-top: -1px; /* smaller negative overlap */
+    padding: 1px 16px; /* match base padding */
 }
 
 .message-container.continuation .profile-picture {
@@ -48,11 +48,12 @@
 
 .message-container.continuation .message-content {
     margin-left: 56px; /* Indent to align under previous message */
+    padding: 4px 0; /* ensure same vertical padding when header is hidden */
 }
 
 /* Discord-like user message grouping */
 .message-container.new-group {
-    margin-top: 16px; /* Add spacing between different user message groups */
+    margin: 6px 0;    /* tighter spacing between user groups */
 }
 
 /* Profile picture styles */
@@ -92,7 +93,7 @@
 /* Message content styles - Discord-like */
 .message-content {
     background-color: transparent; /* Discord doesn't use background colors for messages */
-    padding: 0; /* Remove padding */
+    padding: 1px 0; /* tighter text padding */
     position: relative;
     flex: 1;
     word-break: break-word; /* Break long words */
