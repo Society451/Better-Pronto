@@ -12,6 +12,46 @@ function initMessageInput() {
     updateCharCounter(messageInput, charCounter);
     updateSendButtonState(messageInput.value.trim(), sendButton);
     
+    // Track typing state
+    let isTyping = false;
+    let typingTimer = null;
+    
+    // Send typing indicator when user starts typing
+    function sendTypingIndicator() {
+        if (!isTyping && window.socket && window.currentChatId) {
+            isTyping = true;
+            // Emit socket event for typing - but only if we have an active socket connection
+            try {
+                window.socket.emit('user_typing', {
+                    user_id: window.userID || '000000', // Use global user ID if available
+                    thread_id: window.currentChatId,
+                    bubble_id: window.currentChatId
+                });
+            } catch (e) {
+                console.error('Error emitting typing event:', e);
+            }
+        }
+        
+        // Reset typing timer
+        if (typingTimer) clearTimeout(typingTimer);
+        
+        // After 2 seconds of no typing, send stopped typing event
+        typingTimer = setTimeout(() => {
+            if (isTyping && window.socket && window.currentChatId) {
+                isTyping = false;
+                try {
+                    window.socket.emit('user_stopped_typing', {
+                        user_id: window.userID || '000000',
+                        thread_id: window.currentChatId,
+                        bubble_id: window.currentChatId
+                    });
+                } catch (e) {
+                    console.error('Error emitting stopped typing event:', e);
+                }
+            }
+        }, 2000);
+    }
+    
     // Auto-resize the textarea based on content
     function autoResizeTextarea() {
         // Reset height to a minimal value to get correct scrollHeight measurement
@@ -33,6 +73,9 @@ function initMessageInput() {
         autoResizeTextarea();
         updateCharCounter(messageInput, charCounter);
         updateSendButtonState(messageInput.value.trim(), sendButton);
+        
+        // Send typing indicator
+        sendTypingIndicator();
     });
     
     // Handle send button click
@@ -102,20 +145,51 @@ function sendMessage() {
     const messageText = messageInput.value.trim();
     
     if (messageText) {
-        // In a real application, this would send the message to a server
-        // For now, we'll just add it to the messages container
-        if (window.addMessageToChat) {
-            // Temporarily add a message with local data
-            const tempMessageObj = {
-                message: messageText,
-                user: {
-                    fullname: 'You'
+        // Create a temporary message for immediate display
+        const tempMessageObj = {
+            message: messageText,
+            user: {
+                fullname: 'You'
+            },
+            created_at: new Date().toISOString().replace('T', ' ').split('.')[0],
+            id: `temp-${Date.now()}`
+        };
+        
+        // Add temporary message to the UI
+        const tempMessage = window.addMessageToChat(tempMessageObj);
+        
+        // Send message via API
+        if (window.currentChatId && messageText) {
+            fetch(`/api/send_message`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
                 },
-                created_at: new Date().toISOString().replace('T', ' ').split('.')[0],
-                id: `temp-${Date.now()}`
-            };
-            
-            window.addMessageToChat(tempMessageObj);
+                body: JSON.stringify({ chatId: window.currentChatId, message: messageText })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Message sent via API:', data);
+
+                if (data && data.ok && data.message) {
+                    // Update the temporary message with the real message data from the server
+                    if (window.updateTempMessage) {
+                        window.updateTempMessage(tempMessage.id, data.message);
+                    }
+                } else {
+                    console.error('Error sending message:', data.error || 'Unknown error');
+                    // Show error toast
+                    if (window.showToast) {
+                        window.showToast('Failed to send message', 'error');
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error sending message:', error);
+                if (window.showToast) {
+                    window.showToast('Failed to send message: Network error', 'error');
+                }
+            });
         }
         
         // Clear the input field
