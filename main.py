@@ -10,6 +10,7 @@ from bproapi import *
 import datetime
 import webbrowser
 from flask import Flask, send_from_directory, jsonify, request, redirect, url_for, abort
+from datetime import datetime
 
 PORT = 6969
 
@@ -221,8 +222,25 @@ def get_dynamic_detailed_messages():
     if not bubble_id:
         return jsonify({"error": "No bubble ID provided"}), 400
     
-    result = api.get_dynamicdetailed_messages(bubble_id)
-    return jsonify(result)
+    try:
+        result = api.get_dynamicdetailed_messages(bubble_id)
+        
+        # Pass along raw timestamp
+        for msg in result.get('messages', []):
+            raw = msg.get('time_of_sending')
+            if raw:
+                msg['created_at'] = raw   # preserve exact server time
+            
+            # Reformat timestamps
+            try:
+                dt = datetime.strptime(raw, '%Y-%m-%d %H:%M:%S')
+                msg['time_of_sending'] = dt.strftime('%-I:%M %p')  # e.g. "1:01 AM"
+            except ValueError:
+                pass
+        
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/api/send_message', methods=['POST'])
 def send_message():

@@ -5,6 +5,21 @@ let currentChatName = null;
 let isLoadingMessages = false;
 let autoScrollToBottom = true; // Flag to control automatic scrolling
 
+// New: format full YYYY‑MM‑DD HH:MM:SS UTC into local time string
+function formatDateTime(raw) {
+    // append 'Z' so Date parses it as UTC, then toLocaleString shows local time
+    const dt = new Date(raw.replace(' ', 'T') + 'Z');
+    if (isNaN(dt)) return raw;
+    return dt.toLocaleString('en-US', {
+        month:  'short',
+        day:    'numeric',
+        year:   'numeric',
+        hour:   'numeric',
+        minute: '2-digit',
+        hour12: true
+    });
+}
+
 // Create message element from API message data
 function createMessageFromAPIData(message) {
     // Create message container with appropriate class based on if it's from the current user
@@ -64,44 +79,22 @@ function createMessageFromAPIData(message) {
         senderElement.textContent = message.author || 'Unknown User';
     }
     
-    // Convert timestamp to readable format with improved validation
-    let formattedTimestamp;
-    try {
-        // Handle ISO date string format from Pronto API (e.g. "2025-04-02 11:26:44")
-        if (message.created_at) {
-            const date = new Date(message.created_at.replace(' ', 'T'));
-            if (date instanceof Date && !isNaN(date)) {
-                formattedTimestamp = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            } else {
-                formattedTimestamp = getCurrentTime();
-            }
-        }
-        // Fall back to time_of_sending (unix timestamp) if available
-        else if (message.time_of_sending) {
-            // Handle both string and number formats
-            const timestamp = typeof message.time_of_sending === 'string' 
-                ? parseFloat(message.time_of_sending) 
-                : message.time_of_sending;
-                
-            // Validate if the timestamp is a valid number and in a reasonable range
-            if (!isNaN(timestamp) && timestamp > 946684800) { // Jan 1, 2000 as minimum valid date
-                const date = new Date(timestamp * 1000); // Convert from Unix timestamp
-                
-                // Check if date is valid before formatting
-                if (date instanceof Date && !isNaN(date)) {
-                    formattedTimestamp = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                } else {
-                    formattedTimestamp = getCurrentTime();
-                }
-            } else {
-                formattedTimestamp = getCurrentTime();
-            }
-        } else {
-            formattedTimestamp = getCurrentTime();
-        }
-    } catch (e) {
-        console.error('Error parsing timestamp:', e, 'Original timestamp was:', message.created_at || message.time_of_sending);
-        formattedTimestamp = getCurrentTime();
+    // Render timestamp cleanly using user's timezone
+    let formattedTimestamp = '';
+    if (message.created_at) {
+        formattedTimestamp = formatDateTime(message.created_at);
+    } else if (message.display_time) {
+        formattedTimestamp = message.display_time;
+    } else {
+        // fallback parsing of UTC into local
+        const dt = new Date((message.time_of_sending || '').replace(' ', 'T') + 'Z');
+        formattedTimestamp = (!isNaN(dt))
+            ? dt.toLocaleTimeString('en-US', {
+                  hour:   'numeric',
+                  minute: '2-digit',
+                  hour12:true
+              })
+            : getCurrentTime();
     }
     
     // Create timestamp element

@@ -4,6 +4,7 @@
 
 import json
 import os
+import datetime
 from .systemcheck import createappfolders  # updated relative import
 
 class ReadJSON:
@@ -377,4 +378,16 @@ class ReadJSON:
         except Exception as e:
             print(f"Error reading channel codes from JSON file: {e}")
             return {} if bubble_id is None else None
+
+    @staticmethod
+    def format_timestamp(ts_str, fmt='%I:%M %p'):
+        """
+        Convert 'YYYY-MM-DD HH:MM:SS' into specified format (default 'H:MM AM/PM').
+        Returns original string on failure.
+        """
+        try:
+            dt = datetime.datetime.strptime(ts_str, '%Y-%m-%d %H:%M:%S')
+            return dt.strftime(fmt).lstrip('0')
+        except Exception:
+            return ts_str
 
