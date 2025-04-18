@@ -38,6 +38,16 @@
 
 .message-container.continuation .profile-picture {
     visibility: hidden; /* Hide profile pic for continuation messages */
+    width: 0;
+    margin-right: 0;
+}
+
+.message-container.continuation .message-header {
+    display: none; /* Hide name/timestamp */
+}
+
+.message-container.continuation .message-content {
+    margin-left: 56px; /* Indent to align under previous message */
 }
 
 /* Discord-like user message grouping */
