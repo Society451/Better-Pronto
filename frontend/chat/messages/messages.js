@@ -296,8 +296,15 @@ function renderMessages(messages, chatName) {
     messagesWrapper.style.minHeight = '100%';
     
     // Create and append message elements in order (oldest to newest)
+    let lastAuthor = null;
     sortedMessages.forEach(message => {
         const messageElement = createMessageFromAPIData(message);
+        if (message.author === lastAuthor) {
+            messageElement.classList.add('continuation');
+        } else {
+            messageElement.classList.add('new-group');
+        }
+        lastAuthor = message.author;
         messagesWrapper.appendChild(messageElement);
     });
     
