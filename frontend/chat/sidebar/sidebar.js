@@ -865,6 +865,8 @@ function handleDropdownAction(action, chatId) {
         case 'hide':
             console.log(`Action ${action} for chat ${chatId} - not yet implemented`);
             break;
+        default:
+            console.log(`Unknown settings action: ${action}`);
     }
 }
 
@@ -1094,10 +1096,6 @@ function setupSettingsButton() {
             <button class="settings-menu-item" data-action="help">
                 <i class="fas fa-question-circle fa-fw"></i> Help & Support
             </button>
-            <div class="settings-menu-separator"></div>
-            <button class="settings-menu-item" data-action="logout">
-                <i class="fas fa-sign-out-alt fa-fw"></i> Logout
-            </button>
         `;
         document.querySelector('.sidebar-header').appendChild(settingsMenu);
         
@@ -1155,27 +1153,6 @@ function handleSettingsAction(action) {
             console.log('Opening help & support');
             showToast('Help & support feature coming soon', 'info');
             break;
-        case 'logout':
-            if (confirm('Are you sure you want to logout?')) {
-                console.log('Logging out');
-                fetch('/api/logout', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.ok) {
-                        window.location.href = '/login';
-                    } else {
-                        showToast('Logout failed: ' + (data.error || 'Unknown error'), 'error');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error during logout:', error);
-                    showToast('Logout failed. Please try again.', 'error');
-                });
-            }
-            break;
         default:
             console.log(`Unknown settings action: ${action}`);
     }
@@ -1186,7 +1163,7 @@ function init() {
     setupSearchFunctionality();
     setupSearchToggle();
     setupCollapseAllButton();
-    setupSettingsButton();  // Add this line
+    setupSettingsButton();
     checkApiAvailability();
     
     // Handle route-based navigation for URLs like /chat/chatId

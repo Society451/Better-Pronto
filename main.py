@@ -128,19 +128,6 @@ def handle_verification_code():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@app.route('/api/logout', methods=['POST'])
-def logout():
-    global accesstoken
-    try:
-        # Clear the access token
-        accesstoken = ""
-        # Optionally clear token files
-        with open(authTokenJSONPath, "w") as f:
-            f.write("{}")
-        return jsonify({"ok": True})
-    except Exception as e:
-        return jsonify({"ok": False, "error": str(e)})
-
 # Serve the chat-index.html file
 @app.route('/')
 def index():
