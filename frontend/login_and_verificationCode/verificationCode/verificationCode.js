@@ -1,6 +1,9 @@
 const codeInputs = document.querySelectorAll('.code-input');
 const clearButton = document.getElementById('clear-button');
 
+// Get email from session storage
+const userEmail = sessionStorage.getItem('userEmail') || '';
+
 codeInputs.forEach((input, index) => {
     input.addEventListener('input', () => {
         if (input.value.length === 1 && index < codeInputs.length - 1) {
@@ -43,13 +46,37 @@ document.getElementById('verification-form').addEventListener('submit', async fu
     event.preventDefault();
     const code = Array.from(codeInputs).map(input => input.value).join('');
     console.log(`Verification code entered: ${code}`);
-    const response = await window.pywebview.api.handle_verification_code(code);
-    console.log(response);
-    const errorMessage = document.getElementById('error-message');  // Define errorMessage here
-    if (response === "error") {
-        errorMessage.textContent = "Invalid verification code. Please try again.";
-    } else {
-        errorMessage.textContent = "";
-        window.location.href = "chat.html";
+    
+    if (!userEmail) {
+        document.getElementById('error-message').textContent = "Session expired. Please go back to login.";
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/handle_verification_code', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ 
+                code: code,
+                email: userEmail
+            })
+        });
+        
+        const data = await response.json();
+        const errorMessage = document.getElementById('error-message');
+        
+        if (!response.ok) {
+            errorMessage.textContent = data.error || "Invalid verification code. Please try again.";
+        } else {
+            errorMessage.textContent = "";
+            // Clear session storage
+            sessionStorage.removeItem('userEmail');
+            window.location.href = "/"; // Redirect to main app
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        document.getElementById('error-message').textContent = "An unexpected error occurred. Please try again.";
     }
 });

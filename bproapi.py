@@ -1,6 +1,6 @@
 #Author: Paul Estrada
 #Email: paul257@ohs.stanford.edu
-#URL: https://github.com/Society451/Better-Pronto
+#URL: https://github.com/r0adki110/Better-Pronto
 
 import webview, os, json, re, time, uuid, mimetypes, requests, urllib.parse
 from bpro.pronto import Pronto

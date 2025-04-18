@@ -4,7 +4,7 @@ html {
 }
 
 body {
-    background: url('../images/background.png') no-repeat center center fixed; /* Corrected image path */
+    background: url('/resources/images/background.png') no-repeat center center fixed; /* Updated image path */
     background-size: cover; /* Ensure the background image covers the entire background */
     background-position: center;
     background-repeat: no-repeat;
@@ -27,9 +27,11 @@ body {
 
 .button-group {
     display: flex;
-    justify-content: space-between;
-    width: 80%;
-    gap: 10px; /* Added gap between buttons */
+    justify-content: center;   /* center the buttons */
+    gap: 10px;                  /* space between them */
+    width: 100%;
+    max-width: 300px;           /* constrain total width */
+    margin: 20px auto;          /* vertical spacing and center block */
 }
 
 .button-group input[type="submit"],
@@ -40,6 +42,8 @@ body {
     border-radius: 5px;
     padding: 10px;
     cursor: pointer;
+    flex: 1;                    /* each button takes equal width */
+    min-width: 0;               /* prevent overflow */
 }
 
 .button-group input[type="submit"]:hover,

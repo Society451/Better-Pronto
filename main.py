@@ -1,6 +1,6 @@
 #Author: Paul Estrada
 #Email: paul257@ohs.stanford.edu
-#URL: https://github.com/Society451/Better-Pronto
+#URL: https://github.com/r0adki110/Better-Pronto
 
 import os, re
 from bpro.pronto import Pronto
@@ -9,7 +9,7 @@ from bpro.readjson import ReadJSON
 from bproapi import *
 import datetime
 import webbrowser
-from flask import Flask, send_from_directory, jsonify, request
+from flask import Flask, send_from_directory, jsonify, request, redirect, url_for, abort
 
 PORT = 6969
 
@@ -59,6 +59,13 @@ app = Flask(__name__, static_folder='frontend', static_url_path='/')
 # Flag to track if browser has been opened
 browser_opened = False
 
+# Function to check if user is authenticated
+def is_authenticated():
+    global accesstoken
+    if not accesstoken:
+        getLocalAccesstoken()
+    return bool(accesstoken)
+
 # Function to open browser after server starts
 def open_browser():
     global browser_opened
@@ -69,15 +76,103 @@ def open_browser():
         webbrowser.open(url)
         browser_opened = True
 
+# Authentication routes
+@app.route('/login')
+def login_page():
+    return send_from_directory('frontend/login_and_verificationCode/login', 'login.html')
+
+@app.route('/verification')
+def verification_page():
+    return send_from_directory('frontend/login_and_verificationCode/verificationCode', 'verificationCode.html')
+
+# Authentication API endpoints
+@app.route('/api/handle_email', methods=['POST'])
+def handle_email():
+    data = request.json
+    if not data or 'email' not in data:
+        return jsonify({"error": "Email is required"}), 400
+    
+    email = data['email']
+    if "stanford.edu" in email:
+        try:
+            response = pronto.requestVerificationEmail(email)
+            return jsonify({"success": True, "message": "Email accepted", "response": response})
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+    else:
+        return jsonify({"error": "Invalid email domain"}), 400
+
+@app.route('/api/handle_verification_code', methods=['POST'])
+def handle_verification_code():
+    data = request.json
+    if not data or 'code' not in data or 'email' not in data:
+        return jsonify({"error": "Code and email are required"}), 400
+    
+    email = data['email']
+    code = data['code']
+    
+    try:
+        response = pronto.verification_code_to_login_token(email, code)
+        if "ok" in response:
+            save_response_to_file(response, loginTokenJSONPath)
+            # Get login token and convert to access token
+            logintoken = getvalueLogin(loginTokenJSONPath, "logintoken")
+            if logintoken:
+                auth_response = pronto.login_token_to_access_token(logintoken)
+                if auth_response:
+                    save_response_to_file(auth_response, authTokenJSONPath)
+                    getLocalAccesstoken()
+                    return jsonify({"success": True})
+            
+        return jsonify({"error": "Verification failed", "response": response}), 401
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/logout', methods=['POST'])
+def logout():
+    global accesstoken
+    try:
+        # Clear the access token
+        accesstoken = ""
+        # Optionally clear token files
+        with open(authTokenJSONPath, "w") as f:
+            f.write("{}")
+        return jsonify({"ok": True})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)})
+
 # Serve the chat-index.html file
 @app.route('/')
 def index():
+    if not is_authenticated():
+        return redirect('/login')
     return send_from_directory('frontend/chat', 'chat-index.html')
 
 # Handle chat-specific routes
 @app.route('/chat/<chat_id>')
 def chat_route(chat_id):
+    if not is_authenticated():
+        return redirect('/login')
     return send_from_directory('frontend/chat', 'chat-index.html')
+
+# Authentication check middleware for API endpoints
+@app.before_request
+def check_auth_for_api():
+    # Skip auth check for login-related endpoints
+    if request.path.startswith('/login') or request.path.startswith('/verification') or \
+       request.path == '/api/handle_email' or request.path == '/api/handle_verification_code' or \
+       request.path.startswith('/resources/') or \
+       (request.path.startswith('/api/') and request.path in ['/api/logout']):
+        return
+    
+    # For API endpoints, return 401 if not authenticated
+    if request.path.startswith('/api/') and not is_authenticated():
+        return jsonify({"error": "Authentication required"}), 401
+
+# Error handler for 404 errors
+@app.errorhandler(404)
+def page_not_found(e):
+    return redirect('/login')
 
 # API endpoints to match the functions in api class
 @app.route('/api/methods', methods=['GET'])
