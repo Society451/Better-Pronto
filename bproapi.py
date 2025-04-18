@@ -1,6 +1,6 @@
 #Author: Paul Estrada
 #Email: paul257@ohs.stanford.edu
-#URL: https://github.com/Society451/Better-Pronto
+#URL: https://github.com/r0adki110/Better-Pronto
 
 import webview, os, json, re, time, uuid, mimetypes, requests, urllib.parse
 from bpro.pronto import Pronto
@@ -151,7 +151,11 @@ class Api:
         return user_info["id"] if user_info else None
 
     def get_live_bubbles(self, *args):
-        response = pronto.getUsersBubbles(accesstoken)
+        # Reload token from file
+        getLocalAccesstoken()
+        self.accesstoken = accesstoken
+
+        response = pronto.getUsersBubbles(self.accesstoken)
         save_response_to_file(response, bubbleOverviewJSONPath)
         ReadJSON.create_bubble_folders(bubbleOverviewJSONPath, bubbles_path, sanitize_folder_name)
 

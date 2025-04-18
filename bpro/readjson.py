@@ -1,13 +1,13 @@
 #Author: Paul Estrada
 #Email: paul257@ohs.stanford.edu
-#URL: https://github.com/Society451/Better-Pronto
+#URL: https://github.com/r0adki110/pronto-selfbots
 
 import json
 import os
-from systemcheck import createappfolders
+from .systemcheck import createappfolders  # updated relative import
 
 class ReadJSON:
-    auth_path, chats_path, bubbles_path, loginTokenJSONPath, authTokenJSONPath, verificationCodeResponseJSONPath, settings_path, encryption_path, logs_path, settingsJSONPath, keysJSONPath, bubbleOverviewJSONPath, users_path = createappfolders()
+    auth_path, chats_path, bubbles_path, loginTokenJSONPath, authTokenJSONPath, verificationCodeResponseJSONPath, settings_path, encryption_path, logs_path, settingsJSONPath, keysJSONPath, bubbleOverviewJSONPath, users_path = createappfolders(debug=True)
 
     @staticmethod
     def create_bubble_folders(bubbleOverviewJSONPath, bubbles_path, sanitize_folder_name):

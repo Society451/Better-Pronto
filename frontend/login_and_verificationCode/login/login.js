@@ -1,25 +1,36 @@
-function waitForPywebview() {
-    return new Promise((resolve) => {
-        if (window.pywebview && window.pywebview.api) {
-            resolve();
-        } else {
-            document.addEventListener('pywebviewready', resolve);
-        }
-    });
-    }
-
+// Track email for verification page
+let userEmail = '';
 
 document.getElementById('login-form').addEventListener('submit', async function(event) {
     event.preventDefault();
     const email = document.getElementById('email').value;
-    console.log('Submitting email:', email);  // Debugging statement
-    const response = await window.pywebview.api.handle_email(email);
-    const errorMessage = document.getElementById('error-message');
-    if (response === "Invalid email domain") {
-        errorMessage.textContent = response;
-    } else {
-        errorMessage.textContent = "";
-        window.location.href = "verificationCode.html"; // Redirect to verificationCode.html
+    userEmail = email; // Store email for later use
+    
+    console.log('Submitting email:', email);
+    
+    try {
+        const response = await fetch('/api/handle_email', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email: email })
+        });
+        
+        const data = await response.json();
+        const errorMessage = document.getElementById('error-message');
+        
+        if (!response.ok) {
+            errorMessage.textContent = data.error || "Invalid email domain";
+        } else {
+            errorMessage.textContent = "";
+            // Store email in session storage for verification page
+            sessionStorage.setItem('userEmail', email);
+            window.location.href = "/verification"; // Redirect to verification page
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        document.getElementById('error-message').textContent = "An unexpected error occurred. Please try again.";
     }
 });
 
@@ -30,11 +41,20 @@ async function handleLogin() {
     const email = document.getElementById('email-input').value;
     const password = document.getElementById('password-input').value;
     try {
-        const response = await window.pywebview.api.login(email, password);
-        if (response === "Ok") {
-            window.location.href = 'chat.html'; // Redirect to chat on successful login
+        const response = await fetch('/api/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email, password })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+            displayError(data.error || "Login failed");
         } else {
-            displayError(response); // Display error message
+            window.location.href = 'chat.html'; // Redirect to chat on successful login
         }
     } catch (error) {
         console.error("Login error:", error);
