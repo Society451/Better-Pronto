@@ -151,7 +151,11 @@ class Api:
         return user_info["id"] if user_info else None
 
     def get_live_bubbles(self, *args):
-        response = pronto.getUsersBubbles(accesstoken)
+        # Reload token from file
+        getLocalAccesstoken()
+        self.accesstoken = accesstoken
+
+        response = pronto.getUsersBubbles(self.accesstoken)
         save_response_to_file(response, bubbleOverviewJSONPath)
         ReadJSON.create_bubble_folders(bubbleOverviewJSONPath, bubbles_path, sanitize_folder_name)
 
